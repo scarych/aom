@@ -1,0 +1,33 @@
+{
+  "name": "aom",
+  "version": "0.0.23",
+  "description": "Alpha and Omega",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Grigory Kholstinnikov",
+  "license": "ISC",
+  "dependencies": {
+    "aom": "^0.0.22",
+    "bluebird": "^3.5.1",
+    "cheerio": "^1.0.0-rc.2",
+    "cross-env": "^5.2.0",
+    "esm": "^3.0.55",
+    "koa": "^2.4.1",
+    "koa-convert": "^1.2.0",
+    "koa-router": "^7.4.0",
+    "lodash": "^4.17.10",
+    "koa-router-bridge": "^1.0.6",
+    "moment": "^2.22.2",
+    "mongoose": "^5.2.17",
+    "nconf": "^0.10.0",
+    "ramda": "^0.25.0"
+  },
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://holstinnikov@bitbucket.org/holstinnikov/aom.git"
+  },
+  "homepage": "https://bitbucket.org/holstinnikov/aom#readme"
+}
