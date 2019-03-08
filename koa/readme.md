@@ -1,7 +1,7 @@
 # koa extension
 Полезные middleware-конструкции для интеграции их в koa
 ```js
-import {koa} from 'aom`;
+import {koa} from 'aom';
 ```
 
 ## router.js

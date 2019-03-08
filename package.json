@@ -18,7 +18,7 @@
   "devDependencies": {},
   "repository": {
     "type": "git",
-    "url": "git+https://holstinnikov@bitbucket.org/holstinnikov/aom.git"
+    "url": "git+https://github.com/scarych/aom.git"
   },
-  "homepage": "https://bitbucket.org/holstinnikov/aom#readme"
+  "homepage": "https://github.com/scarych/aom#readme"
 }
