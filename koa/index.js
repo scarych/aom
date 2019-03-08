@@ -1,3 +1,5 @@
+const _  = require('lodash');
+
 exports.Navi = require('./navi');
 exports.access = require('./access');
 // exports.query = require('./body');
@@ -22,10 +24,10 @@ exports.body = (ctx, next) => {
 exports.init = ({ limit = 25, glob = '__' }) => (ctx, next) => {
     return next();
 }
-
+/**  apply render (if posseible) by specific `template` for related ctx */
 exports.render = (template) => {
   return (ctx, next) => {
-    ctx.render && ctx.render(template);
+    _.isFunction(ctx.render) && ctx.render(template);
     return next();
   }
 }

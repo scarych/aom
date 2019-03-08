@@ -1,4 +1,4 @@
 const koaRouter = require('koa-router');
 const bridge = require('koa-router-bridge');
 
-module.exports =  bridge(koaRouter);
+module.exports = bridge(koaRouter);

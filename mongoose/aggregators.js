@@ -7,7 +7,7 @@ exports.objective = value => {
   try {
     value = ObjectId(`${value}`);
   } catch (e) {
-    value = null;
+    value = undefined;
   }
   return value;
 };
