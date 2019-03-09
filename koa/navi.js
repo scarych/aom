@@ -1,7 +1,12 @@
 const router = require('./router');
+const _ = require('lodash');
 
 class Navi {
-  constructor(prev) {
+  constructor(parent = {}) {
+    this.$parent = parent;
+    const {$router = router, $root} = parent;
+    this.$router = $router;
+    this.$root = $root;
     this.ident = this.constructor.name;
   }
 
@@ -10,8 +15,14 @@ class Navi {
     return [this.ident, ident].filter(Boolean).join(Navi.join||'_');
   }
 
-  $href(ident) {
-    return router.url(this.$ident(ident));
+  $href(ident, params) {
+    ident = this.$ident(ident);
+    const url = this.$router.url(ident);
+    if (_.isError(url)) {
+      return '#'+ident;
+    } else {
+      return url;
+    }
   }
 
   $this() {
