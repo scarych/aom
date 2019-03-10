@@ -1,23 +1,29 @@
-const router = require('./router');
 const _ = require('lodash');
 
-class Navi {
+class $ {
   constructor(parent = {}) {
-    this.$parent = parent;
-    const {$router = router, $root} = parent;
-    this.$router = $router;
-    this.$root = $root;
-    this.ident = this.constructor.name;
+    const ident = this.constructor.name;
+    this.$ = { parent, ident };
+    const { router, root = this } = parent.$;
+    this.$.router = router;
+    this.$.root = root;
+  }
+
+  $id({_id}, params = {}) {
+    const { id } = this;
+    if (id && _id) {
+      params[id] = _id;
+    }
+    return params;
   }
 
   $ident(ident) {
-    this.last = ident;
-    return [this.ident, ident].filter(Boolean).join(Navi.join||'_');
+    return [this.$.ident, ident].filter(Boolean).join('');
   }
 
-  $href(ident, params) {
+  $url(ident, params={}) {
     ident = this.$ident(ident);
-    const url = this.$router.url(ident);
+    const url = this.$.router.url(ident, params);
     if (_.isError(url)) {
       return '#'+ident;
     } else {
@@ -25,6 +31,14 @@ class Navi {
     }
   }
 
+  $last() {
+    return (ctx, next) => {
+      const { state, url } = ctx;
+      state.$last = url;
+      return next();
+    }
+  }
+  
   $this() {
     return (ctx, next) => {
       ctx.$this = this;
@@ -33,12 +47,12 @@ class Navi {
   }
 
   toString() {
-    return this.$href();
+    return this.$url();
   }
 
 }
 
-module.exports = Navi ;
+module.exports = $ ;
 
 /* как раз эта самая navi позволит создавать структуры требуемого вида
 так, что они будут естественным образом вплетены в систему вызовов

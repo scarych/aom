@@ -1,5 +1,6 @@
 const _  = require('lodash');
 
+exports.$ = require('./$');
 exports.Navi = require('./navi');
 exports.access = require('./access');
 // exports.query = require('./body');
