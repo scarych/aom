@@ -1,6 +1,6 @@
 const _ = require("lodash");
 const { config } = require("aom/mongoose");
-
+const { connector } = require('./aggregators');
 exports.ensure = function(data) {
   const self = this;
   return self.findOne(data).then(result => {
@@ -26,6 +26,13 @@ exports.enable = function(where, multi = true) {
   const { enabled } = config;
   return this.update(where, { $set: enabled }, { multi });
 };
+
+/** выполняет быстрый join данной таблицы, заменяя собой команду connector */
+exports.join = function(name, key) {
+  const link = {};
+  link[this.modelName] = name;
+  return connector(link, key);
+}
 
 /** набор типовых middleware функций  */
 exports._id = '_id';
