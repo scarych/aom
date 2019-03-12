@@ -13,7 +13,7 @@ class $ {
   }
 
   /** use current id to generate params  {'some_id':_id } 
-  *   for case `$url(ident, $this.$id(User))` in templates
+   * for case $url(ident, $this.$id(User)) in templates
   */
   $id({_id}, params = {}) {
     const { id } = this;
@@ -32,7 +32,7 @@ class $ {
   }
   /** generate ident based on current element ident */
   $ident(ident) {
-    return [this.$.ident, ident].filter(Boolean).join('');
+    return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join('');
   }
   /** generate url for specific ident with related router */
   $url(ident, params={}) {
