@@ -43,14 +43,15 @@ const ctx = {};
  * из существующей модели model, и поместить его в состояние по имени attr
  * если attr не задан, то из текста _id извлекается все, кроме окончания 
  * exports._id, который в общем случае можно "заменять" (например, на Id);
+ * использует where для уточнения запроса
 */
-ctx._id = function(_id, attr) {
+ctx._id = function(_id, attr, where={}) {
   const model = this;
   if (!attr) attr=_id.substr(0, _id.length-exports._id.length);
   return async ({params, state}, next) => {
-    state[attr] = await model.findOne({_id: params[_id]});
+    where._id = params[_id];
+    state[attr] = await model.findOne(where);
     return state[attr] && next();
   }
 }
 
-exports.ctx = ctx;
