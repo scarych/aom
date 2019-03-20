@@ -52,6 +52,26 @@ class $ {
       return next();
     }
   }
+
+  /** add this value to named ctx.state or push into list
+   *  case depends on type of input data string or array
+   */
+  $state() {
+    const attrs = _.values(arguments);
+    return (ctx, next) => {
+      attrs.map(attr => {
+        if (_.isString(attr)) {
+          ctx.state[attr] = this;
+        } else if (_.isArray(attr)) {
+          attr.map(attr => {
+            _.isArray(ctx.state[attr]) && ctx.state[attr].push(this);
+          })
+        }
+      });
+      return next();
+    }
+  }
+  
   /** return current url in string value */
   toString() {
     return this.$url();
