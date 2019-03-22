@@ -7,4 +7,10 @@ exports.is = {
     updated: { type: Date, default: Date.now, },
 };
 
+/** special action to make valid is structure */
+exports.$is = function (is={}) {
+    const { enabled = true } = is;
+    return {is: {'enabled': Boolean(enabled), 'updated': new Date}};
+}
+
 exports.IndexId = { type: ObjectId, index: true };

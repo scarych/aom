@@ -53,6 +53,17 @@ class $ {
     }
   }
 
+  /** make redirect action for current ctx 
+   * 
+  */
+  $redirect(ident, attr) {
+    attr = attr || this.id.substr(0, this.id.length - statics._id.length);
+    return (ctx, next) => {
+      ctx.redirect(this.$url(ident, this.$id(ctx.state[attr])));
+      return next();
+    }
+  }
+  
   /** add this value to named ctx.state or push into list
    *  case depends on type of input data string or array
    */

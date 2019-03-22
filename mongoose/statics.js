@@ -55,3 +55,13 @@ ctx._id = function(_id, attr, where={}) {
   }
 }
 
+/**  возвращает middleware, который создает объект модели с указанными данными по умолчанию
+ * и сохраняет его в state[attr] значении контекста
+*/
+ctx.add = function(attr, data={}) {
+  const model = this;
+  return ({ state, where }, next) => {
+    state[attr] = new model(_.merge({}, data, where));
+    return next();
+  }
+}
