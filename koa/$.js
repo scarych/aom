@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const { statics } = require('../mongoose');
+const Promise = require('bluebird');
 
 class $ {
   constructor(parent = {}) {
@@ -33,6 +34,7 @@ class $ {
   }
   /** generate ident based on current element ident */
   $ident(ident) {
+    this.$.last = ident
     return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join('');
   }
   /** generate url for specific ident with related router */
@@ -50,7 +52,14 @@ class $ {
   $this() {
     return (ctx, next) => {
       ctx.$this = this;
-      return next();
+      const states = [];
+      _.each(this.$.tree, (elem, ident)=> {
+        const {$menu} = elem;
+        if ($menu && $menu.$state) {
+          states.push($menu.$state(ctx, $menu));
+        }
+      });
+      return Promise.all(states).then(result=>next());
     }
   }
 
