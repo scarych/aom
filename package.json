@@ -1,6 +1,6 @@
 {
   "name": "aom",
-  "version": "0.0.32",
+  "version": "0.0.33",
   "description": "API Over Models",
   "main": "index.js",
   "scripts": {

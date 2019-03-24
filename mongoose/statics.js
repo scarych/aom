@@ -37,7 +37,7 @@ exports.join = function(name, key) {
 /** набор типовых middleware функций  */
 exports._id = '_id';
 const ctx = {};
-
+exports.ctx = ctx;
 /** возвращает middleware, позволяющий 
  * быстро извлечь элемент по имени _id и значению в ctx.params
  * из существующей модели model, и поместить его в состояние по имени attr
