@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const { statics } = require('../mongoose');
 
 class $ {
   constructor(parent = {}) {
