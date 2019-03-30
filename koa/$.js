@@ -3,9 +3,9 @@ const { statics } = require('../mongoose');
 const Promise = require('bluebird');
 
 class $ {
-  constructor(parent = {}) {
+  constructor(parent = {}, data={}) {
     const ident = this.constructor.name;
-    this.$ = { parent, ident, tree:{}};
+    this.$ = _.merge({ parent, ident, tree:{}}, data);
     const { router, root = this } = parent.$;
     // set this in tree of parent (store full relation for complete navigation)
     parent.$.tree && (parent.$.tree[ident] = this); 
@@ -40,7 +40,10 @@ class $ {
   /** generate url for specific ident with related router */
   $url(ident, params={}) {
     ident = this.$ident(ident);
-    const url = this.$.router.url(ident, params);
+    console.log ('ctx params', this.$.ctx.params);
+    const true_params = _.merge(_.get(this.$.ctx, 'params'), params); // force merge params with this.$.ctx
+    console.log (params, true_params);
+    const url = this.$.router.url(ident, true_params);
     if (_.isError(url)) {
       return '#'+ident;
     } else {
@@ -52,6 +55,7 @@ class $ {
   $this() {
     return (ctx, next) => {
       ctx.$this = this;
+      this.$.ctx = ctx; // backlink to current state in specific call !! (attention, may cause ctx shuffle)
       const states = [];
       _.each(this.$.tree, (elem, ident)=> {
         const {$menu} = elem;
@@ -93,6 +97,12 @@ class $ {
     }
   }
   
+  $debug() {
+    return (ctx, next)=> {
+      console.log (this, ctx.params);
+      return next();
+    }
+  }
   /** return current url in string value */
   toString() {
     return this.$url();
