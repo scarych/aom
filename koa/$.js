@@ -40,7 +40,7 @@ class $ {
   /** generate url for specific ident with related router */
   $url(ident, params={}) {
     ident = this.$ident(ident);
-    params = _.merge(_.get(this.$.ctx, 'params'), params); // force merge params with this.$.ctx
+    params = _.merge(_.merge({}, _.get(this.$.ctx, 'params')), params); // force merge params with this.$.ctx
     const url = this.$.router.url(ident, params);
     if (_.isError(url)) {
       return '#'+ident;
