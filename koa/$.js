@@ -38,14 +38,15 @@ class $ {
     return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join('');
   }
   /** generate url for specific ident with related router */
-  $url(ident, params={}) {
+  $url(ident, params={}, options={}) {
+    const { router } = this.$;
     ident = this.$ident(ident);
     params = _.merge(_.merge({}, _.get(this.$.ctx, 'params')), params); // force merge params with this.$.ctx
-    const url = this.$.router.url(ident, params);
+    const url = router.url(ident, params, options);
     if (_.isError(url)) {
       return '#'+ident;
     } else {
-      return url;
+      return [router.host, url].filter(Boolean).join('');
     }
   }
   
