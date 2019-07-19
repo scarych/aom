@@ -37,11 +37,12 @@ class $ {
     this.$.last = ident
     return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join('');
   }
+  
   /** generate url for specific ident with related router */
   $url(ident, params = {}, options = {}) {
-    const { router } = this.$;
+    const { router, ctx } = this.$.root.$;
     ident = this.$ident(ident);
-    params = _.merge(_.merge({}, _.get(this.$.ctx, 'params')), params); // force merge params with this.$.ctx
+    params = _.merge(_.omit(ctx.params, '0'), params); // force merge params with this.$.ctx
     const url = router.url(ident, params, options);
     if (_.isError(url)) {
       return '#' + ident;
