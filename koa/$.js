@@ -38,19 +38,6 @@ class $ {
     return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join('');
   }
   
-  /** generate url for specific ident with related router */
-  $url(ident, params = {}, options = {}) {
-    const { router, ctx } = this.$.root.$;
-    ident = this.$ident(ident);
-    params = _.merge(_.omit(ctx.params, '0'), params); // force merge params with this.$.ctx
-    const url = router.url(ident, params, options);
-    if (_.isError(url)) {
-      return '#' + ident;
-    } else {
-      return [router.host, url].filter(Boolean).join('');
-    }
-  }
-
   /** attach this object to content $this */
   $this() {
     return (ctx, next) => {
@@ -73,7 +60,8 @@ class $ {
   $redirect(ident, attr) {
     attr = attr || this.id.substr(0, this.id.length - statics._id.length);
     return (ctx, next) => {
-      const url = this.$url(ident, this.$id(ctx.state[attr]));
+      const params = _.omit(ctx.params, '0');
+      const url = ctx.router.url(this.$ident(ident), _.merge(params, this.$id(ctx.state[attr])));
       return ctx.redirect(url);
     }
   }
@@ -102,10 +90,6 @@ class $ {
       console.log(this, ctx.params);
       return next();
     }
-  }
-  /** return current url in string value */
-  toString() {
-    return this.$url();
   }
 
   /** return child elem into tree by ident (delimetr = '.') */
