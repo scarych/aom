@@ -4,7 +4,7 @@ const { ObjectId } = Schema.Types;
 exports.is = {
     enabled: { type: Boolean, default: true, required: true },
     created: { type: Date, default: Date.now, required: true },
-    updated: { type: Date, default: Date.now, },
+    updated: { type: Date },
 };
 
 /** special action to make valid is structure */
