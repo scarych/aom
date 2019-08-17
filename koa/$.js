@@ -47,7 +47,9 @@ class $ {
       _.each(this.$.tree, (elem, ident) => {
         const { $menu } = elem;
         if ($menu && $menu.$state) {
-          states.push($menu.$state(ctx, $menu));
+          _.map(_.flatten([$menu.$state]), $state => {
+            states.push($state(ctx, $menu));
+          })
         }
       });
       return Promise.all(states).then(result => next());
