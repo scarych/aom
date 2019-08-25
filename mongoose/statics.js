@@ -27,6 +27,15 @@ exports.enable = function(where, multi = true) {
   return this.update(where, { $set: enabled }, { multi });
 };
 
+/** быстро получить набор значений, используя аггреграцию по условию */
+exports.aggregateToSet = function (where, attr='_id') {
+  return this.aggregate([
+    {$match: where},
+    {$group: {_id: `set_${attr}`, set: {$addToSet: `$${attr}`}}}
+  ]).then(result => _.toArray(_.get(_.first(result), 'set')))
+}
+
+
 /** выполняет быстрый join данной таблицы, заменяя собой команду connector */
 exports.join = function(name, key) {
   const link = {};
