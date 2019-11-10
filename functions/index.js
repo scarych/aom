@@ -6,7 +6,6 @@ export const flattenObject = (obj, filter) => {
     const flattened = {};
 
     Object.keys(obj).forEach((key) => {
-        console.log('do flatten', obj, filter, key);
         if (typeof obj[key] === 'object' && obj[key] !== null) {
             Object.assign(flattened, flattenObject(obj[key], filter));
         } else {
