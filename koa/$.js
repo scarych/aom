@@ -35,9 +35,11 @@ class $ {
   /** generate ident based on current element ident */
   $ident(ident) {
     this.$.last = ident
-    return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join('');
+    return [this.$.parent && this.$.parent.$ident ? this.$.parent.$ident(this.$.ident) : this.$.ident, ident].filter(Boolean).join($.$delimeter);
   }
-  
+  //
+  static $delimeter = '.';
+
   /** attach this object to content $this */
   $this() {
     return (ctx, next) => {
