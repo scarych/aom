@@ -5,13 +5,13 @@ const Promise = require('bluebird');
 class $ {
   constructor(parent = {}, data = {}) {
     const ident = this.constructor.name;
-    this.$ = _.merge({ parent, ident, tree: [] }, data);
+    this.$ = _.merge({ parent, ident, tree: [], struct: {} }, data);
     const { router, root = this } = parent.$;
     // set this in tree of parent (store full relation for complete navigation)
     _.isArray(parent.$.tree) && (parent.$.tree.push(this));
     this.$.router = router;
     this.$.root = root;
-
+    root.$.struct[this.$ident('')] = this;
   }
 
   /** use current id to generate params  {'some_id':_id } 
