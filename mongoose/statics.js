@@ -25,5 +25,6 @@ exports.join = function (name, key) {
 		name = _name;
 		key = _key;
 	}
+	link[this.modelName] = name;
 	return connector(link, key);
 };
