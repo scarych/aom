@@ -38,7 +38,6 @@ exports.sorter = (params) => {
 	return sort;
 };
 
-// models connectors for aggregator
 exports.connector = (link, key) => {
 	// compatible for most possible variations
 	const unwind = !_.isArray(key);
@@ -51,9 +50,9 @@ exports.connector = (link, key) => {
 		const $and = [];
 		for (const foreignField in key) {
 			const localField = key[foreignField];
-			const alias = `alias_${foreignField}`;
-			Object.assign(aliases, { [alias]: `$${foreignField}` });
-			$and.push({ $eq: [`$${localField}`, `$$${alias}`] });
+			const alias = `alias_${_.snakeCase(localField)}`;
+			Object.assign(aliases, { [alias]: `$${localField}` });
+			$and.push({ $eq: [`$${foreignField}`, `$$${alias}`] });
 		}
 
 		aggregate.push({
@@ -72,6 +71,24 @@ exports.connector = (link, key) => {
 		}
 	}
 	return aggregate;
+};
+
+exports.$regex = (params) => {
+	const result = {};
+	_.each(_.pickBy(params, _.size), (value, key) => {
+		value = value.split(" ").join(".*");
+		result[key] = { $regex: value, $options: "i" };
+	});
+	return result;
+};
+
+exports.$in = (params) => {
+	const result = {};
+	_.each(_.pickBy(params, _.size), (values, key) => {
+		_.isArray(values) || (values = [values]);
+		result[key] = { $in: values.map(exports.objective).filter(Boolean) };
+	});
+	return result;
 };
 
 exports.$regex = (params) => {
