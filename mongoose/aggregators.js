@@ -45,14 +45,22 @@ exports.connector = (link, key) => {
 	_.isString(key) && (key = { _id: key });
 	let aggregate = [];
 	for (const modelName in link) {
-		const alias = link[modelName];
+		const as = link[modelName];
 		const aliases = {};
 		const $and = [];
 		for (const foreignField in key) {
 			const localField = key[foreignField];
 			const alias = `alias_${_.snakeCase(localField)}`;
 			Object.assign(aliases, { [alias]: `$${localField}` });
-			$and.push({ $eq: [`$${foreignField}`, `$$${alias}`] });
+			const $alias = `$$${alias}`;
+			// smart condition: if local field is array, then use `$in`, else use `$eq`
+			$and.push({
+				$cond: {
+					if: { $isArray: $alias },
+					then: { $in: [`$${foreignField}`, $alias] },
+					else: { $eq: [`$${foreignField}`, $alias] },
+				},
+			});
 		}
 
 		aggregate.push({
@@ -60,7 +68,7 @@ exports.connector = (link, key) => {
 				from: models[modelName].collection.name,
 				let: aliases,
 				pipeline: [{ $match: { $expr: { $and } } }],
-				as: alias,
+				as,
 			},
 		});
 
