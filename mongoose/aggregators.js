@@ -74,7 +74,7 @@ exports.connector = (link, key) => {
 
 		if (unwind) {
 			aggregate.push({
-				$unwind: { path: "$" + alias, preserveNullAndEmptyArrays: true },
+				$unwind: { path: "$" + as, preserveNullAndEmptyArrays: true },
 			});
 		}
 	}
