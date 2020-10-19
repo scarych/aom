@@ -45,6 +45,38 @@ exports.connector = (link, key) => {
 	_.isString(key) && (key = { _id: key });
 	let aggregate = [];
 	for (const modelName in link) {
+		const alias = link[modelName];
+		for (const foreignField in key) {
+			const localField = key[foreignField];
+
+			aggregate.push({
+				$lookup: {
+					from: models[modelName].collection.name,
+					foreignField: foreignField,
+					localField: localField,
+					as: alias,
+				},
+			});
+			if (unwind) {
+				aggregate.push({
+					$unwind: { path: "$" + alias, preserveNullAndEmptyArrays: true },
+				});
+			}
+		}
+	}
+	return aggregate;
+};
+
+/*
+this processing may be very slow in some undetected cases
+this will be commented for the futher debug
+exports.connector = (link, key) => {
+	// compatible for most possible variations
+	const unwind = !_.isArray(key);
+	_.isArray(key) && (key = key.shift());
+	_.isString(key) && (key = { _id: key });
+	let aggregate = [];
+	for (const modelName in link) {
 		const as = link[modelName];
 		const aliases = {};
 		const $and = [];
@@ -80,6 +112,7 @@ exports.connector = (link, key) => {
 	}
 	return aggregate;
 };
+*/
 
 exports.$regex = (params) => {
 	const result = {};
