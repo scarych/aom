@@ -1,6 +1,6 @@
 {
   "name": "aom",
-  "version": "0.0.57",
+  "version": "1.0.0-beta.0",
   "description": "API Over Models",
   "main": "index.js",
   "scripts": {
@@ -9,11 +9,12 @@
   "author": "Grigory Kholstinnikov",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.1",
-    "lodash": "^4.17.10",
-    "koa-router-bridge": "^1.0.7",
-    "moment": "^2.22.2",
-    "ramda": "^0.25.0"
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.2.0",
+    "tslib": "^2.3.0"
+  },
+  "bugs": {
+    "url": "https://github.com/scarych/aom/issues"
   },
   "devDependencies": {},
   "repository": {

@@ -1,3 +1,3 @@
-# API Over Models
-AOM - is library of useful functions and classes, that improve complex 
-development using Koa2, MongoDB (and Mongoose) and other
+# AOM: API Over Models
+
+`aom` - is a metaframework of typescript decorators, which allows to make fast and useful layer-consisted safe api services.
