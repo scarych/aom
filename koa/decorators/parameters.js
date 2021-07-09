@@ -94,3 +94,16 @@ function Ctx() {
   return AddParameterDecorator(handler);
 }
 exports.Ctx = Ctx;
+// ---
+function Err() {
+  const handler = function (ctx) {
+    return function (message, status = 500) {
+      const err = new Error();
+      Reflect.defineMetadata(constants.ERROR_METADATA, message, err, "message");
+      Reflect.defineMetadata(constants.ERROR_METADATA, status, err, "status");
+      return err;
+    };
+  };
+  return AddParameterDecorator(handler);
+}
+exports.Err = Err;

@@ -64,13 +64,13 @@ function $(target) {
 
   // .. do extract routes
   // const target = source.constructor;
-  const targetRoutes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, target);
   const targetBridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, target);
-  // console.log("extract routes", source, target, targetRoutes, targetBridges);
-  const targetMiddlewares = extractMiddlewares(target);
+  const targetRoutes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, target);
+  console.log("extract routes", target);
 
   return (router) => {
-    // /*
+    /*
+    const targetMiddlewares = extractMiddlewares(target);
     router.bridge("/", targetMiddlewares, (router) => {
       if (targetRoutes) {
         Object.keys(targetRoutes).forEach((propertyKey) => {
@@ -90,7 +90,8 @@ function $(target) {
           );
         });
       }
-      // /*
+      // */
+    /*
       if (targetBridges) {
         targetBridges.forEach((bridgeData) => {
           const { url, nextRoute, propertyKey } = bridgeData;
@@ -101,9 +102,9 @@ function $(target) {
           const nextBridge = this.extract(new nextRoute(source));
           router.bridge(url, bridgeMiddlewares, nextBridge);
         });
-        // */
       }
     });
+    // */
   };
 }
 

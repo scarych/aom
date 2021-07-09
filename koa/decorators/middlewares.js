@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // exports.Middlewares = void 0;
 const constants = require("../constants");
 function Middlewares(middlewares = []) {
-  return function (target, propertyKey = undefined) {
+  return function (target, propertyKey = null, descriptor = null) {
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
     const bridges = []
