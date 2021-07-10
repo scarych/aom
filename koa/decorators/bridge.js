@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const constants = require("../constants");
 function Bridge(url, nextRoute) {
   return function (target) {
+    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.BRIDGE_METADATA;
     // ...
     const bridges = Reflect.getOwnMetadata(metakey, target) || [];

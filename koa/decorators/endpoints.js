@@ -4,6 +4,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const constants = require("../constants");
 function Endpoint(path = "/", method = "get") {
   return function (target, propertyKey, descriptor) {
+    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
+
     const metakey = constants.ENDPOINTS_METADATA;
     // ...
     const endpoints = Reflect.getOwnMetadata(metakey, target) || [];

@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const constants = require("../constants");
 function Middlewares(middlewares = []) {
   return function (target, propertyKey, descriptor) {
+    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
     const bridges = []
@@ -17,11 +18,10 @@ exports.Middlewares = Middlewares;
 
 function Use(middlewares = []) {
   return function (target) {
+    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
-    const bridges = []
-      .concat(Reflect.getOwnMetadata(metakey, target) || [])
-      .concat(middlewares);
+    const bridges = [].concat(Reflect.getOwnMetadata(metakey, target) || []).concat(middlewares);
     Reflect.defineMetadata(metakey, bridges, target);
   };
 }

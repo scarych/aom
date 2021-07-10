@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const constants = require("../constants");
 function AddParameterDecorator(handler) {
   return (target, propertyKey, parameterIndex) => {
+    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.PARAMETERS_METADATA;
 
     // if use static method of class, then will store metadata for it with info about
