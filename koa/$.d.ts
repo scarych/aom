@@ -1,6 +1,6 @@
 // type $struct<T extends $> = ;
 
-export declare function $(target: typeof Function): Function;
+export declare function $(target: typeof Function, prefix?: string = "/"): Function;
 
 /*
 interface $$<T extends $> {
