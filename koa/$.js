@@ -38,7 +38,7 @@ function runCtx(target, propertyKey, handler) {
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
       const args = decoratedArgs
-        .map((arg) => arg && Reflect.apply(arg, target, [ctx, next]))
+        .map((arg) => arg && Reflect.apply(arg, target, [ctx, next, target]))
         .concat([ctx, next]);
       const result = await Reflect.apply(handler, target, args);
       if (result === next) {
