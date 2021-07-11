@@ -37,9 +37,10 @@ function runCtx(target, propertyKey, handler) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
+      const defaultArguments = [ctx, next, target];
       const args = decoratedArgs
-        .map((arg) => arg && Reflect.apply(arg, target, [ctx, next, target]))
-        .concat([ctx, next]);
+        .map((arg) => arg && Reflect.apply(arg, target, defaultArguments))
+        .concat(defaultArguments);
       const result = await Reflect.apply(handler, target, args);
       if (result === next) {
         return next();

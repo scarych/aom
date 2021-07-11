@@ -117,3 +117,11 @@ function Err() {
   return AddParameterDecorator(handler);
 }
 exports.Err = Err;
+// ---
+function Constructor() {
+  const handler = function (ctx, next, target) {
+    return target;
+  };
+  return AddParameterDecorator(handler);
+}
+exports.Constructor = Constructor;
