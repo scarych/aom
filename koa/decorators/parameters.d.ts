@@ -13,3 +13,4 @@ export declare function Ctx(): ParameterDecorator;
 export declare function Next(): ParameterDecorator;
 export declare function Err(): ParameterDecorator;
 export declare function Target(): ParameterDecorator;
+export declare function Data(): ParameterDecorator;

@@ -9,7 +9,7 @@ function extractParameterDecorators(target, propertyKey) {
   return Reflect.getOwnMetadata(metadataKey, target, propertyKey) || [];
 }
 
-function extractMiddlewares(target, propertyKey = undefined) {
+function extractMiddlewares(target, propertyKey = undefined, rootData = {}) {
   // ...
   const metadataKey = constants.MIDDLEWARE_METADATA;
   const propertyMiddlewares = Reflect.getOwnMetadata(metadataKey, target, propertyKey) || [];
@@ -18,7 +18,12 @@ function extractMiddlewares(target, propertyKey = undefined) {
     .map((middleware) => {
       if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, middleware)) {
         const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, middleware);
-        return runCtx(middlewareMapData.target, middlewareMapData.propertyKey, middleware, target);
+        return runCtx(
+          middlewareMapData.target,
+          middlewareMapData.propertyKey,
+          middleware,
+          rootData
+        );
       } else {
         throw new Error(constants.IS_MIDDLEWARE_ERROR);
       }
@@ -28,7 +33,7 @@ function extractMiddlewares(target, propertyKey = undefined) {
     });
 }
 
-function runCtx(target, propertyKey, handler, originTarget) {
+function runCtx(target, propertyKey, handler, rootData = {}) {
   //
   const decoratedArgs = extractParameterDecorators(target, propertyKey);
   return async (ctx, next) => {
@@ -37,7 +42,7 @@ function runCtx(target, propertyKey, handler, originTarget) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
-      const defaultArguments = [ctx, next, originTarget];
+      const defaultArguments = [ctx, next, target, rootData];
       const args = decoratedArgs
         .map((arg) => arg && Reflect.apply(arg, target, defaultArguments))
         .concat(defaultArguments);
@@ -63,19 +68,24 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
   const targetBridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, target);
   const targetRoutes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, target);
 
-  const targetMiddlewares = extractMiddlewares(target);
+  const targetMiddlewares = extractMiddlewares(target, undefined, { prefix, target });
 
   if (targetRoutes) {
     targetRoutes.forEach((route) => {
       const { method, descriptor, path, propertyKey } = route;
-      const propertyMiddlewares = extractMiddlewares(target, propertyKey);
-      const routePath = join(prefix, path).replace(/\/$/, ""); // remove trailing slash
+      const routePath = join(prefix, path).replace(/\/$/, "") || "/"; // remove trailing slash
+      const propertyMiddlewares = extractMiddlewares(target, propertyKey, { prefix, target });
       routes.push({
         method,
-        path: routePath || "/", // if path is empty, set root value
-        exec: []
-          .concat(middlewares, targetMiddlewares, propertyMiddlewares)
-          .concat(runCtx(target, propertyKey, descriptor.value, target)),
+        path: routePath, // if path is empty, set root value
+        exec: [].concat(middlewares, targetMiddlewares, propertyMiddlewares).concat(
+          runCtx(target, propertyKey, descriptor.value, {
+            target,
+            prefix,
+            path: routePath,
+            method,
+          })
+        ),
       });
     });
   }
@@ -83,11 +93,15 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
   if (targetBridges) {
     targetBridges.forEach((bridgeData) => {
       const { url, nextRoute, propertyKey } = bridgeData;
-      const bridgeMiddlewares = extractMiddlewares(target, propertyKey);
+      const newPrefix = join(prefix, url);
+      const bridgeMiddlewares = extractMiddlewares(target, propertyKey, {
+        prefix: newPrefix,
+        target,
+      });
       routes = routes.concat(
         buildRoutesList(
           nextRoute,
-          join(prefix, url),
+          newPrefix,
           [].concat(middlewares, targetMiddlewares, bridgeMiddlewares)
         )
       );

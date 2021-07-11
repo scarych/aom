@@ -117,3 +117,11 @@ function Target() {
   return AddParameterDecorator(handler);
 }
 exports.Target = Target;
+// ---
+function Data(dataName = null) {
+  const handler = function (ctx, next, target, data) {
+    return dataName ? Reflect.get(data, dataName) : data;
+  };
+  return AddParameterDecorator(handler);
+}
+exports.Data = Data;
