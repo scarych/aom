@@ -110,10 +110,10 @@ function Err() {
 }
 exports.Err = Err;
 // ---
-function Constructor() {
+function Target() {
   const handler = function (ctx, next, target) {
     return target;
   };
   return AddParameterDecorator(handler);
 }
-exports.Constructor = Constructor;
+exports.Target = Target;
