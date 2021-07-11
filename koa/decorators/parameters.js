@@ -56,6 +56,15 @@ function State(stateName = undefined) {
 
 exports.State = State;
 // ---
+function Session(sessionName = undefined) {
+  const handler = function (ctx) {
+    return sessionName ? Reflect.get(ctx.session, sessionName) : ctx.session;
+  };
+  return AddParameterDecorator(handler);
+}
+
+exports.Session = Session;
+// ---
 function Body() {
   const handler = function (ctx) {
     return ctx.request.body;

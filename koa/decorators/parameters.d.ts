@@ -5,6 +5,7 @@ export declare function AddParameterDecorator(handler: Function): ParameterDecor
 export declare function Query(): ParameterDecorator;
 export declare function Param(paramName?: string): ParameterDecorator;
 export declare function State(stateName?: string): ParameterDecorator;
+export declare function Session(sessionName?: string): ParameterDecorator;
 export declare function Headers(headerName?: string): ParameterDecorator;
 export declare function Body(): ParameterDecorator;
 export declare function Files(fileName?: string): ParameterDecorator;
