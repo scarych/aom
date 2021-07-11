@@ -16,7 +16,7 @@ function extractMiddlewares(target, propertyKey = undefined) {
 
   return propertyMiddlewares
     .map((middleware) => {
-      if (Reflect.get(constants.IS_MIDDLEWARE_METADATA, middleware)) {
+      if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, middleware)) {
         const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, middleware);
         return runCtx(middlewareMapData.target, middlewareMapData.propertyKey, middleware, target);
       } else {
