@@ -6,14 +6,6 @@ function AddParameterDecorator(handler) {
   return (target, propertyKey, parameterIndex) => {
     if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.PARAMETERS_METADATA;
-
-    // if use static method of class, then will store metadata for it with info about
-    // origin class and propertyName, for futher usage
-    if (typeof target === "function") {
-      const metakey = constants.STATICS_REVERSE_METADATA;
-      Reflect.defineMetadata(metakey, { target, propertyKey }, target[propertyKey]);
-    }
-    // */
     // ...
     const propertyArguments = Reflect.getOwnMetadata(metakey, target, propertyKey) || [];
     // может быть стек декораторов, поэтому создадим для них список

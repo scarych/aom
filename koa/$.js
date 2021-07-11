@@ -16,19 +16,19 @@ function extractMiddlewares(target, propertyKey = undefined) {
 
   return propertyMiddlewares
     .map((middleware) => {
-      const middlewareMapData = Reflect.getOwnMetadata(
-        constants.STATICS_REVERSE_METADATA,
-        middleware
-      );
-      return runCtx(middlewareMapData.target, middlewareMapData.propertyKey, middleware);
+      if (Reflect.get(constants.IS_MIDDLEWARE_METADATA, middleware)) {
+        const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, middleware);
+        return runCtx(middlewareMapData.target, middlewareMapData.propertyKey, middleware, target);
+      } else {
+        throw new Error(constants.IS_MIDDLEWARE_ERROR);
+      }
     })
     .concat((ctx, next) => {
-      // console.log(Date.now(), "run default middleware", target, propertyKey);
       return next();
     });
 }
 
-function runCtx(target, propertyKey, handler) {
+function runCtx(target, propertyKey, handler, originTarget) {
   //
   const decoratedArgs = extractParameterDecorators(target, propertyKey);
   return async (ctx, next) => {
@@ -37,9 +37,9 @@ function runCtx(target, propertyKey, handler) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
-      const defaultArguments = [ctx, next, target];
+      const defaultArguments = [ctx, next, originTarget];
       const args = decoratedArgs
-        .map((arg) => arg && Reflect.apply(arg, target, defaultArguments))
+        .map(async (arg) => arg && (await Reflect.apply(arg, target, defaultArguments)))
         .concat(defaultArguments);
       const result = await Reflect.apply(handler, target, args);
       if (result === next) {
@@ -75,7 +75,7 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
         path: routePath || "/", // if path is empty, set root value
         exec: []
           .concat(middlewares, targetMiddlewares, propertyMiddlewares)
-          .concat(runCtx(target, propertyKey, descriptor.value)),
+          .concat(runCtx(target, propertyKey, descriptor.value, target)),
       });
     });
   }

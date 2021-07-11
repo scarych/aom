@@ -6,6 +6,13 @@ function Endpoint(path = "/", method = "get") {
   return function (target, propertyKey, descriptor) {
     if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
 
+    // if use static method of class, then will store metadata for it with info about
+    // origin class and propertyName, for futher usage
+    if (typeof target === "function") {
+      const metakey = constants.REVERSE_METADATA;
+      Reflect.defineMetadata(metakey, { target, propertyKey }, target[propertyKey]);
+    }
+
     const metakey = constants.ENDPOINTS_METADATA;
     // ...
     const endpoints = Reflect.getOwnMetadata(metakey, target) || [];

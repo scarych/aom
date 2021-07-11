@@ -27,3 +27,20 @@ function Use(middlewares = []) {
 }
 
 exports.Use = Use;
+
+function IsMiddleware() {
+  return function (target, propertyKey, descriptor) {
+    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
+
+    // save reverse data for specific handler
+    if (typeof target === "function") {
+      const metakey = constants.REVERSE_METADATA;
+      Reflect.defineMetadata(metakey, { target, propertyKey }, target[propertyKey]);
+    }
+
+    const metakey = constants.IS_MIDDLEWARE_METADATA;
+    Reflect.defineMetadata(metakey, true, target[propertyKey]);
+  };
+}
+
+exports.IsMiddleware = IsMiddleware;
