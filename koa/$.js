@@ -39,7 +39,7 @@ function runCtx(target, propertyKey, handler, originTarget) {
       // последними аргументами всегда будут ctx, next
       const defaultArguments = [ctx, next, originTarget];
       const args = decoratedArgs
-        .map(async (arg) => arg && (await Reflect.apply(arg, target, defaultArguments)))
+        .map((arg) => arg && Reflect.apply(arg, target, defaultArguments))
         .concat(defaultArguments);
       const result = await Reflect.apply(handler, target, args);
       if (result === next) {
