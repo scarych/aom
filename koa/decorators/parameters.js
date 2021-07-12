@@ -19,10 +19,10 @@ function Arg(handler) {
   };
 }
 
-exports.AddParameterDecorator = Arg;
+exports.Arg = Arg;
 // ---
 function Query() {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return ctx.query;
   };
   return Arg(handler);
