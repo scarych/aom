@@ -1,3 +1,3 @@
-export declare function Use(handlers: Function[]): ClassDecorator;
-export declare function Middlewares(handlers: Function[]): MethodDecorator;
-export declare function IsMiddleware(): MethodDecorator;
+type CombinedDecorator = <T extends Function>(target: T, propertyKey?: string) => void;
+export declare function Use(...handlers: Function[]): CombinedDecorator;
+export declare function Middleware(): MethodDecorator;

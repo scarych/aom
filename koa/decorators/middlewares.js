@@ -1,9 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-// exports.Middlewares = void 0;
 const constants = require("../constants");
-function Middlewares(middlewares = []) {
-  return function (target, propertyKey, descriptor) {
+
+function Use(...middlewares) {
+  return function (target, propertyKey = undefined) {
     if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
@@ -14,21 +14,9 @@ function Middlewares(middlewares = []) {
   };
 }
 
-exports.Middlewares = Middlewares;
-
-function Use(middlewares = []) {
-  return function (target) {
-    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
-    const metakey = constants.MIDDLEWARE_METADATA;
-    // ...
-    const bridges = [].concat(Reflect.getOwnMetadata(metakey, target) || []).concat(middlewares);
-    Reflect.defineMetadata(metakey, bridges, target);
-  };
-}
-
 exports.Use = Use;
 
-function IsMiddleware() {
+function Middleware() {
   return function (target, propertyKey, descriptor) {
     if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
 
@@ -43,4 +31,4 @@ function IsMiddleware() {
   };
 }
 
-exports.IsMiddleware = IsMiddleware;
+exports.Middleware = Middleware;

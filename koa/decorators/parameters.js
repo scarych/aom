@@ -2,7 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // exports.AddParameterDecorator = void 0;
 const constants = require("../constants");
-function AddParameterDecorator(handler) {
+function Arg(handler) {
   return (target, propertyKey, parameterIndex) => {
     if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.PARAMETERS_METADATA;
@@ -19,86 +19,86 @@ function AddParameterDecorator(handler) {
   };
 }
 
-exports.AddParameterDecorator = AddParameterDecorator;
+exports.AddParameterDecorator = Arg;
 // ---
 function Query() {
   const handler = function (ctx) {
     return ctx.query;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 
 exports.Query = Query;
 // ---
 function Param(paramName = undefined) {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return paramName ? Reflect.get(ctx.params, paramName) : ctx.params;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 
 exports.Param = Param;
 // ---
 function State(stateName = undefined) {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return stateName ? Reflect.get(ctx.state, stateName) : ctx.state;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 
 exports.State = State;
 // ---
 function Session(sessionName = undefined) {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return sessionName ? Reflect.get(ctx.session, sessionName) : ctx.session;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 
 exports.Session = Session;
 // ---
 function Body() {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return ctx.request.body;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Body = Body;
 // ---
 function Files() {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return ctx.request.files;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Files = Files;
 // ---
 function Headers(headerName = undefined) {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return headerName ? Reflect.get(ctx.headers, headerName) : ctx.headers;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Headers = Headers;
 // ---
 function Next() {
-  const handler = function (ctx, next) {
+  const handler = function ({ next }) {
     return () => next;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Next = Next;
 // ---
 function Ctx() {
-  const handler = function (ctx) {
+  const handler = function ({ ctx }) {
     return ctx;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Ctx = Ctx;
 // ---
 function Err() {
-  const handler = function (ctx) {
+  const handler = function () {
     return function (message, status = 500) {
       const err = new Error();
       Reflect.defineMetadata(constants.ERROR_METADATA, message, err, "message");
@@ -106,22 +106,54 @@ function Err() {
       return err;
     };
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Err = Err;
 // ---
 function Target() {
-  const handler = function (ctx, next, target) {
+  const handler = function ({ target }) {
     return target;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
 exports.Target = Target;
 // ---
-function Data(dataName = null) {
-  const handler = function (ctx, next, target, data) {
-    return dataName ? Reflect.get(data, dataName) : data;
+function Current() {
+  const handler = function ({ current }) {
+    return current;
   };
-  return AddParameterDecorator(handler);
+  return Arg(handler);
 }
-exports.Data = Data;
+exports.Current = Current;
+// ---
+function Origin() {
+  const handler = function ({ origin }) {
+    return origin;
+  };
+  return Arg(handler);
+}
+exports.Origin = Origin;
+// ---
+function Path() {
+  const handler = function ({ path }) {
+    return path;
+  };
+  return Arg(handler);
+}
+exports.Path = Path;
+// ---
+function Prefix() {
+  const handler = function ({ prefix }) {
+    return prefix;
+  };
+  return Arg(handler);
+}
+exports.Prefix = Prefix;
+// ---
+function Method() {
+  const handler = function ({ method }) {
+    return method;
+  };
+  return Arg(handler);
+}
+exports.Method = Method;

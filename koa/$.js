@@ -9,31 +9,40 @@ function extractParameterDecorators(target, propertyKey) {
   return Reflect.getOwnMetadata(metadataKey, target, propertyKey) || [];
 }
 
-function extractMiddlewares(target, propertyKey = undefined, rootData = {}) {
+function extractMiddlewares(target, propertyKey = undefined, env = {}) {
   // ...
   const metadataKey = constants.MIDDLEWARE_METADATA;
   const propertyMiddlewares = Reflect.getOwnMetadata(metadataKey, target, propertyKey) || [];
 
-  return propertyMiddlewares
-    .map((middleware) => {
-      if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, middleware)) {
-        const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, middleware);
+  return propertyMiddlewares.map((middleware) => {
+    if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, middleware)) {
+      const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, middleware);
+      return {
+        handler: middleware,
+        target: middlewareMapData.target,
+        propertyKey: middlewareMapData.propertyKey,
+        env,
+      };
+      /*
         return runCtx(
           middlewareMapData.target,
           middlewareMapData.propertyKey,
           middleware,
           rootData
         );
-      } else {
-        throw new Error(constants.IS_MIDDLEWARE_ERROR);
-      }
-    })
+        */
+    } else {
+      throw new Error(constants.IS_MIDDLEWARE_ERROR);
+    }
+  });
+  /*
     .concat((ctx, next) => {
       return next();
     });
+    */
 }
 
-function runCtx(target, propertyKey, handler, rootData = {}) {
+function runCtx({ target, propertyKey, handler }, env = {}) {
   //
   const decoratedArgs = extractParameterDecorators(target, propertyKey);
   return async (ctx, next) => {
@@ -42,7 +51,7 @@ function runCtx(target, propertyKey, handler, rootData = {}) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
-      const defaultArguments = [ctx, next, target, rootData];
+      const defaultArguments = [{ ...env, ctx, next }];
       const args = decoratedArgs
         .map((arg) => arg && Reflect.apply(arg, target, defaultArguments))
         .concat(defaultArguments);
@@ -51,7 +60,7 @@ function runCtx(target, propertyKey, handler, rootData = {}) {
         return next();
       } else if (result instanceof Error) {
         ctx.status = Reflect.get(result, "status") || result.status || 500;
-        ctx.body = Reflect.get(result, "message") || result.message;
+        ctx.body = result;
       } else {
         ctx.body = result;
       }
@@ -63,45 +72,72 @@ function runCtx(target, propertyKey, handler, rootData = {}) {
   };
 }
 
-function buildRoutesList(target, prefix = "/", middlewares = []) {
+/* как следует переделать методологию построения маршрутов 
+
+в первую очередь, необходимо определиться, что будет включаться в аргументацию контекста
+для построения аргументов необходимо, чтобы участвовали следующие значения
+
+{
+  ctx, next - базовые контексты koa
+
+  origin - исходный класс, откуда строится маршрут
+  prefix - текущий префикс, участвующий в итерации
+
+  current - текущий класс, которому принадлежит миддварь
+
+  target - целевой класс, которому принадлежит ендпоинт
+  path - целевой путь, который
+  method - метод миддлвари, который сейчас реализуется
+
+  seq - последовательность всех миддлварей, которые делались на каждом из этапов
+
+
+}
+При этом origin - фиксируется в начале,  prefix меняется на каждой итерации, 
+current - контекстен в каждом конкретном месте, а target, path и method - элементы финального цикла
+seq - 
+*/
+function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
   let routes = [];
-  const targetBridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, target);
-  const targetRoutes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, target);
+  const bridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, target);
+  const routes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, target);
 
-  const targetMiddlewares = extractMiddlewares(target, undefined, { prefix, target });
+  const targetMiddlewares = extractMiddlewares(target, undefined, { prefix });
 
-  if (targetRoutes) {
-    targetRoutes.forEach((route) => {
-      const { method, descriptor, path, propertyKey } = route;
+  if (routes) {
+    routes.forEach((route) => {
+      const { method, descriptor, path, target, propertyKey } = route;
       const routePath = join(prefix, path).replace(/\/$/, "") || "/"; // remove trailing slash
-      const propertyMiddlewares = extractMiddlewares(target, propertyKey, { prefix, target });
+      const propertyMiddlewares = extractMiddlewares(target, propertyKey, { prefix: routePath });
+      const endpointEnv = { ...env, method, path: routePath, target };
       routes.push({
         method,
         path: routePath, // if path is empty, set root value
-        exec: [].concat(middlewares, targetMiddlewares, propertyMiddlewares).concat(
-          runCtx(target, propertyKey, descriptor.value, {
-            target,
-            prefix,
-            path: routePath,
-            method,
-          })
-        ),
+        exec: []
+          .concat(middlewares, targetMiddlewares, propertyMiddlewares)
+          .map((middleware) =>
+            runCtx(middleware, { current: middleware.target, ...middleware.env, ...endpointEnv })
+          )
+          .concat(
+            runCtx(
+              { target, propertyKey, handler: descriptor.value },
+              { current: target, ...endpointEnv }
+            )
+          ),
       });
     });
   }
 
-  if (targetBridges) {
-    targetBridges.forEach((bridgeData) => {
+  if (bridges) {
+    bridges.forEach((bridgeData) => {
       const { url, nextRoute, propertyKey } = bridgeData;
       const newPrefix = join(prefix, url);
-      const bridgeMiddlewares = extractMiddlewares(target, propertyKey, {
-        prefix: newPrefix,
-        target,
-      });
+      const bridgeMiddlewares = propertyKey ? extractMiddlewares(target, propertyKey) : [];
       routes = routes.concat(
         buildRoutesList(
           nextRoute,
           newPrefix,
+          env,
           [].concat(middlewares, targetMiddlewares, bridgeMiddlewares)
         )
       );
@@ -111,9 +147,9 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
   return routes;
 }
 
-function $(target, prefix = "/") {
+function $(origin, prefix = "/") {
   return (router) => {
-    buildRoutesList(target, prefix).forEach((routeData) => {
+    buildRoutesList(origin, prefix, { origin }).forEach((routeData) => {
       const { method, path, exec } = routeData;
       router[method](path, ...exec);
     });
