@@ -107,7 +107,8 @@ exports.Ctx = Ctx;
 function Err() {
   const handler = function () {
     return function (message, status = 500) {
-      const err = new Error();
+      const err = new Error(message);
+      err.status = status;
       Reflect.defineMetadata(constants.ERROR_METADATA, message, err, "message");
       Reflect.defineMetadata(constants.ERROR_METADATA, status, err, "status");
       return err;
