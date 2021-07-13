@@ -24,23 +24,10 @@ function extractMiddlewares(target, propertyKey = undefined, env = {}) {
         propertyKey: middlewareMapData.propertyKey,
         env,
       };
-      /*
-        return runCtx(
-          middlewareMapData.target,
-          middlewareMapData.propertyKey,
-          middleware,
-          rootData
-        );
-        */
     } else {
       throw new Error(constants.IS_MIDDLEWARE_ERROR);
     }
   });
-  /*
-    .concat((ctx, next) => {
-      return next();
-    });
-    */
 }
 
 function runCtx({ target, propertyKey, handler }, env = {}) {
@@ -139,7 +126,9 @@ function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
     bridges.forEach((bridgeData) => {
       const { url, nextRoute, propertyKey } = bridgeData;
       const newPrefix = join(prefix, url);
-      const bridgeMiddlewares = propertyKey ? extractMiddlewares(target, propertyKey) : [];
+      const bridgeMiddlewares = propertyKey
+        ? extractMiddlewares(target, propertyKey, { prefix: newPrefix })
+        : [];
       routesList.push(
         ...buildRoutesList(
           nextRoute,
