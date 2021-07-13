@@ -10,24 +10,31 @@ function extractParameterDecorators(target, propertyKey) {
 }
 
 function extractMiddlewares(target, propertyKey = undefined, env = {}) {
+  const resultMiddlewares = [];
   // ...
   const metadataKey = constants.MIDDLEWARE_METADATA;
-  // console.log({ metadataKey, target, propertyKey, env });
   const propertyMiddlewares = Reflect.getOwnMetadata(metadataKey, target, propertyKey) || [];
 
-  return propertyMiddlewares.map((middleware) => {
+  propertyMiddlewares.forEach((middleware) => {
     if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, middleware)) {
       const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, middleware);
-      return {
+      // try to found middlewares for current middlewares and set them before current
+      // cyclic links checking onboard
+      resultMiddlewares.push(
+        ...extractMiddlewares(middlewareMapData.target, middlewareMapData.propertyKey, env)
+      );
+      resultMiddlewares.push({
         handler: middleware,
         target: middlewareMapData.target,
         propertyKey: middlewareMapData.propertyKey,
         env,
-      };
+      });
     } else {
       throw new Error(constants.IS_MIDDLEWARE_ERROR);
     }
   });
+
+  return resultMiddlewares;
 }
 
 function runCtx({ target, propertyKey, handler }, env = {}) {
