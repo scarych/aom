@@ -93,14 +93,16 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
   if (routes) {
     routes.forEach((route) => {
       const { method, descriptor, path, propertyKey } = route;
-      const routePath = join(prefix, path).replace(/\/$/, "") || "/"; // remove trailing slash
+      // remove trailing slash and set root if empty
+      const routePath = join(prefix, path).replace(/\/$/, "") || "/";
+      // get middlewars for endpoint with correct prefix
       const propertyMiddlewares = extractMiddlewares(target, propertyKey, {
         prefix: routePath,
       });
       const env = { method, path: routePath, target, handler: descriptor.value };
       routesList.push({
         method,
-        path: routePath, // if path is empty, set root value
+        path: routePath,
         exec: []
           .concat(middlewares, targetMiddlewares, propertyMiddlewares)
           .map((middleware) =>
