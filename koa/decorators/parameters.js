@@ -2,7 +2,14 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // exports.AddParameterDecorator = void 0;
 const constants = require("../constants");
-function Arg(handler) {
+
+// default args handler: extract all values
+function _args(args) {
+  return args;
+}
+
+function Arg(handler = _args) {
+  if (typeof handler !== "function") throw new Error(constants.PARAMETER_HANDLER_ERROR);
   return (target, propertyKey, parameterIndex) => {
     if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
     const metakey = constants.PARAMETERS_METADATA;

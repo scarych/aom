@@ -8,3 +8,4 @@ exports.ERROR_METADATA = "aom.koa:error_result";
 exports.TARGET_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods and class only";
 exports.IS_MIDDLEWARE_ERROR = "Wrong middleware! The handler isn't marked as middleware";
+exports.PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";
