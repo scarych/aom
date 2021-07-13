@@ -1,7 +1,7 @@
 export declare type $Next = () => Function;
 export declare type $Err = (message: string, status: number) => Error;
 
-export declare function Arg(handler: Function): ParameterDecorator;
+export declare function Args(handler?: Function): ParameterDecorator;
 export declare function Query(): ParameterDecorator;
 export declare function Param(paramName?: string): ParameterDecorator;
 export declare function State(stateName?: string): ParameterDecorator;
