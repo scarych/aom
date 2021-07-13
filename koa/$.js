@@ -97,7 +97,7 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
       const propertyMiddlewares = extractMiddlewares(target, propertyKey, {
         prefix: routePath,
       });
-      const endpointEnv = { ...env, method, path: routePath, target, handler: descriptor.value };
+      const env = { method, path: routePath, target, handler: descriptor.value };
       routesList.push({
         method,
         path: routePath, // if path is empty, set root value
@@ -106,10 +106,10 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
           .map((middleware) =>
             runCtx(middleware, {
               ...middleware.env,
-              ...endpointEnv,
+              ...env,
             })
           )
-          .concat(runCtx({ target, propertyKey, handler: descriptor.value }, { ...endpointEnv })),
+          .concat(runCtx({ target, propertyKey, handler: descriptor.value }, env)),
       });
     });
   }
