@@ -71,8 +71,6 @@ function runCtx({ target, propertyKey, handler }, env = {}) {
   origin - исходный класс, откуда строится маршрут
   prefix - текущий префикс, участвующий в итерации
 
-  current - текущий класс, которому принадлежит миддварь
-
   target - целевой класс, которому принадлежит ендпоинт
   path - целевой путь, который
   method - метод миддлвари, который сейчас реализуется
@@ -85,7 +83,7 @@ function runCtx({ target, propertyKey, handler }, env = {}) {
 current - контекстен в каждом конкретном месте, а target, path и method - элементы финального цикла
 seq - 
 */
-function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
+function buildRoutesList(target, prefix = "/", middlewares = []) {
   let routesList = [];
   const bridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, target);
   const routes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, target);
@@ -99,7 +97,7 @@ function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
       const propertyMiddlewares = extractMiddlewares(target, propertyKey, {
         prefix: routePath,
       });
-      const endpointEnv = { ...env, method, path: routePath, target };
+      const endpointEnv = { ...env, method, path: routePath, target, handler: descriptor.value };
       routesList.push({
         method,
         path: routePath, // if path is empty, set root value
@@ -107,17 +105,11 @@ function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
           .concat(middlewares, targetMiddlewares, propertyMiddlewares)
           .map((middleware) =>
             runCtx(middleware, {
-              current: middleware.target,
               ...middleware.env,
               ...endpointEnv,
             })
           )
-          .concat(
-            runCtx(
-              { target, propertyKey, handler: descriptor.value },
-              { current: target, ...endpointEnv }
-            )
-          ),
+          .concat(runCtx({ target, propertyKey, handler: descriptor.value }, { ...endpointEnv })),
       });
     });
   }
@@ -133,7 +125,6 @@ function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
         ...buildRoutesList(
           nextRoute,
           newPrefix,
-          env,
           [].concat(middlewares, targetMiddlewares, bridgeMiddlewares)
         )
       );
@@ -145,7 +136,7 @@ function buildRoutesList(target, prefix = "/", env = {}, middlewares = []) {
 
 function $(origin, prefix = "/") {
   return (router) => {
-    const routesList = buildRoutesList(origin, prefix, { origin });
+    const routesList = buildRoutesList(origin, prefix);
     routesList.forEach((routeData) => {
       const { method, path, exec } = routeData;
       router[method](path, ...exec);

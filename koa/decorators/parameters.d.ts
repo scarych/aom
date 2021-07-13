@@ -14,8 +14,9 @@ export declare function Next(): ParameterDecorator;
 export declare function Err(): ParameterDecorator;
 
 export declare function Target(): ParameterDecorator;
-export declare function Origin(): ParameterDecorator;
-export declare function Current(): ParameterDecorator;
 export declare function Prefix(): ParameterDecorator;
 export declare function Path(): ParameterDecorator;
 export declare function Method(): ParameterDecorator;
+export declare function Handler(): ParameterDecorator;
+export declare function Req(): ParameterDecorator;
+export declare function Res(): ParameterDecorator;

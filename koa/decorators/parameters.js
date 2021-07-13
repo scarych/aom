@@ -125,22 +125,6 @@ function Target() {
 }
 exports.Target = Target;
 // ---
-function Current() {
-  const handler = function ({ current }) {
-    return current;
-  };
-  return Args(handler);
-}
-exports.Current = Current;
-// ---
-function Origin() {
-  const handler = function ({ origin }) {
-    return origin;
-  };
-  return Args(handler);
-}
-exports.Origin = Origin;
-// ---
 function Path() {
   const handler = function ({ path }) {
     return path;
@@ -164,3 +148,27 @@ function Method() {
   return Args(handler);
 }
 exports.Method = Method;
+// ---
+function Handler() {
+  const handler = function ({ handler }) {
+    return handler;
+  };
+  return Args(handler);
+}
+exports.Handler = Handler;
+// ---
+function Req() {
+  const handler = function ({ ctx }) {
+    return ctx.request;
+  };
+  return Args(handler);
+}
+exports.Req = Req;
+// ---
+function Res() {
+  const handler = function ({ ctx }) {
+    return ctx.response;
+  };
+  return Args(handler);
+}
+exports.Res = Res;
