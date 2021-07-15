@@ -118,46 +118,6 @@ function Err() {
 }
 exports.Err = Err;
 // ---
-function Target() {
-  const handler = function ({ target }) {
-    return target;
-  };
-  return Args(handler);
-}
-exports.Target = Target;
-// ---
-function Path() {
-  const handler = function ({ path }) {
-    return path;
-  };
-  return Args(handler);
-}
-exports.Path = Path;
-// ---
-function Prefix() {
-  const handler = function ({ prefix }) {
-    return prefix;
-  };
-  return Args(handler);
-}
-exports.Prefix = Prefix;
-// ---
-function Method() {
-  const handler = function ({ method }) {
-    return method;
-  };
-  return Args(handler);
-}
-exports.Method = Method;
-// ---
-function Handler() {
-  const handler = function ({ handler }) {
-    return handler;
-  };
-  return Args(handler);
-}
-exports.Handler = Handler;
-// ---
 function Req() {
   const handler = function ({ ctx }) {
     return ctx.request;
@@ -173,3 +133,43 @@ function Res() {
   return Args(handler);
 }
 exports.Res = Res;
+// ---
+function Endpoint() {
+  const handler = function ({ endpoint }) {
+    return endpoint;
+  };
+  return Args(handler);
+}
+exports.Endpoint = Endpoint;
+// ---
+function Cursor() {
+  const handler = function ({ cursor }) {
+    return cursor;
+  };
+  return Args(handler);
+}
+exports.Cursor = Cursor;
+// ---
+function Callstack() {
+  const handler = function ({ callstack }) {
+    return callstack;
+  };
+  return Args(handler);
+}
+exports.Callstack = Callstack;
+// ---
+function Prefix() {
+  const handler = function ({ prefix }) {
+    return prefix;
+  };
+  return Args(handler);
+}
+exports.Prefix = Prefix;
+// ---
+function Map() {
+  const handler = function ({ map }) {
+    return map;
+  };
+  return Args(handler);
+}
+exports.Map = Map;

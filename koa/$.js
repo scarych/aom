@@ -46,7 +46,7 @@ function runCtx({ target, propertyKey, handler }, env = {}) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
-      const defaultArguments = [{ ...env, ctx, next }];
+      const defaultArguments = [{ ...env, current: { target, propertyKey, handler }, ctx, next }];
       const args = decoratedArgs
         .map((arg) => arg && Reflect.apply(arg, target, defaultArguments))
         .concat(defaultArguments);
@@ -106,19 +106,24 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
       const propertyMiddlewares = extractMiddlewares(target, propertyKey, {
         prefix: routePath,
       });
-      const env = { method, path: routePath, target, handler: descriptor.value };
+      const callstack = [].concat(middlewares, targetMiddlewares, propertyMiddlewares);
+      const env = {
+        endpoint: { target, propertyKey, handler, method, path: routePath },
+        callstack,
+      };
       routesList.push({
         method,
         path: routePath,
-        exec: []
-          .concat(middlewares, targetMiddlewares, propertyMiddlewares)
-          .map((middleware) =>
-            runCtx(middleware, {
-              ...middleware.env,
-              ...env,
-            })
-          )
-          .concat(runCtx({ target, propertyKey, handler: descriptor.value }, env)),
+        exec: (map) =>
+          callstack
+            .map((middleware) =>
+              runCtx(middleware, {
+                ...middleware.env,
+                ...env,
+                map,
+              })
+            )
+            .concat(runCtx({ target, propertyKey, handler: descriptor.value }, { ...env, map })),
       });
     });
   }
@@ -148,7 +153,7 @@ function $(origin, prefix = "/") {
     const routesList = buildRoutesList(origin, prefix);
     routesList.forEach((routeData) => {
       const { method, path, exec } = routeData;
-      router[method](path, ...exec);
+      router[method](path, ...exec(routesList));
     });
     return router;
   };
