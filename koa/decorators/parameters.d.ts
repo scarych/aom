@@ -25,7 +25,7 @@ export declare interface $Cursor {
   handler: Function;
   prefix: string;
 }
-export declare interface $Route extends Omit<$Cursor, "prefix"> {
+export declare interface $Route extends $Cursor {
   method: string;
   path: string;
   // callstack: $Callstack;
