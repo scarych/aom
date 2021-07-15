@@ -1,13 +1,36 @@
+export declare interface $Args {
+  route: $Route;
+  cursor: $Cursor;
+  next: $Next;
+  ctx: $Ctx;
+  metaMap: any;
+  prefix: string;
+  callstack: $Callstack;
+}
+export declare interface $Ctx {
+  req: any;
+  res: any;
+  headers: any;
+  request: any;
+  response: any;
+  body: any;
+  session: any;
+  query: any;
+}
 export declare type $Next = () => Function;
 export declare type $Err = (message: string, status: number) => Error;
-export declare type $Cursor = { target: typeof Function; propertyKey: string; handler: Function };
-export declare type $Endpoint = {
-  target: typeof Function;
+export declare interface $Cursor {
+  constructor: typeof Function;
   propertyKey: string;
   handler: Function;
+  prefix: string;
+}
+export declare interface $Route extends Omit<$Cursor, "prefix"> {
   method: string;
   path: string;
-};
+  // callstack: $Callstack;
+}
+
 export declare type $Callstack = Function[];
 
 export declare function Args(handler?: Function): ParameterDecorator;
@@ -26,6 +49,5 @@ export declare function Res(): ParameterDecorator;
 
 export declare function Callstack(): ParameterDecorator;
 export declare function Cursor(): ParameterDecorator;
-export declare function Target(): ParameterDecorator;
-export declare function Prefix(): ParameterDecorator;
-export declare function Map(): ParameterDecorator;
+export declare function Route(): ParameterDecorator;
+export declare function MetaMap(): ParameterDecorator;

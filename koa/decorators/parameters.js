@@ -10,11 +10,11 @@ function _args(args) {
 
 function Args(handler = _args) {
   if (typeof handler !== "function") throw new Error(constants.PARAMETER_HANDLER_ERROR);
-  return (target, propertyKey, parameterIndex) => {
-    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
+  return (constructor, property, parameterIndex) => {
+    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
     const metakey = constants.PARAMETERS_METADATA;
     // ...
-    const propertyArguments = Reflect.getOwnMetadata(metakey, target, propertyKey) || [];
+    const propertyArguments = Reflect.getOwnMetadata(metakey, constructor, property) || [];
     // может быть стек декораторов, поэтому создадим для них список
     /*
     if (!propertyParameters[parameterIndex])
@@ -22,7 +22,7 @@ function Args(handler = _args) {
       propertyParameters[parameterIndex].push(handler);
       */
     propertyArguments[parameterIndex] = handler;
-    Reflect.defineMetadata(metakey, propertyArguments, target, propertyKey);
+    Reflect.defineMetadata(metakey, propertyArguments, constructor, property);
   };
 }
 
@@ -133,14 +133,15 @@ function Res() {
   return Args(handler);
 }
 exports.Res = Res;
+
 // ---
-function Target() {
-  const handler = function ({ endpoint }) {
-    return endpoint;
+function Route() {
+  const handler = function ({ route }) {
+    return route;
   };
   return Args(handler);
 }
-exports.Target = Target;
+exports.Route = Route;
 // ---
 function Cursor() {
   const handler = function ({ cursor }) {
@@ -166,10 +167,10 @@ function Prefix() {
 }
 exports.Prefix = Prefix;
 // ---
-function Map() {
-  const handler = function ({ map }) {
-    return map;
+function MetaMap() {
+  const handler = function ({ metaMap }) {
+    return metaMap;
   };
   return Args(handler);
 }
-exports.Map = Map;
+exports.MetaMap = MetaMap;

@@ -3,21 +3,21 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // exports.Endpoint = void 0;
 const constants = require("../constants");
 function Endpoint(path = "/", method = "get") {
-  return function (target, propertyKey, descriptor) {
-    if (typeof target !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
+  return function (constructor, property, descriptor) {
+    if (typeof constructor !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
 
     // if use static method of class, then will store metadata for it with info about
     // origin class and propertyName, for futher usage
-    if (typeof target === "function") {
+    if (typeof constructor === "function") {
       const metakey = constants.REVERSE_METADATA;
-      Reflect.defineMetadata(metakey, { target, propertyKey }, target[propertyKey]);
+      Reflect.defineMetadata(metakey, { constructor, property }, constructor[property]);
     }
 
     const metakey = constants.ENDPOINTS_METADATA;
     // ...
-    const endpoints = Reflect.getOwnMetadata(metakey, target) || [];
-    endpoints.push({ path, method, propertyKey, descriptor });
-    Reflect.defineMetadata(metakey, endpoints, target);
+    const endpoints = Reflect.getOwnMetadata(metakey, constructor) || [];
+    endpoints.push({ path, method, property, descriptor });
+    Reflect.defineMetadata(metakey, endpoints, constructor);
   };
 }
 
