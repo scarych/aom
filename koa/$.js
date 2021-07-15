@@ -39,11 +39,11 @@ function makeCtx(cursor, env = {}) {
   const { constructor, property, handler } = cursor;
   // в момент генерации контекстного вызова извлечем маршрут, который есть всегда, и применим к нему маркеры
   const { route } = env;
-  const markersData = Reflect.getOwnMetadata(constants.MARKERS_METADATA, handler);
+  const markersData = Reflect.getOwnMetadata(constants.MARKERS_METADATA, constructor, property);
   if (markersData) {
-    markersData.forEach((marker) => Reflect.apply(marker.handler, marker.constructor));
-    // .. to do something with markers
-    console.log(route, markersData);
+    markersData.forEach((marker) =>
+      Reflect.apply(marker.handler, marker.constructor, [route, cursor])
+    );
   }
 
   const decoratedArgs = extractParameterDecorators(constructor, property);
