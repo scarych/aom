@@ -21,7 +21,7 @@ export declare type $Next = () => Function;
 export declare type $Err = (message: string, status: number) => Error;
 export declare interface $Cursor {
   constructor: typeof Function;
-  propertyKey: string;
+  property: string;
   handler: Function;
   prefix: string;
 }
