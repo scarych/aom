@@ -102,8 +102,8 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
   const targetMiddlewares = extractMiddlewares({ constructor, prefix });
 
   if (routes) {
-    routes.forEach((route) => {
-      const { method, descriptor, path, property } = route;
+    routes.forEach((routeElem) => {
+      const { method, descriptor, path, property } = routeElem;
       const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
