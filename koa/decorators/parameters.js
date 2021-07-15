@@ -134,13 +134,13 @@ function Res() {
 }
 exports.Res = Res;
 // ---
-function Endpoint() {
+function Target() {
   const handler = function ({ endpoint }) {
     return endpoint;
   };
   return Args(handler);
 }
-exports.Endpoint = Endpoint;
+exports.Target = Target;
 // ---
 function Cursor() {
   const handler = function ({ cursor }) {

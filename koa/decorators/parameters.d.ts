@@ -26,6 +26,6 @@ export declare function Res(): ParameterDecorator;
 
 export declare function Callstack(): ParameterDecorator;
 export declare function Cursor(): ParameterDecorator;
-export declare function Endpoint(): ParameterDecorator;
+export declare function Target(): ParameterDecorator;
 export declare function Prefix(): ParameterDecorator;
 export declare function Map(): ParameterDecorator;

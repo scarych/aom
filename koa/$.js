@@ -108,7 +108,7 @@ function buildRoutesList(target, prefix = "/", middlewares = []) {
       });
       const callstack = [].concat(middlewares, targetMiddlewares, propertyMiddlewares);
       const env = {
-        endpoint: { target, propertyKey, handler, method, path: routePath },
+        target: { target, propertyKey, handler, method, path: routePath },
         callstack,
       };
       routesList.push({
