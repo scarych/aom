@@ -111,6 +111,7 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       const route = {
         method,
         path: routePath,
+        prefix: routePath,
         constructor,
         property,
         handler,
