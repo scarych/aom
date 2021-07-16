@@ -108,11 +108,10 @@ function safeJSON(data) {
 }
 
 function buildRoutesList(constructor, prefix = "/", middlewares = []) {
-  let routesList = [];
-  const bridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, constructor);
-  const routes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, constructor);
+  const routesList = [];
+  const commonMiddlewares = extractMiddlewares({ constructor, prefix });
 
-  const targetMiddlewares = extractMiddlewares({ constructor, prefix });
+  const routes = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, constructor);
 
   if (routes) {
     routes.forEach((routeElem) => {
@@ -135,7 +134,7 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
         property,
         prefix: target.path,
       });
-      const callstack = [].concat(middlewares, targetMiddlewares, propertyMiddlewares);
+      const callstack = [].concat(middlewares, commonMiddlewares, propertyMiddlewares);
       const env = { target };
       Object.assign(target, {
         exec: (routes) =>
@@ -154,18 +153,29 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
     });
   }
 
+  const bridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, constructor);
+
   if (bridges) {
     bridges.forEach((bridgeData) => {
-      const { url, nextRoute, property } = bridgeData;
+      const { url, nextRoute, property, descriptor } = bridgeData;
       const newPrefix = join(prefix, url);
       const bridgeMiddlewares = property
         ? extractMiddlewares({ constructor, property, prefix: newPrefix })
         : [];
+      // если мост является собственной миддлварбю
+      if (descriptor && typeof descriptor.value === "function") {
+        bridgeMiddlewares.push({
+          constructor,
+          property,
+          handler: descriptor.value,
+          prefix: newPrefix,
+        });
+      }
       routesList.push(
         ...buildRoutesList(
           nextRoute,
           newPrefix,
-          [].concat(middlewares, targetMiddlewares, bridgeMiddlewares)
+          [].concat(middlewares, commonMiddlewares, bridgeMiddlewares)
         )
       );
     });
