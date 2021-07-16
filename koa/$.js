@@ -36,6 +36,7 @@ function extractMiddlewares({ constructor, property = undefined, prefix }) {
 }
 
 function makeCtx(cursor, env = {}) {
+  cursor = safeJSON(cursor);
   const { constructor, property, handler } = cursor;
   // в момент генерации контекстного вызова извлечем маршрут, который есть всегда, и применим к нему маркеры
   const { target } = env;
@@ -94,6 +95,18 @@ function makeCtx(cursor, env = {}) {
 current - контекстен в каждом конкретном месте, а target, path и method - элементы финального цикла
 seq - 
 */
+
+function safeJSON(data) {
+  return {
+    ...data,
+    toJSON() {
+      const skipKeys = ["constructor", "handler", "property"];
+      const safeEntries = Object.entries(data).filter(([key, value]) => skipKeys.indexOf(key) < 0);
+      return Object.fromEntries(safeEntries);
+    },
+  };
+}
+
 function buildRoutesList(constructor, prefix = "/", middlewares = []) {
   let routesList = [];
   const bridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, constructor);
@@ -108,13 +121,13 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
       // route - элемент маршрута, доступен через декораторы параметров `@Route`
-      const target = {
+      const target = safeJSON({
         method,
         path: routePath,
         constructor,
         property,
         handler,
-      };
+      });
 
       // get middlewars for endpoint with correct prefix
       const propertyMiddlewares = extractMiddlewares({
