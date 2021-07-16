@@ -1,4 +1,8 @@
-type CombinedDecorator = <T extends Function>(target: T, propertyKey?: string) => void;
+type CombinedDecorator = <T extends Function>(
+  target: T,
+  propertyKey?: string,
+  descriptor?: any
+) => void;
 export declare function Use(...handlers: Function[]): CombinedDecorator;
 export declare function Middleware(): MethodDecorator;
 export declare function Marker(handler): MethodDecorator;
