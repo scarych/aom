@@ -1,11 +1,9 @@
 export declare interface $Args {
-  route: $Route;
+  target: $Target;
   cursor: $Cursor;
   next: $Next;
   ctx: $Ctx;
-  metaMap: any;
-  prefix: string;
-  callstack: $Callstack;
+  routes: $Target[];
 }
 export declare interface $Ctx {
   req: any;
@@ -25,13 +23,11 @@ export declare interface $Cursor {
   handler: Function;
   prefix: string;
 }
-export declare interface $Route extends $Cursor {
+export declare interface $Target extends Omit<$Cursor, "prefix"> {
   method: string;
   path: string;
-  // callstack: $Callstack;
+  [key: string]: any;
 }
-
-export declare type $Callstack = Function[];
 
 export declare function Args(handler?: Function): ParameterDecorator;
 export declare function Query(): ParameterDecorator;
@@ -47,7 +43,6 @@ export declare function Err(): ParameterDecorator;
 export declare function Req(): ParameterDecorator;
 export declare function Res(): ParameterDecorator;
 
-export declare function Callstack(): ParameterDecorator;
 export declare function Cursor(): ParameterDecorator;
-export declare function Route(): ParameterDecorator;
-export declare function MetaMap(): ParameterDecorator;
+export declare function Target(): ParameterDecorator;
+export declare function Routes(): ParameterDecorator;

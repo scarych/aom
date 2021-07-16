@@ -135,14 +135,6 @@ function Res() {
 exports.Res = Res;
 
 // ---
-function Route() {
-  const handler = function ({ route }) {
-    return route;
-  };
-  return Args(handler);
-}
-exports.Route = Route;
-// ---
 function Cursor() {
   const handler = function ({ cursor }) {
     return cursor;
@@ -151,26 +143,18 @@ function Cursor() {
 }
 exports.Cursor = Cursor;
 // ---
-function Callstack() {
-  const handler = function ({ callstack }) {
-    return callstack;
+function Target() {
+  const handler = function ({ target }) {
+    return target;
   };
   return Args(handler);
 }
-exports.Callstack = Callstack;
+exports.Target = Target;
 // ---
-function Prefix() {
-  const handler = function ({ prefix }) {
-    return prefix;
+function Routes() {
+  const handler = function ({ routes }) {
+    return routes;
   };
   return Args(handler);
 }
-exports.Prefix = Prefix;
-// ---
-function MetaMap() {
-  const handler = function ({ metaMap }) {
-    return metaMap;
-  };
-  return Args(handler);
-}
-exports.MetaMap = MetaMap;
+exports.Routes = Routes;

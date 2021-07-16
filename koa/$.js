@@ -38,11 +38,11 @@ function extractMiddlewares({ constructor, property = undefined, prefix }) {
 function makeCtx(cursor, env = {}) {
   const { constructor, property, handler } = cursor;
   // в момент генерации контекстного вызова извлечем маршрут, который есть всегда, и применим к нему маркеры
-  const { route } = env;
+  const { target } = env;
   const markersData = Reflect.getOwnMetadata(constants.MARKERS_METADATA, constructor, property);
   if (markersData) {
     markersData.forEach((marker) =>
-      Reflect.apply(marker.handler, marker.constructor, [route, cursor])
+      Reflect.apply(marker.handler, marker.constructor, [target, cursor])
     );
   }
 
@@ -108,10 +108,9 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
       // route - элемент маршрута, доступен через декораторы параметров `@Route`
-      const route = {
+      const target = {
         method,
         path: routePath,
-        prefix: routePath,
         constructor,
         property,
         handler,
@@ -121,24 +120,24 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       const propertyMiddlewares = extractMiddlewares({
         constructor,
         property,
-        prefix: route.path,
+        prefix: target.path,
       });
       const callstack = [].concat(middlewares, targetMiddlewares, propertyMiddlewares);
-      const env = { route, callstack };
-      Object.assign(route, {
-        exec: (metaMap) =>
+      const env = { target };
+      Object.assign(target, {
+        exec: (routes) =>
           callstack
             .map((middleware) =>
               makeCtx(middleware, {
                 ...env,
-                metaMap,
+                routes,
               })
             )
             .concat(
-              makeCtx({ constructor, property, handler, prefix: route.path }, { ...env, metaMap })
+              makeCtx({ constructor, property, handler, prefix: target.path }, { ...env, routes })
             ),
       });
-      routesList.push(route);
+      routesList.push(target);
     });
   }
 
