@@ -97,14 +97,13 @@ seq -
 */
 
 function safeJSON(data) {
-  return {
-    ...data,
+  Object.assign(data, {
     toJSON() {
       const skipKeys = ["constructor", "handler", "property"];
-      const safeEntries = Object.entries(data).filter(([key, value]) => skipKeys.indexOf(key) < 0);
+      const safeEntries = Object.entries(data).filter(([key]) => skipKeys.indexOf(key) < 0);
       return Object.fromEntries(safeEntries);
     },
-  };
+  });
 }
 
 function buildRoutesList(constructor, prefix = "/", middlewares = []) {
