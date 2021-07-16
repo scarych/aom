@@ -104,6 +104,7 @@ function safeJSON(data) {
       return Object.fromEntries(safeEntries);
     },
   });
+  return data;
 }
 
 function buildRoutesList(constructor, prefix = "/", middlewares = []) {
