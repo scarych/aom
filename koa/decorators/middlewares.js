@@ -22,6 +22,12 @@ function Middleware() {
   return function (constructor, property, descriptor) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
 
+    // сохраним в контексте конструктора список
+    const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
+    const middlewaresList = Reflect.getOwnMetadata(listMetakey, constructor) || [];
+    middlewaresList.push(property);
+    Reflect.defineMetadata(listMetakey, middlewaresList, constructor);
+
     // save reverse data for specific handler
     if (typeof constructor === "function") {
       const metakey = constants.REVERSE_METADATA;

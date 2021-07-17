@@ -1,6 +1,7 @@
 exports.BRIDGE_METADATA = "aom.koa:bridge";
 exports.MARKERS_METADATA = "aom.koa:marker";
 exports.MIDDLEWARE_METADATA = "aom.koa:middleware";
+exports.MIDDLEWARES_LIST_METADATA = "aom.koa:middlewares_storage";
 exports.IS_MIDDLEWARE_METADATA = "aom.koa:is_middleware";
 exports.ENDPOINTS_METADATA = "aom.koa:endpoints";
 exports.PARAMETERS_METADATA = "aom.koa:parameters";
