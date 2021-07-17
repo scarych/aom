@@ -9,9 +9,10 @@ function Mixin(source) {
     const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
     const sourceMiddlewares = Reflect.getOwnMetadata(listMetakey, source) || [];
 
-    sourceMiddlewares.forEach((property) => {
+    sourceMiddlewares.forEach(({ property, descriptor }) => {
       const reverseMetakey = constants.REVERSE_METADATA;
 
+      Reflect.set(constructor, property, descriptor);
       /*
       const sourceMetadata = Reflect.defineMetadata(
         reverseMetakey,
@@ -20,10 +21,10 @@ function Mixin(source) {
       );
       */
 
-      Reflect.defineMetadata(reverseMetakey, { constructor: target, property }, target[property]);
+      Reflect.defineMetadata(reverseMetakey, { constructor, property }, constructor[property]);
 
       const metakey = constants.IS_MIDDLEWARE_METADATA;
-      Reflect.defineMetadata(metakey, true, target[property]);
+      Reflect.defineMetadata(metakey, true, constructor[property]);
     });
   };
 }

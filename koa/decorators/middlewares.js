@@ -25,7 +25,7 @@ function Middleware() {
     // сохраним в контексте конструктора список
     const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
     const middlewaresList = Reflect.getOwnMetadata(listMetakey, constructor) || [];
-    middlewaresList.push(property);
+    middlewaresList.push({ property, descriptor });
     Reflect.defineMetadata(listMetakey, middlewaresList, constructor);
 
     // save reverse data for specific handler
