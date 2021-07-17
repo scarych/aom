@@ -1,1 +1,1 @@
-export declare function Mixin(source?: typeof Function): ClassDecorator;
+export declare function Mixin(source: Function): ClassDecorator;
