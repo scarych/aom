@@ -19,6 +19,12 @@ function extractMiddlewares({ constructor, property = undefined, prefix }) {
     if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, handler)) {
       //
       const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler);
+      /*
+      console.log("mw data", { middlewareMapData, handler }, "orig", {
+        constructor,
+        property,
+      });
+      // */
       // try to found middlewares for current middlewares and set them before current
       // cyclic links checking onboard
       resultMiddlewares.push(...extractMiddlewares({ ...middlewareMapData, prefix }));

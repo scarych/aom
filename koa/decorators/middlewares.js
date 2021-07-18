@@ -21,7 +21,12 @@ exports.Use = Use;
 function Middleware() {
   return function (constructor, property, descriptor) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
-
+    const { value } = descriptor;
+    const handler = (...args) => {
+      const rawData = Reflect.getOwnMetadata(constants.MIDDLEWARE_RAW_METADATA, handler);
+      return Reflect.apply(rawData.descriptorValue, rawData.constructor, args);
+    };
+    descriptor.value = handler;
     // сохраним в контексте конструктора список
     const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
     const middlewaresList = Reflect.getOwnMetadata(listMetakey, constructor) || [];
@@ -31,11 +36,16 @@ function Middleware() {
     // save reverse data for specific handler
     if (typeof constructor === "function") {
       const metakey = constants.REVERSE_METADATA;
-      Reflect.defineMetadata(metakey, { constructor, property }, constructor[property]);
+      Reflect.defineMetadata(metakey, { constructor, property }, handler);
     }
 
-    const metakey = constants.IS_MIDDLEWARE_METADATA;
-    Reflect.defineMetadata(metakey, true, constructor[property]);
+    Reflect.defineMetadata(
+      constants.MIDDLEWARE_RAW_METADATA,
+      { descriptorValue: value, constructor, property },
+      handler
+    );
+
+    Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, handler);
   };
 }
 

@@ -2,6 +2,7 @@ export declare const BRIDGE_METADATA = "aom.koa:bridge";
 export declare const MARKERS_METADATA = "aom.koa:marker";
 export declare const MIDDLEWARE_METADATA = "aom.koa:middleware";
 export declare const MIDDLEWARES_LIST_METADATA = "aom.koa:middlewares_storage";
+export declare const MIDDLEWARE_RAW_METADATA = "aom.koa:middleware_raw";
 export declare const IS_MIDDLEWARE_METADATA = "aom.koa:is_middleware";
 export declare const ENDPOINTS_METADATA = "aom.koa:endpoints";
 export declare const PARAMETERS_METADATA = "aom.koa:parameters";
