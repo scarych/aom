@@ -1,3 +1,6 @@
+exports.STORAGE_METADATA = "aom.koa:storage";
+exports.STORAGE_SET_METADATA = "aom.koa:storage_set";
+exports.STORAGE_KEYS_SET_METADATA = "aom.koa:storage_keys_set";
 exports.BRIDGE_METADATA = "aom.koa:bridge";
 exports.MARKERS_METADATA = "aom.koa:marker";
 exports.MIDDLEWARE_METADATA = "aom.koa:middleware";

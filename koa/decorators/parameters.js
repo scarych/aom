@@ -2,6 +2,7 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 // exports.AddParameterDecorator = void 0;
 const constants = require("../constants");
+const { saveStorageMetadata } = require("../helpers");
 
 // default args handler: extract all values
 function _args(args) {
@@ -12,17 +13,21 @@ function Args(handler = _args) {
   if (typeof handler !== "function") throw new Error(constants.PARAMETER_HANDLER_ERROR);
   return (constructor, property, parameterIndex) => {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    /*
     const metakey = constants.PARAMETERS_METADATA;
     // ...
     const propertyArguments = Reflect.getOwnMetadata(metakey, constructor, property) || [];
-    // может быть стек декораторов, поэтому создадим для них список
-    /*
-    if (!propertyParameters[parameterIndex])
-      propertyParameters[parameterIndex] = [];
-      propertyParameters[parameterIndex].push(handler);
-      */
     propertyArguments[parameterIndex] = handler;
     Reflect.defineMetadata(metakey, propertyArguments, constructor, property);
+    */
+    saveStorageMetadata(
+      constructor,
+      constants.PARAMETERS_METADATA,
+      handler,
+      [constructor, property],
+      true,
+      parameterIndex
+    );
   };
 }
 
