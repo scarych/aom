@@ -6,9 +6,13 @@ const { saveStorageMetadata } = require("../helpers");
 function Endpoint(path = "/", method = "get") {
   return function (constructor, property, descriptor) {
     if (typeof constructor !== "function") throw new Error(constants.TARGET_TYPE_ERROR);
-    saveStorageMetadata(constructor, constants.REVERSE_METADATA, { constructor, property }, [
-      constructor[property],
-    ]);
+
+    saveStorageMetadata(
+      constructor,
+      constants.REVERSE_METADATA,
+      { constructor, property },
+      constructor[property]
+    );
 
     /*
     // if use static method of class, then will store metadata for it with info about
@@ -22,7 +26,7 @@ function Endpoint(path = "/", method = "get") {
       constructor,
       constants.ENDPOINTS_METADATA,
       { path, method, property, descriptor },
-      [constructor],
+      constructor,
       true
     );
     /*  

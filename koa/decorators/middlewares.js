@@ -7,11 +7,14 @@ const { saveStorageMetadata } = require("../helpers");
 function Use(...middlewares) {
   return function (constructor, property = undefined) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    middlewares.forEach((middleware) => {
+      console.log(middleware, Reflect.getPrototypeOf(middleware));
+    });
     saveStorageMetadata(
       constructor,
       constants.MIDDLEWARE_METADATA,
       middlewares,
-      [constructor, property],
+      property ? constructor[property] : constructor,
       true
     );
     /*
@@ -59,11 +62,14 @@ function Middleware() {
 
     Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, handler);
     */
-    saveStorageMetadata(constructor, constants.REVERSE_METADATA, { constructor, property }, [
-      handler,
-    ]);
+    saveStorageMetadata(
+      constructor,
+      constants.REVERSE_METADATA,
+      { constructor, property },
+      constructor[property]
+    );
 
-    saveStorageMetadata(constructor, constants.IS_MIDDLEWARE_METADATA, true, [handler]);
+    saveStorageMetadata(constructor, constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
   };
 }
 
@@ -85,7 +91,7 @@ function Marker(handler) {
       constructor,
       constants.MARKERS_METADATA,
       { handler, constructor, descriptor, markerName },
-      [constructor, property],
+      constructor[property],
       true
     );
   };
@@ -108,7 +114,7 @@ function Bridge(url, nextRoute) {
       constructor,
       constants.BRIDGE_METADATA,
       { url, nextRoute, constructor, property, descriptor },
-      [constructor],
+      constructor,
       true
     );
   };

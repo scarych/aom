@@ -44,20 +44,30 @@ exports.MixWith = MixWith;
 function Router() {
   return (constructor) => {
     // разберем данные из хранилища и установим их в релевантные места
-    const storage =
-      Reflect.getOwnMetadata(constants.STORAGE_METADATA, constructor) || new WeakMap();
+    const storage = Reflect.getOwnMetadata(constants.STORAGE_METADATA, constructor) || new Map();
 
     const storageSet = storage.get(constants.STORAGE_SET_METADATA) || new Set();
+    // console.log(storageSet, storage, constructor);
     storageSet.forEach((metakey) => {
       // ...
       const metakeyData = storage.get(metakey);
       const metakeySet = metakeyData.get(constants.STORAGE_KEYS_SET_METADATA);
-      metakeySet.forEach((storageKeys) => {
+      metakeySet.forEach((storageKey) => {
         // ...
-        const keysData = metakeyData.get(storageKeys);
-        Reflect.defineMetadata(metakey, keysData, ...storageKeys);
+        const keysData = metakeyData.get(storageKey);
+        // console.log(metakey, keysData, storageKey);
+        Reflect.defineMetadata(metakey, keysData, storageKey);
       });
     });
+
+    /*
+    return new Proxy(class extends constructor {}, {
+      get(target, prop) {
+        // console.log("initial get", target, prop);
+        return Reflect.get(target, prop);
+      },
+    });
+    */
   };
 }
 

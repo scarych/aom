@@ -20,11 +20,19 @@ function Args(handler = _args) {
     propertyArguments[parameterIndex] = handler;
     Reflect.defineMetadata(metakey, propertyArguments, constructor, property);
     */
+
+    saveStorageMetadata(
+      constructor,
+      constants.REVERSE_METADATA,
+      { constructor, property },
+      constructor[property]
+    );
+
     saveStorageMetadata(
       constructor,
       constants.PARAMETERS_METADATA,
       handler,
-      [constructor, property],
+      constructor[property],
       true,
       parameterIndex
     );
