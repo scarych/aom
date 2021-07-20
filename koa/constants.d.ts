@@ -1,5 +1,6 @@
 export declare const BRIDGE_METADATA = "aom.koa:bridge";
 export declare const MARKERS_METADATA = "aom.koa:marker";
+export declare const IS_STICKER_METADATA = "aom.koa:is_sticker";
 export declare const MIDDLEWARE_METADATA = "aom.koa:middleware";
 export declare const MIDDLEWARES_LIST_METADATA = "aom.koa:middlewares_storage";
 export declare const IS_MIDDLEWARE_METADATA = "aom.koa:is_middleware";

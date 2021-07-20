@@ -42,6 +42,20 @@ function Middleware() {
 exports.Middleware = Middleware;
 
 // ...
+function Bridge(url, nextRoute) {
+  return function (constructor, property = undefined, descriptor = undefined) {
+    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    const metakey = constants.BRIDGE_METADATA;
+    // ...
+    const bridges = Reflect.getOwnMetadata(metakey, constructor) || [];
+    bridges.push({ url, nextRoute, constructor, property, descriptor });
+    Reflect.defineMetadata(metakey, bridges, constructor);
+  };
+}
+
+exports.Bridge = Bridge;
+
+// ...
 function Marker(handler) {
   return function (constructor, property, descriptor) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
@@ -55,17 +69,15 @@ function Marker(handler) {
 }
 
 exports.Marker = Marker;
-
 // ...
-function Bridge(url, nextRoute) {
-  return function (constructor, property = undefined, descriptor = undefined) {
+function Sticker() {
+  return function (constructor, property, descriptor) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
-    const metakey = constants.BRIDGE_METADATA;
+    const metakey = constants.MARKERS_METADATA;
+    const markerName = `${constructor.name}:${property}`;
     // ...
-    const bridges = Reflect.getOwnMetadata(metakey, constructor) || [];
-    bridges.push({ url, nextRoute, constructor, property, descriptor });
-    Reflect.defineMetadata(metakey, bridges, constructor);
+    Reflect.defineMetadata(metakey, markerName, constructor, property);
   };
 }
 
-exports.Bridge = Bridge;
+exports.Sticker = Sticker;

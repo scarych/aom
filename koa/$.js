@@ -46,6 +46,14 @@ function makeCtx(cursor, env = {}) {
       Reflect.apply(marker.handler, marker.constructor, [target, cursor])
     );
   }
+  
+  // в момент генерации вызова проверим, является ли данное свойство стикером
+  const stickerData = Reflect.getOwnMetadata(constants.IS_STICKER_METADATA, constructor, property);
+  // и если является, и целевой конструктор является наследником курсора
+  if (stickerData && target.constructor.prototype instanceof cursor.constructor) {
+    // то в курсоре заменим конструктор на целевой
+    cursor.constructor = target.constructor;
+  }
 
   const decoratedArgs = extractParameterDecorators(constructor, property);
   return async (ctx, next) => {
