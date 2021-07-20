@@ -89,9 +89,9 @@ function Headers(headerName = undefined) {
 }
 exports.Headers = Headers;
 // ---
-function Next(...handlers) {
+function Next() {
   const handler = function (args) {
-    return () => (handlers.length > 0 ? nextSequences(handlers, args) : args.next);
+    return (...handlers) => (handlers.length > 0 ? nextSequences(handlers, args) : args.next);
   };
   return Args(handler);
 }

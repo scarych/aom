@@ -15,7 +15,7 @@ export declare interface $Ctx {
   session: any;
   query: any;
 }
-export declare type $Next = () => Function;
+export declare type $Next = (...handlers: Function[]) => Function;
 export declare type $Err = (message: string, status: number) => Error;
 export declare interface $Cursor {
   constructor: typeof Function;
@@ -38,7 +38,7 @@ export declare function Headers(headerName?: string): ParameterDecorator;
 export declare function Body(): ParameterDecorator;
 export declare function Files(fileName?: string): ParameterDecorator;
 export declare function Ctx(): ParameterDecorator;
-export declare function Next(...handlers: Function[]): ParameterDecorator;
+export declare function Next(): ParameterDecorator;
 export declare function Err(): ParameterDecorator;
 export declare function Req(): ParameterDecorator;
 export declare function Res(): ParameterDecorator;

@@ -5,18 +5,20 @@ const constants = require("./constants");
 const { join } = require("path");
 
 // сгенерировать последовательность вызовов
-function nextSequences(handlers = [], defaultArguments = {}) {
+async function nextSequences(handlers = [], defaultArguments = {}) {
   //
   let returnValue;
-  handlers.forEach(async (handler) => {
-    if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, handler)) {
-      //
-      const { constructor, property } = Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler);
+  while (!returnValue && handlers.length > 0) {
+    const handler = handlers.shift();
+    //
+    const { constructor, property } =
+      Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler) || {};
+    if (constructor && property) {
       const decoratedArgs = extractParameterDecorators(constructor, property);
 
       const args = decoratedArgs
-        .map((arg) => arg && Reflect.apply(arg, constructor, defaultArguments))
-        .concat(defaultArguments);
+        .map((arg) => arg && Reflect.apply(arg, constructor, [defaultArguments]))
+        .concat([defaultArguments]);
       const result = await Reflect.apply(handler, constructor, args);
 
       if (result === defaultArguments.next) {
@@ -27,11 +29,10 @@ function nextSequences(handlers = [], defaultArguments = {}) {
         returnValue = result;
         break;
       }
-    } else {
-      throw new Error(constants.IS_MIDDLEWARE_ERROR);
     }
-    return returnValue
-  });
+  }
+
+  return returnValue;
 }
 
 exports.nextSequences = nextSequences;
