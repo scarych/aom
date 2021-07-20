@@ -73,10 +73,10 @@ exports.Marker = Marker;
 function Sticker() {
   return function (constructor, property, descriptor) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
-    const metakey = constants.MARKERS_METADATA;
-    const markerName = `${constructor.name}:${property}`;
+    const metakey = constants.IS_STICKER_METADATA;
+    const stickerName = `${constructor.name}:${property}`;
     // ...
-    Reflect.defineMetadata(metakey, markerName, constructor, property);
+    Reflect.defineMetadata(metakey, stickerName, constructor, property);
   };
 }
 
