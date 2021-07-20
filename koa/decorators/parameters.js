@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+const { nextSequences } = require("../$");
 // exports.AddParameterDecorator = void 0;
 const constants = require("../constants");
 
@@ -88,9 +89,9 @@ function Headers(headerName = undefined) {
 }
 exports.Headers = Headers;
 // ---
-function Next() {
-  const handler = function ({ next }) {
-    return () => next;
+function Next(...handlers) {
+  const handler = function (args) {
+    return () => (handlers.length > 0 ? nextSequences(handlers, args) : args.next);
   };
   return Args(handler);
 }

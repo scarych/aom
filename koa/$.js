@@ -4,6 +4,38 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const constants = require("./constants");
 const { join } = require("path");
 
+// сгенерировать последовательность вызовов
+function nextSequences(handlers = [], defaultArguments = {}) {
+  //
+  let returnValue;
+  handlers.forEach(async (handler) => {
+    if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, handler)) {
+      //
+      const { constructor, property } = Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler);
+      const decoratedArgs = extractParameterDecorators(constructor, property);
+
+      const args = decoratedArgs
+        .map((arg) => arg && Reflect.apply(arg, constructor, defaultArguments))
+        .concat(defaultArguments);
+      const result = await Reflect.apply(handler, constructor, args);
+
+      if (result === defaultArguments.next) {
+        continue;
+      } else if (result instanceof Error) {
+        throw result;
+      } else {
+        returnValue = result;
+        break;
+      }
+    } else {
+      throw new Error(constants.IS_MIDDLEWARE_ERROR);
+    }
+    return returnValue
+  });
+}
+
+exports.nextSequences = nextSequences;
+
 function extractParameterDecorators(constructor, property) {
   const metadataKey = constants.PARAMETERS_METADATA;
   return Reflect.getOwnMetadata(metadataKey, constructor, property) || [];
@@ -46,7 +78,7 @@ function makeCtx(cursor, env = {}) {
       Reflect.apply(marker.handler, marker.constructor, [target, cursor])
     );
   }
-  
+
   // в момент генерации вызова проверим, является ли данное свойство стикером
   const stickerData = Reflect.getOwnMetadata(constants.IS_STICKER_METADATA, constructor, property);
   // и если является, и целевой конструктор является наследником курсора
