@@ -16,6 +16,22 @@ async function nextSequences(handlers = [], defaultArguments = {}) {
     if (constructor && property) {
       const decoratedArgs = extractParameterDecorators(constructor, property);
 
+      // check sticker metadata
+      const stickerData = Reflect.getOwnMetadata(
+        constants.IS_STICKER_METADATA,
+        constructor,
+        property
+      );
+      const { target } = defaultArguments;
+
+      if (stickerData && target.constructor.prototype instanceof constructor) {
+        // change default cursor constuctor
+        Object.assign(defaultArguments.cursor, { constructor: target.constructor, property });
+      } else {
+        // restore cursor constructor and property
+        Object.assign(defaultArguments.cursor, { constructor, property });
+      }
+
       const args = decoratedArgs
         .map((arg) => arg && Reflect.apply(arg, constructor, [defaultArguments]))
         .concat([defaultArguments]);
@@ -31,8 +47,8 @@ async function nextSequences(handlers = [], defaultArguments = {}) {
       }
     }
   }
-
-  return returnValue;
+  // return default next if  return value wasn't found
+  return returnValue || defaultArguments.next;
 }
 
 exports.nextSequences = nextSequences;

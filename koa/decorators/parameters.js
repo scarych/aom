@@ -91,7 +91,7 @@ exports.Headers = Headers;
 // ---
 function Next() {
   const handler = function (args) {
-    return (...handlers) => (handlers.length > 0 ? nextSequences(handlers, args) : args.next);
+    return (...handlers) => nextSequences(handlers, args);
   };
   return Args(handler);
 }
