@@ -1,11 +1,13 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const constants = require("../constants");
+const constants = require("../../common/constants");
+const { checkConstructorProperty, reverseMetadata } = require("../../common/functions");
 
 // ...
 function Use(...middlewares) {
   return function (constructor, property = undefined) {
-    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    checkConstructorProperty(constructor, property);
+
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
     const bridges = []
@@ -20,19 +22,14 @@ exports.Use = Use;
 // ...
 function Middleware() {
   return function (constructor, property, descriptor) {
-    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    checkConstructorProperty(constructor, property);
+    reverseMetadata(constructor, property);
 
     // сохраним в контексте конструктора список
     const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
     const middlewaresList = Reflect.getOwnMetadata(listMetakey, constructor) || [];
     middlewaresList.push({ property, descriptor });
     Reflect.defineMetadata(listMetakey, middlewaresList, constructor);
-
-    // save reverse data for specific handler
-    if (typeof constructor === "function") {
-      const metakey = constants.REVERSE_METADATA;
-      Reflect.defineMetadata(metakey, { constructor, property }, constructor[property]);
-    }
 
     const metakey = constants.IS_MIDDLEWARE_METADATA;
     Reflect.defineMetadata(metakey, true, constructor[property]);
@@ -44,7 +41,8 @@ exports.Middleware = Middleware;
 // ...
 function Bridge(url, nextRoute) {
   return function (constructor, property = undefined, descriptor = undefined) {
-    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    checkConstructorProperty(constructor, property);
+
     const metakey = constants.BRIDGE_METADATA;
     // ...
     const bridges = Reflect.getOwnMetadata(metakey, constructor) || [];
@@ -58,7 +56,8 @@ exports.Bridge = Bridge;
 // ...
 function Marker(handler) {
   return function (constructor, property, descriptor) {
-    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    checkConstructorProperty(constructor, property);
+
     const metakey = constants.MARKERS_METADATA;
     const markerName = `${constructor.name}:${property}`;
     // ...

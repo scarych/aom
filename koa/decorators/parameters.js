@@ -2,7 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const { nextSequences } = require("../$");
 // exports.AddParameterDecorator = void 0;
-const constants = require("../constants");
+const constants = require("../../common/constants");
+const { checkConstructorProperty, reverseMetadata } = require("../../common/functions");
 
 // default args handler: extract all values
 function _args(args) {
@@ -12,7 +13,8 @@ function _args(args) {
 function Args(handler = _args) {
   if (typeof handler !== "function") throw new Error(constants.PARAMETER_HANDLER_ERROR);
   return (constructor, property, parameterIndex) => {
-    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+    checkConstructorProperty(constructor, property);
+
     const metakey = constants.PARAMETERS_METADATA;
     // ...
     const propertyArguments = Reflect.getOwnMetadata(metakey, constructor, property) || [];

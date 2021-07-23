@@ -1,7 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 // exports.Endpoint = void 0;
-const constants = require("../constants");
+const constants = require("../../common/constants");
+
 function Mixin(source) {
   return function (constructor) {
     if (typeof constructor !== "function") throw new Error(constants.TARGET_TYPE_ERROR);

@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-const constants = require("./constants");
+const constants = require("../common/constants");
 const { join } = require("path");
 
 // сгенерировать последовательность вызовов
