@@ -1,10 +1,6 @@
-const { validationMetadatasToSchemas } = require("class-validator-jsonschema");
+const { targetConstructorToSchema } = require("class-validator-jsonschema");
 const constants = require("../common/constants");
-const {
-  checkConstructorProperty,
-  checkOpenAPIMetadata,
-  restoreReverseMetadata,
-} = require("../common/functions");
+const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/functions");
 
 function OpenAPIHandlerMetadata({ constructor, property = undefined }, container, data) {
   Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, constructor, property);
@@ -19,6 +15,19 @@ function standartDecorator(container, data = {}) {
     checkConstructorProperty(constructor, property);
     OpenAPIHandlerMetadata({ constructor, property }, container, { ...data });
   };
+}
+
+function schemasSet2json(schemasSet) {
+  const result = {};
+
+  schemasSet.forEach((constructor) => {
+    const schema = targetConstructorToSchema(constructor);
+    if (Object.keys(schema).length > 0) {
+      const { name } = constructor;
+      Object.assign(result, { [name]: schema });
+    }
+  });
+  return result;
 }
 class OpenAPI {
   data = {
@@ -57,10 +66,9 @@ class OpenAPI {
     return this;
   }
 
-  schemas = {};
-  Schemas(schemas = {}) {
-    // ...
-    Object.assign(this.schemas, { ...schemas });
+  schemasSet = new Set();
+  Schemas(schemas = []) {
+    schemas.forEach((schema) => this.schemasSet.add(schema));
     return this;
   }
 
@@ -114,7 +122,7 @@ class OpenAPI {
       {
         ...this.data,
         components: {
-          // schemas: validationMetadatasToSchemas(),
+          schemas: schemasSet2json(this.schemasSet),
         },
         paths: this.paths,
       }
