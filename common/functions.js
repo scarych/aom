@@ -19,8 +19,7 @@ function reverseMetadata(constructor, property) {
 exports.reverseMetadata = reverseMetadata;
 // ...
 function restoreReverseMetadata(handler) {
-  const metakey = constants.REVERSE_METADATA;
-  return Reflect.getOwnMetadata(metakey, handler);
+  return Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler);
 }
 
 exports.restoreReverseMetadata = restoreReverseMetadata;

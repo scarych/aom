@@ -28,7 +28,7 @@ class OpenAPI {
   }
 
   paths = {};
-  registerPath(route, callstack = []) {
+  registerPath(route, middlewares = []) {
     const { constructor, property, path, method } = route;
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     if (!this.paths[path]) this.paths[path] = {};
@@ -41,8 +41,8 @@ class OpenAPI {
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
     // миддлвари проходятся с начала и до последнего значения, и в конце обязательно должны стыковаться
     // собственные аналогичные значения
-    callstack.forEach((middleware) => {
-      const { constructor, property } = restoreReverseMetadata(middleware);
+    middlewares.forEach((middleware) => {
+      const { constructor, property, handler } = middleware;
       const middlewareOpenApiData = checkOpenAPIMetadata(constructor, property);
       if (middlewareOpenApiData) {
         //
