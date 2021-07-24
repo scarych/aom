@@ -67,7 +67,7 @@ class OpenAPI {
   }
 
   schemasSet = new Set();
-  Schemas(schemas = []) {
+  AddSchemas(schemas = []) {
     schemas.forEach((schema) => this.schemasSet.add(schema));
     return this;
   }
