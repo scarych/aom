@@ -1,5 +1,5 @@
 export declare class OpenApi {
-  constructor();
+  constructor(initData?: any);
   Data(data: any): OpenApi;
   Schemas(schemas: any): OpenApi;
   Summary(summary: string): MethodDecorator;
