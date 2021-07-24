@@ -3,6 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const constants = require("../common/constants");
 const { join } = require("path");
+const { checkOpenAPIContainer } = require("../common/functions");
 
 // сгенерировать последовательность вызовов
 async function nextSequences(handlers = [], defaultArguments = {}) {
@@ -193,6 +194,15 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       });
       const callstack = [].concat(middlewares, commonMiddlewares, propertyMiddlewares);
       const env = { target };
+
+      // если для ендпоинта есть openApi контейнер, который хранит даные для контекста
+      const openApiContainter = checkOpenAPIContainer(handler);
+      if (openApiContainter) {
+        // и в нем зарегистрируем маршрут целиком, передав в него также callstack вызовов,
+        // откуда будут взяты дополнительные аргументы
+        openApiContainter.registerPath(target, callstack);
+      }
+
       Object.assign(target, {
         exec: (routes) =>
           callstack

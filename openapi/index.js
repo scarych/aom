@@ -1,7 +1,9 @@
+const { validationMetadatasToSchemas } = require("class-validator-jsonschema");
 const constants = require("../common/constants");
-const { checkConstructorProperty } = require("../common/functions");
+const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/functions");
 
-function OpenAPIHandlerMetadata(handler, data) {
+function OpenAPIHandlerMetadata(handler, container, data) {
+  Reflect.defineMetadata(constants.OPEN_API_CONTAINTER_METADATA, container, handler);
   const key = constants.OPEN_API_METADATA;
   const handlerMetadata = Reflect.getOwnMetadata(key, handler) || {};
   Object.assign(handlerMetadata, { ...data });
@@ -10,8 +12,28 @@ function OpenAPIHandlerMetadata(handler, data) {
 
 class OpenAPI {
   data = {};
-  constructor(initData) {
+  constructor(initData = {}) {
     // ...
+    Object.assign(this.data, { ...initData });
+  }
+
+  paths = {};
+  registerPath(route, callstack = []) {
+    const { handler, path, method } = route;
+    const handlerOpenApiData = checkOpenAPIMetadata(handler);
+    if (!this.paths[path]) this.paths[path] = {};
+    const currentPath = this.paths[path];
+    if (!currentPath[method]) currentPath[method] = {};
+    const currentMethod = currentPath[method];
+    const { description, summary } = handlerOpenApiData;
+    Object.assign(currentMethod, { description, summary });
+    // далее следует сборка response, body и других контекстных значений,
+    // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
+    callstack.forEach((middleware) => {
+      const middlewareOpenApiData = checkOpenAPIMetadata(middleware);
+      if (middlewareOpenApiData) {
+      }
+    });
   }
 
   Data(data) {
@@ -30,8 +52,8 @@ class OpenAPI {
   Summary(summary) {
     // ...
     return function (constructor, property, descriptor) {
-      checkConstructor(constructor, property);
-      OpenAPIHandlerMetadata(constructor[property], { summary });
+      checkConstructorProperty(constructor, property);
+      OpenAPIHandlerMetadata(constructor[property], this, { summary });
       // Reflect.defineMetadata(constants.OPENAPI_SUMMARY)
     };
   }
@@ -40,9 +62,8 @@ class OpenAPI {
   Description(description) {
     // ...
     return function (constructor, property, descriptor) {
-      checkConstructor(constructor, property);
-      OpenAPIHandlerMetadata(constructor[property], { description });
-      // Reflect.defineMetadata(constants.OPENAPI_SUMMARY)
+      checkConstructorProperty(constructor, property);
+      OpenAPIHandlerMetadata(constructor[property], this, { description });
     };
   }
 
@@ -61,6 +82,16 @@ class OpenAPI {
   // JSON generator of complete documentation
   toJSON() {
     //
+    return Object.assign(
+      {},
+      {
+        ...this.data,
+        components: {
+          schemas: validationMetadatasToSchemas(),
+        },
+        paths: this.paths,
+      }
+    );
   }
 
   // yaml generator of complete documentation
