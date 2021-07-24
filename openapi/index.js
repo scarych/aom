@@ -6,12 +6,12 @@ const {
   restoreReverseMetadata,
 } = require("../common/functions");
 
-function OpenAPIHandlerMetadata(handler, container, data) {
-  Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, handler);
+function OpenAPIHandlerMetadata({ constructor, property = undefined }, container, data) {
+  Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, constructor, property);
   const key = constants.OPEN_API_METADATA;
-  const handlerMetadata = Reflect.getOwnMetadata(key, handler) || {};
-  Object.assign(handlerMetadata, { ...data });
-  Reflect.defineMetadata(key, handlerMetadata, handler);
+  const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || {};
+  Object.assign(openapiMetadata, { ...data });
+  Reflect.defineMetadata(key, openapiMetadata, constructor, property);
 }
 
 function standartDecorator(container, data = {}) {
