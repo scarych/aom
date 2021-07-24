@@ -1,15 +1,25 @@
 const { validationMetadatasToSchemas } = require("class-validator-jsonschema");
 const constants = require("../common/constants");
-const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/functions");
+const {
+  checkConstructorProperty,
+  checkOpenAPIMetadata,
+  restoreReverseMetadata,
+} = require("../common/functions");
 
 function OpenAPIHandlerMetadata(handler, container, data) {
-  Reflect.defineMetadata(constants.OPEN_API_CONTAINTER_METADATA, container, handler);
+  Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, handler);
   const key = constants.OPEN_API_METADATA;
   const handlerMetadata = Reflect.getOwnMetadata(key, handler) || {};
   Object.assign(handlerMetadata, { ...data });
   Reflect.defineMetadata(key, handlerMetadata, handler);
 }
 
+function standartDecorator(container, data = {}) {
+  return function (constructor, property = undefined, descriptor = undefined) {
+    checkConstructorProperty(constructor, property);
+    OpenAPIHandlerMetadata({ constructor, property }, container, { ...data });
+  };
+}
 class OpenAPI {
   data = {};
   constructor(initData = {}) {
@@ -19,8 +29,8 @@ class OpenAPI {
 
   paths = {};
   registerPath(route, callstack = []) {
-    const { handler, path, method } = route;
-    const handlerOpenApiData = checkOpenAPIMetadata(handler);
+    const { constructor, property, path, method } = route;
+    const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     if (!this.paths[path]) this.paths[path] = {};
     const currentPath = this.paths[path];
     if (!currentPath[method]) currentPath[method] = {};
@@ -29,9 +39,13 @@ class OpenAPI {
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
+    // миддлвари проходятся с начала и до последнего значения, и в конце обязательно должны стыковаться
+    // собственные аналогичные значения
     callstack.forEach((middleware) => {
-      const middlewareOpenApiData = checkOpenAPIMetadata(middleware);
+      const { constructor, property } = restoreReverseMetadata(middleware);
+      const middlewareOpenApiData = checkOpenAPIMetadata(constructor, property);
       if (middlewareOpenApiData) {
+        //
       }
     });
   }
@@ -51,33 +65,38 @@ class OpenAPI {
   // значение добавляется только целенаправленно один раз
   Summary(summary) {
     // ...
-    const container = this;
-    return function (constructor, property, descriptor) {
-      checkConstructorProperty(constructor, property);
-      OpenAPIHandlerMetadata(constructor[property], container, { summary });
-    };
+    return standartDecorator(this, { summary });
   }
 
   // значение добавляется только целенаправленно один раз
   Description(description) {
     // ...
-    const container = this;
-    return function (constructor, property, descriptor) {
-      checkConstructorProperty(constructor, property);
-      OpenAPIHandlerMetadata(constructor[property], container, { description });
-    };
+    return standartDecorator(this, { description });
   }
 
-  Parameters(properties) {
+  Parameters(parameters) {
     // ...
+    return standartDecorator(this, { parameters });
   }
 
-  Responses(codes) {
+  Query(query) {
     // ...
+    return standartDecorator(this, { query });
   }
 
-  RequestBody(structure) {
+  Responses(responses) {
     // ...
+    return standartDecorator(this, { responses });
+  }
+
+  RequestBody(requestBody) {
+    // ...
+    return standartDecorator(this, { requestBody });
+  }
+
+  Security(security) {
+    // ...
+    return standartDecorator(this, { security });
   }
 
   // JSON generator of complete documentation

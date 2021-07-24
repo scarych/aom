@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const constants = require("../common/constants");
 const { join } = require("path");
-const { checkOpenAPIContainer } = require("../common/functions");
+const { checkOpenAPIContainer, restoreReverseMetadata } = require("../common/functions");
 
 // сгенерировать последовательность вызовов
 async function nextSequences(handlers = [], defaultArguments = {}) {
@@ -12,8 +12,7 @@ async function nextSequences(handlers = [], defaultArguments = {}) {
   while (!returnValue && handlers.length > 0) {
     const handler = handlers.shift();
     //
-    const { constructor, property } =
-      Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler) || {};
+    const { constructor, property } = restoreReverseMetadata(handler) || {};
     if (constructor && property) {
       const decoratedArgs = extractParameterDecorators(constructor, property);
 
@@ -68,7 +67,7 @@ function extractMiddlewares({ constructor, property = undefined, prefix }) {
   propertyMiddlewares.forEach((handler) => {
     if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, handler)) {
       //
-      const middlewareMapData = Reflect.getOwnMetadata(constants.REVERSE_METADATA, handler);
+      const middlewareMapData = restoreReverseMetadata(handler);
       // try to found middlewares for current middlewares and set them before current
       // cyclic links checking onboard
       resultMiddlewares.push(...extractMiddlewares({ ...middlewareMapData, prefix }));
@@ -196,7 +195,7 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       const env = { target };
 
       // если для ендпоинта есть openApi контейнер, который хранит даные для контекста
-      const openApiContainter = checkOpenAPIContainer(handler);
+      const openApiContainter = checkOpenAPIContainer(constructor, property);
       if (openApiContainter) {
         // и в нем зарегистрируем маршрут целиком, передав в него также callstack вызовов,
         // откуда будут взяты дополнительные аргументы

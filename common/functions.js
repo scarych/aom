@@ -18,17 +18,24 @@ function reverseMetadata(constructor, property) {
 
 exports.reverseMetadata = reverseMetadata;
 
+function restoreReverseMetadata(handler) {
+  const metakey = constants.REVERSE_METADATA;
+  Reflect.getOwnMetadata(metakey, handler);
+}
+
+exports.restoreReverseMetadata = restoreReverseMetadata;
+
 // ...
-function checkOpenAPIMetadata(handler) {
+function checkOpenAPIMetadata(constructor, property = undefined) {
   const metakey = constants.OPEN_API_METADATA;
-  return Reflect.getOwnMetadata(metakey, handler);
+  return Reflect.getOwnMetadata(metakey, constructor, property);
 }
 
 exports.checkOpenAPIMetadata = checkOpenAPIMetadata;
-// ... 
-function checkOpenAPIContainer(handler) {
-  const metakey = constants.OPEN_API_CONTAINTER_METADATA;
-  return Reflect.getOwnMetadata(metakey, handler);
+// ...
+function checkOpenAPIContainer(constructor, property = undefined) {
+  const metakey = constants.OPEN_API_CONTAINER_METADATA;
+  return Reflect.getOwnMetadata(metakey, constructor, property);
 }
 
 exports.checkOpenAPIContainer = checkOpenAPIContainer;

@@ -9,7 +9,7 @@ export declare const PARAMETERS_METADATA = "aom:parameters";
 export declare const REVERSE_METADATA = "aom:reverse_link";
 export declare const ERROR_METADATA = "aom:error_result";
 export declare const OPEN_API_METADATA = "aom:open_api_meta";
-export declare const OPEN_API_CONTAINTER_METADATA = "aom:open_api_container";
+export declare const OPEN_API_CONTAINER_METADATA = "aom:open_api_container";
 export declare const CONSTRUCTOR_TYPE_ERROR =
   "Wrong target type! The decorator allowed for class only";
 export declare const CONSTRUCTOR_PROPERTY_TYPE_ERROR =
