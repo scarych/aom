@@ -4,6 +4,7 @@ declare class OpenApi {
   Schemas(schemas: any): OpenApi;
   Summary(summary: string): MethodDecorator;
   Description(description: string): MethodDecorator;
+  Tags(tags: string[]): MethodDecorator;
   Parameters(parameters: any): MethodDecorator;
   Responses(responses: any): MethodDecorator;
   RequestBody(requestBody: any): MethodDecorator;

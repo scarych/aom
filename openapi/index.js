@@ -21,7 +21,9 @@ function standartDecorator(container, data = {}) {
   };
 }
 class OpenAPI {
-  data = {};
+  data = {
+    openapi: "3.0.0",
+  };
   constructor(initData = {}) {
     // ...
     Object.assign(this.data, { ...initData });
@@ -97,6 +99,11 @@ class OpenAPI {
   Security(security) {
     // ...
     return standartDecorator(this, { security });
+  }
+
+  Tags(tags) {
+    // ...
+    return standartDecorator(this, { tags });
   }
 
   // JSON generator of complete documentation
