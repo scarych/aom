@@ -10,17 +10,17 @@ function checkConstructorProperty(constructor, property = undefined) {
   }
 }
 exports.checkConstructorProperty = checkConstructorProperty;
-
+// ...
 function reverseMetadata(constructor, property) {
   const metakey = constants.REVERSE_METADATA;
   Reflect.defineMetadata(metakey, { constructor, property }, constructor[property]);
 }
 
 exports.reverseMetadata = reverseMetadata;
-
+// ...
 function restoreReverseMetadata(handler) {
   const metakey = constants.REVERSE_METADATA;
-  Reflect.getOwnMetadata(metakey, handler);
+  return Reflect.getOwnMetadata(metakey, handler);
 }
 
 exports.restoreReverseMetadata = restoreReverseMetadata;
