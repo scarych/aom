@@ -1,4 +1,4 @@
-export declare class OpenApi {
+declare class OpenApi {
   constructor(initData?: any);
   Data(data: any): OpenApi;
   Schemas(schemas: any): OpenApi;
@@ -9,3 +9,5 @@ export declare class OpenApi {
   // RequestBody(properties: any): MethodDecorator;
   // Parameters(properties: any): MethodDecorator;
 }
+
+export default OpenApi;
