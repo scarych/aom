@@ -107,7 +107,7 @@ class OpenAPI {
       {
         ...this.data,
         components: {
-          schemas: validationMetadatasToSchemas(),
+          // schemas: validationMetadatasToSchemas(),
         },
         paths: this.paths,
       }
