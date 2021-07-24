@@ -51,19 +51,20 @@ class OpenAPI {
   // значение добавляется только целенаправленно один раз
   Summary(summary) {
     // ...
+    const container = this;
     return function (constructor, property, descriptor) {
       checkConstructorProperty(constructor, property);
-      OpenAPIHandlerMetadata(constructor[property], this, { summary });
-      // Reflect.defineMetadata(constants.OPENAPI_SUMMARY)
+      OpenAPIHandlerMetadata(constructor[property], container, { summary });
     };
   }
 
   // значение добавляется только целенаправленно один раз
   Description(description) {
     // ...
+    const container = this;
     return function (constructor, property, descriptor) {
       checkConstructorProperty(constructor, property);
-      OpenAPIHandlerMetadata(constructor[property], this, { description });
+      OpenAPIHandlerMetadata(constructor[property], container, { description });
     };
   }
 
