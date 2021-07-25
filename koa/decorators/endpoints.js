@@ -10,7 +10,7 @@ function Endpoint(path = "/", method = "get") {
 
     // if use static method of class, then will store metadata for it with info about
     // origin class and propertyName, for futher usage
-    reverseMetadata(constructor, property)
+    reverseMetadata(constructor, property);
 
     const metakey = constants.ENDPOINTS_METADATA;
     // ...
@@ -54,3 +54,8 @@ function Delete(path = "/") {
   return Endpoint(path, "delete");
 }
 exports.Delete = Delete;
+// ---
+function All(path = "/") {
+  return Endpoint(path, "all");
+}
+exports.All = All;
