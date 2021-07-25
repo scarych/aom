@@ -40,12 +40,10 @@ class OpenAPI {
 
   paths = {};
   registerPath(route, middlewares = []) {
-    const { constructor, property, path, method } = route;
+    let { constructor, property, path, method } = route;
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
-    if (!this.paths[path]) this.paths[path] = {};
-    const currentPath = this.paths[path];
-    if (!currentPath[method]) currentPath[method] = {};
-    const currentMethod = currentPath[method];
+    const currentMethod = {};
+
     const { description, summary } = handlerOpenApiData;
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
@@ -57,8 +55,27 @@ class OpenAPI {
       const middlewareOpenApiData = checkOpenAPIMetadata(constructor, property);
       if (middlewareOpenApiData) {
         //
+        if (middlewareOpenApiData.parameters) {
+          const { parameters } = middlewareOpenApiData;
+          if (!currentMethod.parameters) currentMethod.parameters = [];
+          const currentParameters = currentMethod.parameters;
+          Object.keys(parameters).forEach((parameter) => {
+            const parameterProps = parameters[parameter];
+            const { name } = parameterProps;
+            // здесь происходит замена полного написания параметра на его openApi валидную нотацию
+            path = path.replace(parameter, `{${name}}`);
+            currentParameters.push({
+              ...parameterProps,
+              in: "path",
+              required: true,
+            });
+          });
+        }
       }
     });
+    // в конце добавим путь и метод в общий список
+    if (!this.paths[path]) this.paths[path] = {};
+    this.paths[path][method] = currentMethod;
   }
 
   Data(data) {
