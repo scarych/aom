@@ -2,6 +2,7 @@ declare class OpenApi {
   constructor(initData?: any);
   Data(data: any): OpenApi;
   AddSchemas(schemas: any): OpenApi;
+  AddTag(tag: any): OpenApi;
   Summary(summary: string): MethodDecorator;
   Description(description: string): MethodDecorator;
   Tags(tags: string[]): MethodDecorator;

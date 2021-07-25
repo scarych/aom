@@ -72,6 +72,12 @@ class OpenAPI {
     return this;
   }
 
+  tagsSet = new Set();
+  AddTag(tag = {}) {
+    this.tagsSet.add(tag);
+    return this;
+  }
+
   // значение добавляется только целенаправленно один раз
   Summary(summary) {
     // ...
