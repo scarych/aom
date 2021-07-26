@@ -2,18 +2,29 @@ const { targetConstructorToSchema } = require("class-validator-jsonschema");
 const constants = require("../common/constants");
 const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/functions");
 
-function OpenAPIHandlerMetadata({ constructor, property = undefined }, container, data) {
-  Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, constructor, property);
+function mergeOpenAPIHandlerMetadata({ constructor, property = undefined }, data = {}) {
   const key = constants.OPEN_API_METADATA;
   const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || {};
   Object.assign(openapiMetadata, { ...data });
   Reflect.defineMetadata(key, openapiMetadata, constructor, property);
 }
 
-function standartDecorator(container, data = {}) {
+function pushOpenAPIHandlerMetadata({ constructor, property = undefined }, data = []) {
+  const key = constants.OPEN_API_METADATA;
+  const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || [];
+  openapiMetadata.push(...data);
+  Reflect.defineMetadata(key, openapiMetadata, constructor, property);
+}
+
+function standartDecorator(container, data) {
   return function (constructor, property = undefined, descriptor = undefined) {
     checkConstructorProperty(constructor, property);
-    OpenAPIHandlerMetadata({ constructor, property }, container, { ...data });
+    Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, constructor, property);
+    if (data instanceof Array) {
+      pushOpenAPIHandlerMetadata({ constructor, property }, data);
+    } else {
+      mergeOpenAPIHandlerMetadata({ constructor, property }, data);
+    }
   };
 }
 
@@ -44,7 +55,7 @@ class OpenAPI {
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     const currentMethod = {};
 
-    const { description, summary } = handlerOpenApiData;
+    const { description, summary, tags = [] } = handlerOpenApiData;
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -57,6 +68,9 @@ class OpenAPI {
         //
         if (middlewareOpenApiData.parameters) {
           const { parameters } = middlewareOpenApiData;
+          if (middlewareOpenApiData.tags) {
+            tags.push(...middlewareOpenApiData.tags);
+          }
           if (!currentMethod.parameters) currentMethod.parameters = [];
           const currentParameters = currentMethod.parameters;
           Object.keys(parameters).forEach((parameter) => {
@@ -73,6 +87,11 @@ class OpenAPI {
         }
       }
     });
+
+    // добавим только те теги, которые есть в общем хранилище
+    if (tags.length) {
+      Object.assign(currentMethod, { tags: tags.filter(this.tagsSet.has) });
+    }
     // в конце добавим путь и метод в общий список
     if (!this.paths[path]) this.paths[path] = {};
     this.paths[path][method] = currentMethod;
@@ -95,8 +114,10 @@ class OpenAPI {
   }
 
   tagsSet = new Set();
-  AddTag(tag = {}) {
-    this.tagsSet.add(tag);
+  tagsMap = new Map();
+  AddTag(tag) {
+    this.tagsSet.add(tag.name);
+    this.tagsMap.set(tag.name, tag);
     return this;
   }
 
@@ -137,13 +158,17 @@ class OpenAPI {
     return standartDecorator(this, { security });
   }
 
-  Tags(tags) {
+  Tags(tags = []) {
     // ...
-    return standartDecorator(this, { tags });
+    return standartDecorator(this, tags);
   }
 
   // JSON generator of complete documentation
   toJSON() {
+    const tags = {};
+    this.tagsSet.forEach((tagName) =>
+      Object.assign(tags, { [tagName]: this.tagsMap.get(tagName) })
+    );
     //
     return Object.assign(
       {},
@@ -151,6 +176,7 @@ class OpenAPI {
         ...this.data,
         components: {
           schemas: schemasSet2json(this.schemasSet),
+          tags,
         },
         paths: this.paths,
       }
