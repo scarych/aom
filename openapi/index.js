@@ -121,6 +121,12 @@ class OpenAPI {
     return this;
   }
 
+  // базовая информация: summary, description, tags
+  Info(info = {}) {
+    // ...
+    return standartDecorator(this, { ...info });
+  }
+
   // значение добавляется только целенаправленно один раз
   Summary(summary) {
     // ...
@@ -158,7 +164,7 @@ class OpenAPI {
     return standartDecorator(this, { security });
   }
 
-  Tags(tags = []) {
+  Tags(...tags) {
     // ...
     return standartDecorator(this, tags);
   }
