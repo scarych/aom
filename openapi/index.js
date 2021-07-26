@@ -89,7 +89,11 @@ class OpenAPI {
 
     // добавим только те теги, которые есть в общем хранилище
     if (tags.length) {
-      Object.assign(currentMethod, { tags: tags.filter(this.tagsSet.has).map(this.tagsMap.get) });
+      Object.assign(currentMethod, {
+        tags: tags
+          .filter((tagKey) => this.tagsSet.has(tagKey))
+          .map((tagKey) => this.tagsMap.get(tagKey)),
+      });
     }
     // в конце добавим путь и метод в общий список
     if (!this.paths[path]) this.paths[path] = {};
