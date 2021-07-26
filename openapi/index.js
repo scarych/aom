@@ -117,7 +117,7 @@ class OpenAPI {
   AddTags(tags = {}) {
     Object.keys(tags).forEach((tagKey) => {
       this.tagsSet.add(tagKey);
-      this.tagsMap.set(tagKey, tag);
+      this.tagsMap.set(tagKey, tags[tagKey]);
     });
     return this;
   }
