@@ -15,3 +15,6 @@ exports.CONSTRUCTOR_PROPERTY_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods only";
 exports.IS_MIDDLEWARE_ERROR = "Wrong middleware! The handler isn't marked as middleware";
 exports.PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";
+exports.NEXT_TAGS_REPLACE="aom:next_tags_replace";
+exports.NEXT_TAGS_IGNORE="aom:next_tags_ignore";
+exports.NEXT_TAGS_MERGE="aom:next_tags_merge";

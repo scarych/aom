@@ -27,7 +27,7 @@ declare class OpenApi {
   Info(info: OpenApiInfo): MethodDecorator;
   Summary(summary: string): MethodDecorator;
   Description(description: string): MethodDecorator;
-  Tags(...tags: string[]): MethodDecorator;
+  Tag(tag: string): MethodDecorator;
   Parameters(parameters: OpenApiParameters): MethodDecorator;
   Responses(responses: any): MethodDecorator;
   RequestBody(requestBody: any): MethodDecorator;

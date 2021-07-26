@@ -53,18 +53,33 @@ class OpenAPI {
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     const currentMethod = {};
 
-    const { description, summary, tags = [] } = handlerOpenApiData;
+    // если стоит собственный тег на ендпоинте, то он прироритетнее всего
+    const { description, summary, tag } = handlerOpenApiData;
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
     // миддлвари проходятся с начала и до последнего значения, и в конце обязательно должны стыковаться
     // собственные аналогичные значения
+    // let lastTag; // последний найденный тег, который будет, если нет собственного
+    let branchTags = []; // теги для слияния в потоке
+    let nextTagRule = constants.NEXT_TAGS_REPLACE; // правило сборки тегов, по умолчанию - замена
     middlewares.forEach((middleware) => {
       const { constructor, property, handler } = middleware;
       const middlewareOpenApiData = checkOpenAPIMetadata(constructor, property);
       if (middlewareOpenApiData) {
-        if (middlewareOpenApiData.tags) {
-          tags.push(...middlewareOpenApiData.tags);
+        // если в потоке стоит правило замены тегов, то
+        if (middlewareOpenApiData.nextTagRule) {
+          nextTagRule = middlewareOpenApiData.nextTagRule;
+        }
+        // дальнейшие действия выполняются, если нет инструкции игнорировать следующие теги
+        if (middlewareOpenApiData.tag && nextTagRule !== constants.NEXT_TAGS_IGNORE) {
+          // если стоит инструкция замены тегов
+          if (nextTagRule === constants.NEXT_TAGS_REPLACE) {
+            branchTags = [middlewareOpenApiData.tag];
+            // tags.push(...middlewareOpenApiData.tags);
+          } else if (nextTagRule === constants.NEXT_TAGS_MERGE) {
+            branchTags.push(middlewareOpenApiData.tag);
+          }
         }
 
         //
@@ -90,9 +105,7 @@ class OpenAPI {
     // добавим только те теги, которые есть в общем хранилище
     if (tags.length) {
       Object.assign(currentMethod, {
-        tags: tags
-          .filter((tagKey) => this.tagsSet.has(tagKey))
-          .map((tagKey) => Reflect.get(this.tagsMap.get(tagKey), "name")),
+        tags: this.mergeAndExtractTags(tag ? [tag] : branchTags),
       });
     }
     // в конце добавим путь и метод в общий список
@@ -169,9 +182,40 @@ class OpenAPI {
     return standartDecorator(this, { security });
   }
 
-  Tags(...tags) {
+  Tag(tag) {
     // ...
-    return standartDecorator(this, { tags });
+    return standartDecorator(this, { tag });
+  }
+
+  ReplaceNextTags() {
+    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_REPLACE });
+  }
+
+  IgnoreNextTags() {
+    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_IGNORE });
+  }
+
+  MergeNextTags() {
+    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_RULE });
+  }
+
+  // склеить и вернуть валидный список тегов по ключам
+  mergeAndExtractTags(tagsKeys = []) {
+    const mergeSeparator = "+";
+    const validTags = tagsKeys.filter((tagKey) => this.tagsSet.has(tagKey));
+    const validTagsName = validTags.map((tagKey) => Reflect.get(this.tagsMap.get(tagKey), "name"));
+    // если в списке больше чем один тег, то производим хитрую операцию слияния
+    if (validTags.length > 1) {
+      const resultTagCode = validTags.join(mergeSeparator);
+      const resultTagName = validTagsName.join(mergeSeparator);
+      this.AddTags({
+        [`${resultTagCode}`]: { name: resultTagName },
+      });
+      return [resultTagName];
+    } else {
+      // иначе возвращаем то, что получилось (1 тег или пустой массив)
+      return validTagsName;
+    }
   }
 
   // JSON generator of complete documentation
