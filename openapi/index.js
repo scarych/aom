@@ -176,7 +176,7 @@ class OpenAPI {
 
   // JSON generator of complete documentation
   toJSON() {
-    const tags = {};
+    const tags = [];
     this.tagsSet.forEach((tagName) => tags.push(this.tagsMap.get(tagName)));
     //
     return Object.assign(
