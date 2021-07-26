@@ -90,7 +90,7 @@ class OpenAPI {
 
     // добавим только те теги, которые есть в общем хранилище
     if (tags.length) {
-      Object.assign(currentMethod, { tags: tags.filter(this.tagsSet.has) });
+      Object.assign(currentMethod, { tags: tags.filter(this.tagsSet.has).map(this.tagsMap.get) });
     }
     // в конце добавим путь и метод в общий список
     if (!this.paths[path]) this.paths[path] = {};
@@ -115,9 +115,11 @@ class OpenAPI {
 
   tagsSet = new Set();
   tagsMap = new Map();
-  AddTag(tag) {
-    this.tagsSet.add(tag.name);
-    this.tagsMap.set(tag.name, tag);
+  AddTags(tags = {}) {
+    Object.keys(tags).forEach((tagKey) => {
+      this.tagsSet.add(tagKey);
+      this.tagsMap.set(tagKey, tag);
+    });
     return this;
   }
 

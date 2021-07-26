@@ -1,5 +1,6 @@
 import { SchemaObject, TagObject } from "openapi3-ts";
 
+// special extensions to fix bug with inheritance of SchemaObject
 declare type OpenApiSchemaObject = Omit<SchemaObject, "type"> & {
   type?: SchemaObject["type"] | string;
 };
@@ -22,7 +23,7 @@ declare class OpenApi {
   Data(data: any): OpenApi;
   AddSchema(schemas: any): OpenApi;
   AddSchemas(...schemas: any[]): OpenApi;
-  AddTag(tag: AddTagObject): OpenApi;
+  AddTags(tags: AddTagObject): OpenApi;
   Info(info: OpenApiInfo): MethodDecorator;
   Summary(summary: string): MethodDecorator;
   Description(description: string): MethodDecorator;
