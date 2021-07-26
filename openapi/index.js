@@ -108,7 +108,7 @@ class OpenAPI {
     return this;
   }
 
-  AddSchemas(schemas = []) {
+  AddSchemas(...schemas) {
     schemas.forEach((schema) => this.AddSchema(schema));
     return this;
   }
