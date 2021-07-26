@@ -92,7 +92,7 @@ class OpenAPI {
       Object.assign(currentMethod, {
         tags: tags
           .filter((tagKey) => this.tagsSet.has(tagKey))
-          .map((tagKey) => this.tagsMap.get(tagKey)),
+          .map((tagKey) => Reflect.get(this.tagsMap.get(tagKey), "name")),
       });
     }
     // в конце добавим путь и метод в общий список
