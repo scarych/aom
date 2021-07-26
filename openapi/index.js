@@ -197,7 +197,7 @@ class OpenAPI {
   }
 
   MergeNextTags() {
-    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_RULE });
+    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_MERGE });
   }
 
   // склеить и вернуть валидный список тегов по ключам
