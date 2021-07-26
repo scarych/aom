@@ -39,6 +39,7 @@ function schemasSet2json(schemasSet) {
   return result;
 }
 class OpenAPI {
+  mergeSeparator = "+";
   data = {
     openapi: "3.0.0",
   };
@@ -103,7 +104,7 @@ class OpenAPI {
     });
 
     // добавим только те теги, которые есть в общем хранилище
-    if (tags.length) {
+    if (tag || branchTags.length) {
       Object.assign(currentMethod, {
         tags: this.mergeAndExtractTags(tag ? [tag] : branchTags),
       });
@@ -201,7 +202,7 @@ class OpenAPI {
 
   // склеить и вернуть валидный список тегов по ключам
   mergeAndExtractTags(tagsKeys = []) {
-    const mergeSeparator = "+";
+    const { mergeSeparator } = this;
     const validTags = tagsKeys.filter((tagKey) => this.tagsSet.has(tagKey));
     const validTagsName = validTags.map((tagKey) => Reflect.get(this.tagsMap.get(tagKey), "name"));
     // если в списке больше чем один тег, то производим хитрую операцию слияния
