@@ -5,14 +5,16 @@ const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/fu
 function mergeOpenAPIHandlerMetadata({ constructor, property = undefined }, data = {}) {
   const key = constants.OPEN_API_METADATA;
   const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || {};
-  Object.assign(openapiMetadata, { ...data });
-  Reflect.defineMetadata(key, openapiMetadata, constructor, property);
-}
+  Object.keys(data).forEach((key) => {
+    if (data[key] instanceof Array) {
+      const curData = openapiMetadata[key] || [];
+      curData.push(...data[key]);
+      openapiMetadata[key] = curData;
+    } else {
+      Object.assign(openapiMetadata, { [key]: data[key] });
+    }
+  });
 
-function pushOpenAPIHandlerMetadata({ constructor, property = undefined }, data = []) {
-  const key = constants.OPEN_API_METADATA;
-  const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || [];
-  openapiMetadata.push(...data);
   Reflect.defineMetadata(key, openapiMetadata, constructor, property);
 }
 
@@ -20,11 +22,7 @@ function standartDecorator(container, data) {
   return function (constructor, property = undefined, descriptor = undefined) {
     checkConstructorProperty(constructor, property);
     Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, constructor, property);
-    if (data instanceof Array) {
-      pushOpenAPIHandlerMetadata({ constructor, property }, data);
-    } else {
-      mergeOpenAPIHandlerMetadata({ constructor, property }, data);
-    }
+    mergeOpenAPIHandlerMetadata({ constructor, property }, data);
   };
 }
 
@@ -65,12 +63,13 @@ class OpenAPI {
       const { constructor, property, handler } = middleware;
       const middlewareOpenApiData = checkOpenAPIMetadata(constructor, property);
       if (middlewareOpenApiData) {
+        if (middlewareOpenApiData.tags) {
+          tags.push(...middlewareOpenApiData.tags);
+        }
+
         //
         if (middlewareOpenApiData.parameters) {
           const { parameters } = middlewareOpenApiData;
-          if (middlewareOpenApiData.tags) {
-            tags.push(...middlewareOpenApiData.tags);
-          }
           if (!currentMethod.parameters) currentMethod.parameters = [];
           const currentParameters = currentMethod.parameters;
           Object.keys(parameters).forEach((parameter) => {
@@ -168,15 +167,13 @@ class OpenAPI {
 
   Tags(...tags) {
     // ...
-    return standartDecorator(this, tags);
+    return standartDecorator(this, { tags });
   }
 
   // JSON generator of complete documentation
   toJSON() {
     const tags = {};
-    this.tagsSet.forEach((tagName) =>
-      Object.assign(tags, { [tagName]: this.tagsMap.get(tagName) })
-    );
+    this.tagsSet.forEach((tagName) => tags.push(this.tagsMap.get(tagName)));
     //
     return Object.assign(
       {},
