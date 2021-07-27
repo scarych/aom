@@ -9,7 +9,7 @@ export declare type AddTagObject = { [key: string]: TagObject };
 export declare interface OpenApiInfo {
   summary?: string;
   description?: string;
-  tags?: string[];
+  tag?: string;
 }
 
 declare interface OpenApiParameterObject {
