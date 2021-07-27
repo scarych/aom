@@ -55,7 +55,7 @@ class OpenAPI {
     const currentMethod = {};
 
     // если стоит собственный тег на ендпоинте, то он прироритетнее всего
-    const { description, summary, tag } = handlerOpenApiData;
+    const { description, summary, responses = [], tag } = handlerOpenApiData;
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -83,7 +83,12 @@ class OpenAPI {
           }
         }
 
-        //
+        // build responses in branch
+        if (middlewareOpenApiData.responses) {
+          responses.push(...middlewareOpenApiData.responses);
+        }
+
+        // build parameters in branch
         if (middlewareOpenApiData.parameters) {
           const { parameters } = middlewareOpenApiData;
           if (!currentMethod.parameters) currentMethod.parameters = [];
@@ -107,6 +112,11 @@ class OpenAPI {
     if (tag || branchTags.length) {
       Object.assign(currentMethod, {
         tags: this.mergeAndExtractTags(tag ? [tag] : branchTags),
+      });
+    }
+    if (responses.length) {
+      Object.assign(currentMethod, {
+        responses: this.buildResponses(responses),
       });
     }
     // в конце добавим путь и метод в общий список
@@ -168,7 +178,7 @@ class OpenAPI {
     return standartDecorator(this, { query });
   }
 
-  Responses(responses) {
+  Responses(...responses) {
     // ...
     return standartDecorator(this, { responses });
   }
@@ -189,7 +199,9 @@ class OpenAPI {
   }
 
   ReplaceNextTags() {
-    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_REPLACE });
+    return standartDecorator(this, {
+      nextTagRule: constants.NEXT_TAGS_REPLACE,
+    });
   }
 
   IgnoreNextTags() {
@@ -217,6 +229,28 @@ class OpenAPI {
       // иначе возвращаем то, что получилось (1 тег или пустой массив)
       return validTagsName;
     }
+  }
+
+  buildResponses(responses) {
+    const result = {};
+    responses.forEach((responseData) => {
+      const { status, schema, description } = responseData;
+      const { contentType = "application/json" } = responseData;
+      const contentSchema = {};
+      if (this.schemasSet.has(schema)) {
+        const { name } = schema;
+        Object.assign(contentSchema, {
+          schema: { $ref: `#/components/schemas/${name}` },
+        });
+      } else {
+        Object.assign(contentSchema, { ...schema });
+      }
+      const content = { [contentType]: contentSchema };
+      result[status] = { description, content };
+    });
+
+    return result;
+    // return undefined;
   }
 
   // JSON generator of complete documentation

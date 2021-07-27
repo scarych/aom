@@ -17,7 +17,17 @@ declare interface OpenApiParameterObject {
   description?: string;
   schema: OpenApiSchemaObject;
 }
-export declare type OpenApiParameters = { [parameter: string]: OpenApiParameterObject };
+
+export declare interface OpenApiResponse {
+  status: number;
+  description: string;
+  contentType?: string;
+  schema: OpenApiSchemaObject | Function | any;
+}
+
+export declare type OpenApiParameters = {
+  [parameter: string]: OpenApiParameterObject;
+};
 declare class OpenApi {
   constructor(initData?: any);
   Data(data: any): OpenApi;
@@ -32,7 +42,7 @@ declare class OpenApi {
   IgnoreNextTags(): MethodDecorator;
   MergeNextTags(): MethodDecorator;
   Parameters(parameters: OpenApiParameters): MethodDecorator;
-  Responses(responses: any): MethodDecorator;
+  Responses(...responses: OpenApiResponse[]): MethodDecorator;
   RequestBody(requestBody: any): MethodDecorator;
   Security(security: any): MethodDecorator;
 }
