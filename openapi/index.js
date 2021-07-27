@@ -234,14 +234,20 @@ class OpenAPI {
   buildResponses(responses) {
     const result = {};
     responses.forEach((responseData) => {
-      const { status, schema, description } = responseData;
+      const { status, schema, description, isArray = false } = responseData;
       const { contentType = "application/json" } = responseData;
       const contentSchema = {};
       if (this.schemasSet.has(schema)) {
         const { name } = schema;
-        Object.assign(contentSchema, {
-          schema: { $ref: `#/components/schemas/${name}` },
-        });
+        if (isArray) {
+          Object.assign(contentSchema, {
+            schema: { type: "array", items: { $ref: `#/components/schemas/${name}` } },
+          });
+        } else {
+          Object.assign(contentSchema, {
+            schema: { $ref: `#/components/schemas/${name}` },
+          });
+        }
       } else {
         Object.assign(contentSchema, { ...schema });
       }

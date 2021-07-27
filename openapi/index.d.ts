@@ -22,6 +22,7 @@ export declare interface OpenApiResponse {
   status: number;
   description: string;
   contentType?: string;
+  isArray?: boolean;
   schema: OpenApiSchemaObject | Function | any;
 }
 
