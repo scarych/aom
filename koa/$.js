@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
+const { Promise } = require("bluebird");
 const constants = require("../common/constants");
 const { join } = require("path");
 const { checkOpenAPIContainer, restoreReverseMetadata } = require("../common/functions");
@@ -32,9 +33,12 @@ async function nextSequences(handlers = [], defaultArguments = {}) {
         Object.assign(defaultArguments.cursor, { constructor, property });
       }
 
-      const args = decoratedArgs
-        .map((arg) => arg && Reflect.apply(arg, constructor, [defaultArguments]))
-        .concat([defaultArguments]);
+      const args = await Promise.map(
+        decoratedArgs,
+        async (arg) => arg && (await Reflect.apply(arg, constructor, [defaultArguments]))
+      );
+      args.push(defaultArguments);
+      // .concat([defaultArguments]);
       const result = await Reflect.apply(handler, constructor, args);
 
       if (result === defaultArguments.next) {
