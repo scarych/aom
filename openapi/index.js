@@ -289,7 +289,7 @@ class OpenAPI {
           });
         }
       } else {
-        Object.assign(contentSchema, { ...schema });
+        Object.assign(contentSchema, { schema });
       }
       const content = { [contentType]: contentSchema };
       result[status] = { description, content };
@@ -311,7 +311,7 @@ class OpenAPI {
         schema: { $ref: `#/components/schemas/${name}` },
       });
     } else {
-      Object.assign(contentSchema, { ...schema });
+      Object.assign(contentSchema, { schema });
     }
     const content = { [contentType]: contentSchema };
     Object.assign(result, { description, content });
