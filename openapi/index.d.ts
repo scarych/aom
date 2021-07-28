@@ -1,4 +1,4 @@
-import { SchemaObject, TagObject } from "openapi3-ts";
+import { SchemaObject, SecuritySchemeObject, TagObject } from "openapi3-ts";
 
 // special extensions to fix bug with inheritance of SchemaObject
 declare type OpenApiSchemaObject = Omit<SchemaObject, "type"> & {
@@ -6,6 +6,7 @@ declare type OpenApiSchemaObject = Omit<SchemaObject, "type"> & {
 };
 
 export declare type AddTagObject = { [key: string]: TagObject };
+export declare type AddAddSecurityScheme = { [key: string]: SecuritySchemeObject };
 export declare interface OpenApiInfo {
   summary?: string;
   description?: string;
@@ -35,6 +36,7 @@ declare class OpenApi {
   AddSchema(schemas: any): OpenApi;
   AddSchemas(...schemas: any[]): OpenApi;
   AddTags(tags: AddTagObject): OpenApi;
+  AddSecurity(security: AddSecurityScheme): OpenApi;
   Info(info: OpenApiInfo): MethodDecorator;
   Summary(summary: string): MethodDecorator;
   Description(description: string): MethodDecorator;
@@ -45,7 +47,7 @@ declare class OpenApi {
   Parameters(parameters: OpenApiParameters): MethodDecorator;
   Responses(...responses: OpenApiResponse[]): MethodDecorator;
   RequestBody(requestBody: any): MethodDecorator;
-  Security(security: any): MethodDecorator;
+  Security(securitySchemeName: string): MethodDecorator;
 }
 
 export default OpenApi;

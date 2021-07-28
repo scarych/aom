@@ -55,7 +55,7 @@ class OpenAPI {
     const currentMethod = {};
 
     // если стоит собственный тег на ендпоинте, то он прироритетнее всего
-    const { description, summary, responses = [], tag } = handlerOpenApiData;
+    const { description, summary, responses = [], tag, security = [] } = handlerOpenApiData;
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -81,6 +81,11 @@ class OpenAPI {
           } else if (nextTagRule === constants.NEXT_TAGS_MERGE) {
             branchTags.push(middlewareOpenApiData.tag);
           }
+        }
+
+        // if middleware has security rule
+        if (middlewareOpenApiData.security instanceof Array) {
+          security.push(...middlewareOpenApiData.security);
         }
 
         // build responses in branch
@@ -114,6 +119,14 @@ class OpenAPI {
         tags: this.mergeAndExtractTags(tag ? [tag] : branchTags),
       });
     }
+
+    // add security rules
+    if (security.length) {
+      Object.assign(currentMethod, {
+        security: security.filter((securityName) => this.securitySet.has(securityName)),
+      });
+    }
+    // add responses variants
     if (responses.length) {
       Object.assign(currentMethod, {
         responses: this.buildResponses(responses),
@@ -146,6 +159,16 @@ class OpenAPI {
     Object.keys(tags).forEach((tagKey) => {
       this.tagsSet.add(tagKey);
       this.tagsMap.set(tagKey, tags[tagKey]);
+    });
+    return this;
+  }
+
+  securitySet = new Set();
+  securityMap = new Map();
+  AddTags(securitySchemes = {}) {
+    Object.keys(securitySchemes).forEach((schemaName) => {
+      this.securitySet.add(schemaName);
+      this.securityMap.set(schemaName, securitySchemes[schemaName]);
     });
     return this;
   }
@@ -188,7 +211,7 @@ class OpenAPI {
     return standartDecorator(this, { requestBody });
   }
 
-  Security(security) {
+  Security(...security) {
     // ...
     return standartDecorator(this, { security });
   }
@@ -261,8 +284,14 @@ class OpenAPI {
 
   // JSON generator of complete documentation
   toJSON() {
+    // add tags data
     const tags = [];
     this.tagsSet.forEach((tagName) => tags.push(this.tagsMap.get(tagName)));
+    // add security schemas
+    const securitySchemes = {};
+    this.securitySet.forEach((securityName) =>
+      Object.assign(securitySchemes, { [securityName]: this.securityMap.get(tagName) })
+    );
     //
     return Object.assign(
       {},
@@ -271,6 +300,7 @@ class OpenAPI {
         components: {
           schemas: schemasSet2json(this.schemasSet),
           tags,
+          securitySchemes,
         },
         paths: this.paths,
       }
