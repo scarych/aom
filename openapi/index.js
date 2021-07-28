@@ -55,7 +55,14 @@ class OpenAPI {
     const currentMethod = {};
 
     // если стоит собственный тег на ендпоинте, то он прироритетнее всего
-    const { description, summary, responses = [], tag, security = [] } = handlerOpenApiData;
+    const {
+      description,
+      summary,
+      responses = [],
+      requestBody,
+      tag,
+      security = [],
+    } = handlerOpenApiData;
     Object.assign(currentMethod, { description, summary });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -134,6 +141,11 @@ class OpenAPI {
     if (responses.length) {
       Object.assign(currentMethod, {
         responses: this.buildResponses(responses),
+      });
+    }
+    if (requestBody) {
+      Object.assign(currentMethod, {
+        requestBody: this.buildRequestBody(responses),
       });
     }
     // в конце добавим путь и метод в общий список
@@ -281,6 +293,27 @@ class OpenAPI {
       const content = { [contentType]: contentSchema };
       result[status] = { description, content };
     });
+
+    return result;
+    // return undefined;
+  }
+
+  buildRequestBody(requestBody) {
+    const result = {};
+
+    const { contentType = "application/json", schema, description } = requestBody;
+
+    const contentSchema = {};
+    if (this.schemasSet.has(schema)) {
+      const { name } = schema;
+      Object.assign(contentSchema, {
+        schema: { $ref: `#/components/schemas/${name}` },
+      });
+    } else {
+      Object.assign(contentSchema, { ...schema });
+    }
+    const content = { [contentType]: contentSchema };
+    Object.assign(result, { description, content });
 
     return result;
     // return undefined;

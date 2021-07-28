@@ -27,6 +27,11 @@ export declare interface OpenApiResponse {
   isArray?: boolean;
   schema: OpenApiSchemaObject | Function | any;
 }
+export declare interface OpenApiRequestBody {
+  description: string;
+  contentType?: string;
+  schema: OpenApiSchemaObject | Function | any;
+}
 
 export declare type OpenApiParameters = {
   [parameter: string]: OpenApiParameterObject;
@@ -47,7 +52,7 @@ declare class OpenApi {
   MergeNextTags(): MethodDecorator;
   Parameters(parameters: OpenApiParameters): MethodDecorator;
   Responses(...responses: OpenApiResponse[]): MethodDecorator;
-  RequestBody(requestBody: any): MethodDecorator;
+  RequestBody(requestBody: OpenApiRequestBody): MethodDecorator;
   Security(securitySchemeName: string): MethodDecorator;
 }
 
