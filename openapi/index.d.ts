@@ -6,7 +6,8 @@ declare type OpenApiSchemaObject = Omit<SchemaObject, "type"> & {
 };
 
 export declare type AddTagObject = { [key: string]: TagObject };
-export declare type AddAddSecurityScheme = { [key: string]: SecuritySchemeObject };
+export declare type AddSecurityScheme = { [key: string]: SecuritySchemeObject };
+
 export declare interface OpenApiInfo {
   summary?: string;
   description?: string;
