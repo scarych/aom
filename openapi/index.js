@@ -290,7 +290,7 @@ class OpenAPI {
     // add security schemas
     const securitySchemes = {};
     this.securitySet.forEach((securityName) =>
-      Object.assign(securitySchemes, { [securityName]: this.securityMap.get(tagName) })
+      Object.assign(securitySchemes, { [securityName]: this.securityMap.get(securityName) })
     );
     //
     return Object.assign(
