@@ -165,7 +165,7 @@ class OpenAPI {
 
   securitySet = new Set();
   securityMap = new Map();
-  AddTags(securitySchemes = {}) {
+  AddSecurity(securitySchemes = {}) {
     Object.keys(securitySchemes).forEach((schemaName) => {
       this.securitySet.add(schemaName);
       this.securityMap.set(schemaName, securitySchemes[schemaName]);
