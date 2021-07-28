@@ -122,14 +122,12 @@ class OpenAPI {
 
     // add security rules
     if (security.length) {
-      const methodSecurity = {};
-      security
-        .filter((securityName) => this.securitySet.has(securityName))
-        .forEach((securityName) => {
-          Object.assign(methodSecurity, { [securityName]: [] });
-        });
       Object.assign(currentMethod, {
-        security: methodSecurity,
+        security: security
+          .filter((securityName) => this.securitySet.has(securityName))
+          .map((securityName) => {
+            return { [securityName]: [] };
+          }),
       });
     }
     // add responses variants
