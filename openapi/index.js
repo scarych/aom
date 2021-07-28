@@ -143,9 +143,10 @@ class OpenAPI {
         responses: this.buildResponses(responses),
       });
     }
+    // build request body data
     if (requestBody) {
       Object.assign(currentMethod, {
-        requestBody: this.buildRequestBody(responses),
+        requestBody: this.buildRequestBody(requestBody),
       });
     }
     // в конце добавим путь и метод в общий список
