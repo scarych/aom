@@ -115,10 +115,13 @@ function makeCtx(cursor, env = {}) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
-      const defaultArguments = [{ ...env, cursor, ctx, next }];
-      const args = decoratedArgs
-        .map((arg) => arg && Reflect.apply(arg, constructor, defaultArguments))
-        .concat(defaultArguments);
+      const defaultArguments = { ...env, cursor, ctx, next };
+      const args = await Promise.map(
+        decoratedArgs,
+        async (arg) => arg && (await Reflect.apply(arg, constructor, [defaultArguments]))
+      );
+      args.push(defaultArguments);
+      // 
       const result = await Reflect.apply(handler, constructor, args);
       if (result === next) {
         return next();
