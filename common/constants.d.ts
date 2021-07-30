@@ -16,7 +16,9 @@ export declare const CONSTRUCTOR_PROPERTY_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods only";
 export declare const IS_MIDDLEWARE_ERROR =
   "Wrong middleware! The handler isn't marked as middleware";
+export declare const ERROR_CONSTRUCTOR_ERROR =
+  "Wrong error decorator argument! The constructor must be `class extends  Error`";
 export declare const PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";
-export declare const NEXT_TAGS_REPLACE="aom:next_tags_replace";
-export declare const NEXT_TAGS_IGNORE="aom:next_tags_ignore";
-export declare const NEXT_TAGS_MERGE="aom:next_tags_merge";
+export declare const NEXT_TAGS_REPLACE = "aom:next_tags_replace";
+export declare const NEXT_TAGS_IGNORE = "aom:next_tags_ignore";
+export declare const NEXT_TAGS_MERGE = "aom:next_tags_merge";

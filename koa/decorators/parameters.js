@@ -107,14 +107,18 @@ function Ctx() {
 }
 exports.Ctx = Ctx;
 // ---
-function Err() {
+function Err(ErrorConstructor = Error) {
+  if (!(ErrorConstructor.prototype instanceof Error)) throw new Error(constants.WRON);
   const handler = function () {
-    return function (message, status = 500) {
+    return function (message, status = 500, data = undefined) {
+      return Object.assign(new ErrorConstructor(message), { status, data });
+      /*
       const err = new Error(message);
       Object.assign(err, { status });
       Reflect.defineMetadata(constants.ERROR_METADATA, message, err, "message");
       Reflect.defineMetadata(constants.ERROR_METADATA, status, err, "status");
       return err;
+      */
     };
   };
   return Args(handler);

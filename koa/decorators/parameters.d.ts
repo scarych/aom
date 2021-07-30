@@ -16,7 +16,7 @@ export declare interface $Ctx {
   query: any;
 }
 export declare type $Next = (...handlers: Function[]) => Function;
-export declare type $Err = (message: string, status: number) => Error;
+export declare type $Err = <T extends Error>(message: string, status: number, data: any) => T;
 export declare interface $Cursor {
   constructor: typeof Function;
   property: string;
@@ -40,7 +40,7 @@ export declare function Files(fileName?: string): ParameterDecorator;
 
 export declare function Ctx(): ParameterDecorator;
 export declare function Next(): ParameterDecorator;
-export declare function Err(): ParameterDecorator;
+export declare function Err<T extends typeof Error>(ErrorConstuctor?: T): ParameterDecorator;
 export declare function Req(): ParameterDecorator;
 export declare function Res(): ParameterDecorator;
 
