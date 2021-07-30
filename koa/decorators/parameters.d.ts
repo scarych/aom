@@ -16,7 +16,7 @@ export declare interface $Ctx {
   query: any;
 }
 export declare type $Next = (...handlers: Function[]) => Function;
-export declare type $Err = <T extends Error>(message: string, status: number, data: any) => T;
+export declare type $Err = <T extends Error>(message: string, status?: number, data?: any) => T;
 export declare interface $Cursor {
   constructor: typeof Function;
   property: string;
