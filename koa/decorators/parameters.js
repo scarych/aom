@@ -6,11 +6,11 @@ const constants = require("../../common/constants");
 const { checkConstructorProperty, reverseMetadata } = require("../../common/functions");
 
 // default args handler: extract all values
-function _args(args) {
+function _default(args) {
   return args;
 }
 
-function Args(handler = _args) {
+function Args(handler = _default) {
   if (typeof handler !== "function") throw new Error(constants.PARAMETER_HANDLER_ERROR);
   return (constructor, property, parameterIndex) => {
     checkConstructorProperty(constructor, property);
@@ -31,9 +31,9 @@ function Args(handler = _args) {
 
 exports.Args = Args;
 // ---
-function Query() {
+function Query(queryHandler = _default) {
   const handler = function ({ ctx }) {
-    return ctx.query;
+    return Reflect.apply(queryHandler, null, [ctx.query]);
   };
   return Args(handler);
 }
@@ -67,9 +67,9 @@ function Session(sessionName = undefined) {
 
 exports.Session = Session;
 // ---
-function Body() {
+function Body(bodyHandler = _default) {
   const handler = function ({ ctx }) {
-    return ctx.request.body;
+    return Reflect.apply(bodyHandler, null, [ctx.request.body]);
   };
   return Args(handler);
 }
