@@ -108,7 +108,7 @@ function Ctx() {
 exports.Ctx = Ctx;
 // ---
 function Err(ErrorConstructor = Error) {
-  if (!(ErrorConstructor.prototype instanceof Error))
+  if (!(ErrorConstructor === Error || ErrorConstructor.prototype instanceof Error))
     throw new Error(constants.ERROR_CONSTRUCTOR_ERROR);
   const handler = function () {
     return function (message, status = 500, data = undefined) {
