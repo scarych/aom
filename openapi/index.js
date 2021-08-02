@@ -1,4 +1,3 @@
-const { targetConstructorToSchema } = require("class-validator-jsonschema");
 const constants = require("../common/constants");
 const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/functions");
 
@@ -26,6 +25,7 @@ function standartDecorator(container, data) {
   };
 }
 
+/*
 function schemasSet2json(schemasSet) {
   const result = {};
 
@@ -38,6 +38,8 @@ function schemasSet2json(schemasSet) {
   });
   return result;
 }
+*/
+
 class OpenAPI {
   mergeSeparator = "+";
   data = {
@@ -159,6 +161,7 @@ class OpenAPI {
     return this;
   }
 
+  /*
   schemasSet = new Set();
   AddSchema(schema) {
     this.schemasSet.add(schema);
@@ -169,6 +172,7 @@ class OpenAPI {
     schemas.forEach((schema) => this.AddSchema(schema));
     return this;
   }
+  */
 
   tagsSet = new Set();
   tagsMap = new Map();
@@ -336,7 +340,7 @@ class OpenAPI {
       {
         ...this.data,
         components: {
-          schemas: schemasSet2json(this.schemasSet),
+          // schemas: schemasSet2json(this.schemasSet),
           tags,
           securitySchemes,
         },

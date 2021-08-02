@@ -39,8 +39,8 @@ export declare type OpenApiParameters = {
 declare class OpenApi {
   constructor(initData?: any);
   Data(data: any): OpenApi;
-  AddSchema(schemas: any): OpenApi;
-  AddSchemas(...schemas: any[]): OpenApi;
+  // AddSchema(schemas: any): OpenApi;
+  // AddSchemas(...schemas: any[]): OpenApi;
   AddTags(tags: AddTagObject): OpenApi;
   AddSecurity(security: AddSecurityScheme): OpenApi;
   Info(info: OpenApiInfo): MethodDecorator;
