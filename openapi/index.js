@@ -281,17 +281,10 @@ class OpenAPI {
       const { status, schema, description, isArray = false } = responseData;
       const { contentType = "application/json" } = responseData;
       const contentSchema = {};
-      if (this.schemasSet.has(schema)) {
-        const { name } = schema;
-        if (isArray) {
-          Object.assign(contentSchema, {
-            schema: { type: "array", items: { $ref: `#/components/schemas/${name}` } },
-          });
-        } else {
-          Object.assign(contentSchema, {
-            schema: { $ref: `#/components/schemas/${name}` },
-          });
-        }
+      if (isArray) {
+        Object.assign(contentSchema, {
+          schema: { type: "array", items: schema },
+        });
       } else {
         Object.assign(contentSchema, { schema });
       }
