@@ -302,6 +302,8 @@ class OpenAPI {
     const { contentType = "application/json", schema, description } = requestBody;
 
     const contentSchema = {};
+    Object.assign(contentSchema, { schema });
+    /*
     if (this.schemasSet.has(schema)) {
       const { name } = schema;
       Object.assign(contentSchema, {
@@ -310,6 +312,7 @@ class OpenAPI {
     } else {
       Object.assign(contentSchema, { schema });
     }
+    */
     const content = { [contentType]: contentSchema };
     Object.assign(result, { description, content });
 
