@@ -22,3 +22,8 @@ export declare const PARAMETER_HANDLER_ERROR = "Wrong handler for parameter deco
 export declare const NEXT_TAGS_REPLACE = "aom:next_tags_replace";
 export declare const NEXT_TAGS_IGNORE = "aom:next_tags_ignore";
 export declare const NEXT_TAGS_MERGE = "aom:next_tags_merge";
+export declare const MONGO_QUERY_FIELDS = "aom:mongo_query_fields";
+export declare const MONGO_QUERY_FIELDS_TYPE_ERROR = "Property type is not defined!";
+export declare const MONGO_JOIN_FIELDS = "aom:mongo_join_fields";
+export declare const MONGO_JOIN_FIELDS_ERROR =
+  "Wrong relation! The argument relation must be database model";

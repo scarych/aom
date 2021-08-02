@@ -20,3 +20,7 @@ exports.PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";
 exports.NEXT_TAGS_REPLACE = "aom:next_tags_replace";
 exports.NEXT_TAGS_IGNORE = "aom:next_tags_ignore";
 exports.NEXT_TAGS_MERGE = "aom:next_tags_merge";
+exports.MONGO_QUERY_FIELDS = "aom:mongo_query_fields";
+exports.MONGO_QUERY_FIELDS_TYPE_ERROR = "Property type is not defined!";
+exports.MONGO_JOIN_FIELDS = "aom:mongo_join_fields";
+exports.MONGO_JOIN_FIELDS_ERROR = "Wrong relation! The argument relation must be database model";
