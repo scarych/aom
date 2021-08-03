@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const constants = require('../common/constants');
+const constants = require("../common/constants");
 // const { checkConstructorProperty } = require("../common/functions");
 
 function QueryJoin(relation) {
@@ -71,7 +71,7 @@ function QueryField(originType = undefined) {
     const { MONGO_QUERY_FIELDS } = constants;
     const queryFieldsData = Reflect.getOwnMetadata(MONGO_QUERY_FIELDS, constructor) || {};
     const designTypeMetakey = "design:type";
-    const type = originType || Reflect.getOwnMetadata(designTypeMetakey, constructor, property);
+    const type = originType || Reflect.getOwnMetadata(designTypeMetakey, target, property);
     if (type) {
       Object.assign(queryFieldsData, { [property]: { type } });
     } else {
