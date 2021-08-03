@@ -242,12 +242,19 @@ exports.QueryParse = QueryParse;
 
 // возвращает список возможных полей и масок, которые могут быть применены
 function QueryMap(constructor) {
-  const { MONGO_QUERY_FIELDS, MONGO_JOIN_FIELDS } = constants;
-  const queryFieldsData = Reflect.getOwnMetadata(MONGO_QUERY_FIELDS, constructor) || {};
   const result = [];
+  const { MONGO_QUERY_FIELDS, MONGO_JOIN_FIELDS } = constants;
+
+  if (!constructor) return result;
+
+  console.log("parent is", constructor, Object.getPrototypeOf(constructor));
+  result.push(...QueryMap(Object.getPrototypeOf(constructor)));
+
+  const queryFieldsData = Reflect.getOwnMetadata(MONGO_QUERY_FIELDS, constructor) || {};
   Object.keys(queryFieldsData).forEach((queryField) => {
     const { type } = queryFieldsData[queryField];
     result.push({ name: queryField, type: type.name });
+    /*
     result.push({ name: `${queryField}.!`, type: type.name });
     switch (type) {
       case String:
@@ -258,8 +265,10 @@ function QueryMap(constructor) {
         result.push({ name: `${queryField}.<`, type: type.name });
         break;
     }
+    */
   });
   // look for exists join data
+  /*
   const joinFieldsData = Reflect.getOwnMetadata(MONGO_JOIN_FIELDS, constructor) || new Map();
   joinFieldsData.forEach((value, key) => {
     console.log({ value, key });
@@ -269,7 +278,33 @@ function QueryMap(constructor) {
   });
   result.push({ name: ".offset", type: Number.name });
   result.push({ name: ".limit", type: Number.name });
+  */
   return result;
 }
 
 exports.QueryMap = QueryMap;
+
+function QuerySchema(constructor) {
+  const queryFields = QueryMap(constructor);
+  const jsonSchema = constructor.toJSON ? Reflect.apply(constructor.toJSON, constructor, []) : {};
+  const querySchemas = [];
+  queryFields.forEach((queryField) => {
+    const { name, type } = queryField;
+    if (Reflect.has(jsonSchema.properties, name)) {
+      // ..
+      const schemaData = Reflect.get(jsonSchema.properties, name);
+      const schema = _.pick(schemaData, "type", "format");
+      const schemaInfo = _.pick(schemaData, "description", "example", "examples");
+      querySchemas.push({
+        name,
+        required: false,
+        in: "query",
+        ...schemaInfo,
+        schema,
+      });
+    }
+  });
+  return querySchemas;
+}
+
+exports.QuerySchema = QuerySchema;
