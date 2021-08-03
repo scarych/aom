@@ -3,10 +3,10 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const { checkConstructorProperty } = require("../common/functions");
 
-function JoinField(relation) {
+function QueryJoin(relation) {
   return (target, property) => {
     const { constructor } = target;
-    checkConstructorProperty(constructor, property);
+    // checkConstructorProperty(constructor, property);
     const { MONGO_JOIN_FIELDS } = constants;
     // -- set allowed relation by name
     /*
@@ -62,12 +62,12 @@ function JoinField(relation) {
     //
   };
 }
-exports.JoinField = JoinField;
+exports.QueryJoin = QueryJoin;
 
 function QueryField(originType = undefined) {
   return (target, property) => {
     const { constructor } = target;
-    checkConstructorProperty(constructor, property);
+    // checkConstructorProperty(constructor, property);
     const { MONGO_QUERY_FIELDS } = constants;
     const queryFieldsData = Reflect.getOwnMetadata(MONGO_QUERY_FIELDS, constructor) || {};
     const designTypeMetakey = "design:type";
