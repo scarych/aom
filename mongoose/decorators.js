@@ -1,7 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-
-const { checkConstructorProperty } = require("../common/functions");
+const constants = require('../common/constants');
+// const { checkConstructorProperty } = require("../common/functions");
 
 function QueryJoin(relation) {
   return (target, property) => {
