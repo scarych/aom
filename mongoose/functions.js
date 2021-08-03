@@ -247,7 +247,6 @@ function QueryMap(constructor) {
 
   if (!constructor) return result;
 
-  console.log("parent is", constructor, Object.getPrototypeOf(constructor));
   result.push(...QueryMap(Object.getPrototypeOf(constructor)));
 
   const queryFieldsData = Reflect.getOwnMetadata(MONGO_QUERY_FIELDS, constructor) || {};
@@ -287,21 +286,66 @@ exports.QueryMap = QueryMap;
 function QuerySchema(constructor) {
   const queryFields = QueryMap(constructor);
   const jsonSchema = constructor.toJSON ? Reflect.apply(constructor.toJSON, constructor, []) : {};
-  const querySchemas = [];
+  const querySchemas = [
+    {
+      name: ".limit",
+      in: "query",
+      required: false,
+      description: "limit data of search",
+      schema: { type: "number" },
+    },
+    {
+      name: ".offset",
+      in: "query",
+      required: false,
+      description: "offset of search data",
+      schema: { type: "number" },
+    },
+  ];
   queryFields.forEach((queryField) => {
     const { name, type } = queryField;
     if (Reflect.has(jsonSchema.properties, name)) {
       // ..
       const schemaData = Reflect.get(jsonSchema.properties, name);
-      const schema = _.pick(schemaData, "type", "format");
-      const schemaInfo = _.pick(schemaData, "description", "example", "examples");
-      querySchemas.push({
-        name,
+      // /*
+      const schema = {
+        type: "array",
+        items: _.pick(schemaData, "type", "format", "enum"),
+      };
+      // */
+      /*
+      const schema = {
+        ..._.pick(schemaData, "type", "format", "enum"),
+      };
+      */
+      const schemaInfo = _.pick(
+        schemaData,
+        "description"
+        // "example",
+        // "examples"
+      );
+      const schemaObject = {
         required: false,
         in: "query",
         ...schemaInfo,
         schema,
+      };
+      querySchemas.push({
+        name,
+        ...schemaObject,
       });
+
+      querySchemas.push({ name: `${name}.!`, ...schemaObject });
+      switch (type) {
+        case String:
+          querySchemas.push({ name: `${name}.~`, ...schemaObject });
+          break;
+        case Number:
+        case Date:
+          querySchemas.push({ name: `${name}.>`, ...schemaObject });
+          querySchemas.push({ name: `${name}.<`, ...schemaObject });
+          break;
+      }
     }
   });
   return querySchemas;

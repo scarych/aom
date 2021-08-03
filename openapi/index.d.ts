@@ -51,6 +51,7 @@ declare class OpenApi {
   IgnoreNextTags(): MethodDecorator;
   MergeNextTags(): MethodDecorator;
   Parameters(parameters: OpenApiParameters): MethodDecorator;
+  QueryString(...queryParams: OpenApiParameters[]): MethodDecorator;
   Responses(...responses: OpenApiResponse[]): MethodDecorator;
   RequestBody(requestBody: OpenApiRequestBody): MethodDecorator;
   Security(securitySchemeName: string): MethodDecorator;

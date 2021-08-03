@@ -64,8 +64,13 @@ class OpenAPI {
       requestBody,
       tag,
       security = [],
+      queryString = [],
     } = handlerOpenApiData;
-    Object.assign(currentMethod, { description, summary });
+    Object.assign(currentMethod, {
+      description,
+      summary,
+      parameters: [...queryString],
+    });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
     // миддлвари проходятся с начала и до последнего значения, и в конце обязательно должны стыковаться
@@ -217,6 +222,11 @@ class OpenAPI {
     return standartDecorator(this, { parameters });
   }
 
+  QueryString(...queryParams) {
+    // ...
+    return standartDecorator(this, { queryString: queryParams });
+  }
+
   Query(query) {
     // ...
     return standartDecorator(this, { query });
@@ -328,7 +338,9 @@ class OpenAPI {
     // add security schemas
     const securitySchemes = {};
     this.securitySet.forEach((securityName) =>
-      Object.assign(securitySchemes, { [securityName]: this.securityMap.get(securityName) })
+      Object.assign(securitySchemes, {
+        [securityName]: this.securityMap.get(securityName),
+      })
     );
     //
     return Object.assign(
