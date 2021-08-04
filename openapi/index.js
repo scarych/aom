@@ -44,7 +44,7 @@ class OpenApi {
     Object.assign(currentMethod, {
       description,
       summary,
-      // parameters: [...queryString],
+      parameters: [...queryString],
     });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -85,7 +85,7 @@ class OpenApi {
         // build parameters in branch
         if (middlewareOpenApiData.parameters) {
           const { parameters } = middlewareOpenApiData;
-          if (!currentMethod.parameters) currentMethod.parameters = [];
+
           const currentParameters = currentMethod.parameters;
           Object.keys(parameters).forEach((parameter) => {
             const parameterProps = parameters[parameter];
