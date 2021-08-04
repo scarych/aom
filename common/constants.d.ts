@@ -19,6 +19,9 @@ export declare const IS_MIDDLEWARE_ERROR =
 export declare const ERROR_CONSTRUCTOR_ERROR =
   "Wrong error decorator argument! The constructor must be `class extends  Error`";
 export declare const PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";
+
+export declare const OPENAPI_TAG = "aom:openapi_tag_schema";
+export declare const OPENAPI_SECURITY = "aom:openapi_security_schema";
 export declare const NEXT_TAGS_REPLACE = "aom:next_tags_replace";
 export declare const NEXT_TAGS_IGNORE = "aom:next_tags_ignore";
 export declare const NEXT_TAGS_MERGE = "aom:next_tags_merge";

@@ -27,7 +27,10 @@ async function nextSequences(handlers = [], defaultArguments = {}) {
 
       if (stickerData && target.constructor.prototype instanceof constructor) {
         // change default cursor constuctor
-        Object.assign(defaultArguments.cursor, { constructor: target.constructor, property });
+        Object.assign(defaultArguments.cursor, {
+          constructor: target.constructor,
+          property,
+        });
       } else {
         // restore cursor constructor and property
         Object.assign(defaultArguments.cursor, { constructor, property });
@@ -121,7 +124,7 @@ function makeCtx(cursor, env = {}) {
         async (arg) => arg && (await Reflect.apply(arg, constructor, [defaultArguments]))
       );
       args.push(defaultArguments);
-      // 
+      //
       const result = await Reflect.apply(handler, constructor, args);
       if (result === next) {
         return next();
@@ -171,7 +174,12 @@ function safeJSON(data) {
   return data;
 }
 
-function buildRoutesList(constructor, prefix = "/", middlewares = []) {
+function buildRoutesList(
+  constructor,
+  prefix = "/",
+  middlewares = [],
+  openApiContainter = undefined
+) {
   const routesList = [];
   const commonMiddlewares = extractMiddlewares({ constructor, prefix });
 
@@ -202,7 +210,7 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       const env = { target };
 
       // если для ендпоинта есть openApi контейнер, который хранит даные для контекста
-      const openApiContainter = checkOpenAPIContainer(constructor, property);
+      // const openApiContainter = checkOpenAPIContainer(constructor, property);
       if (openApiContainter) {
         // и в нем зарегистрируем маршрут целиком, передав в него также callstack вызовов,
         // откуда будут взяты дополнительные аргументы
@@ -248,7 +256,8 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
         ...buildRoutesList(
           nextRoute,
           newPrefix,
-          [].concat(middlewares, commonMiddlewares, bridgeMiddlewares)
+          [].concat(middlewares, commonMiddlewares, bridgeMiddlewares),
+          openApiContainter
         )
       );
     });
@@ -257,9 +266,9 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
   return routesList;
 }
 
-function $(constructor, prefix = "/") {
+function $(constructor, prefix = "/", doc = undefined) {
   return (router) => {
-    const routesList = buildRoutesList(constructor, prefix);
+    const routesList = buildRoutesList(constructor, prefix, [], doc);
     routesList.forEach((routeData) => {
       const { method, path, exec } = routeData;
       router[method](path, ...exec(routesList));

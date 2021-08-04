@@ -1,46 +1,12 @@
+("use strict");
+Object.defineProperty(exports, "__esModule", { value: true });
+const tslib = require("tslib");
+tslib.__exportStar(require("./decorators"), exports);
+
 const constants = require("../common/constants");
-const { checkConstructorProperty, checkOpenAPIMetadata } = require("../common/functions");
+const { checkOpenAPIMetadata } = require("../common/functions");
 
-function mergeOpenAPIHandlerMetadata({ constructor, property = undefined }, data = {}) {
-  const key = constants.OPEN_API_METADATA;
-  const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || {};
-  Object.keys(data).forEach((key) => {
-    if (data[key] instanceof Array) {
-      const curData = openapiMetadata[key] || [];
-      curData.push(...data[key]);
-      openapiMetadata[key] = curData;
-    } else {
-      Object.assign(openapiMetadata, { [key]: data[key] });
-    }
-  });
-
-  Reflect.defineMetadata(key, openapiMetadata, constructor, property);
-}
-
-function standartDecorator(container, data) {
-  return function (constructor, property = undefined, descriptor = undefined) {
-    checkConstructorProperty(constructor, property);
-    Reflect.defineMetadata(constants.OPEN_API_CONTAINER_METADATA, container, constructor, property);
-    mergeOpenAPIHandlerMetadata({ constructor, property }, data);
-  };
-}
-
-/*
-function schemasSet2json(schemasSet) {
-  const result = {};
-
-  schemasSet.forEach((constructor) => {
-    const schema = targetConstructorToSchema(constructor);
-    if (Object.keys(schema).length > 0) {
-      const { name } = constructor;
-      Object.assign(result, { [name]: schema });
-    }
-  });
-  return result;
-}
-*/
-
-class OpenAPI {
+class OpenApi {
   mergeSeparator = "+";
   data = {
     openapi: "3.0.0",
@@ -50,10 +16,18 @@ class OpenAPI {
     Object.assign(this.data, { ...initData });
   }
 
+  tagsSet = new Set();
+  tagsMap = new Map();
+
+  securitySet = new Set();
+  securityMap = new Map();
+
   paths = {};
   registerPath(route, middlewares = []) {
     let { constructor, property, path, method } = route;
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
+    if (!handlerOpenApiData) return;
+    // console.log(handlerOpenApiData);
     const currentMethod = {};
 
     // если стоит собственный тег на ендпоинте, то он прироритетнее всего
@@ -66,10 +40,11 @@ class OpenAPI {
       security = [],
       queryString = [],
     } = handlerOpenApiData;
+    // инициируем базовую информацию о текущем методе
     Object.assign(currentMethod, {
       description,
       summary,
-      parameters: [...queryString],
+      // parameters: [...queryString],
     });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -103,7 +78,7 @@ class OpenAPI {
         }
 
         // build responses in branch
-        if (middlewareOpenApiData.responses) {
+        if (middlewareOpenApiData.responses instanceof Array) {
           responses.push(...middlewareOpenApiData.responses);
         }
 
@@ -138,9 +113,19 @@ class OpenAPI {
     if (security.length) {
       Object.assign(currentMethod, {
         security: security
-          .filter((securityName) => this.securitySet.has(securityName))
-          .map((securityName) => {
-            return { [securityName]: [] };
+          .filter((securityContainer) =>
+            Reflect.getOwnMetadata(constants.OPENAPI_SECURITY, securityContainer)
+          )
+          .map((securityContainer) => {
+            // внесем в справочник данные о протоколах безопасности
+            if (!this.securitySet.has(securityContainer)) {
+              this.securitySet.add(securityContainer);
+              this.securityMap.set(
+                securityContainer,
+                Reflect.getOwnMetadata(constants.OPENAPI_SECURITY, securityContainer)
+              );
+            }
+            return { [securityContainer.name]: [] };
           }),
       });
     }
@@ -166,118 +151,35 @@ class OpenAPI {
     return this;
   }
 
-  /*
-  schemasSet = new Set();
-  AddSchema(schema) {
-    this.schemasSet.add(schema);
-    return this;
-  }
-
-  AddSchemas(...schemas) {
-    schemas.forEach((schema) => this.AddSchema(schema));
-    return this;
-  }
-  */
-
-  tagsSet = new Set();
-  tagsMap = new Map();
-  AddTags(tags = {}) {
-    Object.keys(tags).forEach((tagKey) => {
-      this.tagsSet.add(tagKey);
-      this.tagsMap.set(tagKey, tags[tagKey]);
-    });
-    return this;
-  }
-
-  securitySet = new Set();
-  securityMap = new Map();
-  AddSecurity(securitySchemes = {}) {
-    Object.keys(securitySchemes).forEach((schemaName) => {
-      this.securitySet.add(schemaName);
-      this.securityMap.set(schemaName, securitySchemes[schemaName]);
-    });
-    return this;
-  }
-
-  // базовая информация: summary, description, tags
-  Info(info = {}) {
-    // ...
-    return standartDecorator(this, { ...info });
-  }
-
-  // значение добавляется только целенаправленно один раз
-  Summary(summary) {
-    // ...
-    return standartDecorator(this, { summary });
-  }
-
-  // значение добавляется только целенаправленно один раз
-  Description(description) {
-    // ...
-    return standartDecorator(this, { description });
-  }
-
-  Parameters(parameters) {
-    // ...
-    return standartDecorator(this, { parameters });
-  }
-
-  QueryString(...queryParams) {
-    // ...
-    return standartDecorator(this, { queryString: queryParams });
-  }
-
-  Query(query) {
-    // ...
-    return standartDecorator(this, { query });
-  }
-
-  Responses(...responses) {
-    // ...
-    return standartDecorator(this, { responses });
-  }
-
-  RequestBody(requestBody) {
-    // ...
-    return standartDecorator(this, { requestBody });
-  }
-
-  Security(...security) {
-    // ...
-    return standartDecorator(this, { security });
-  }
-
-  Tag(tag) {
-    // ...
-    return standartDecorator(this, { tag });
-  }
-
-  ReplaceNextTags() {
-    return standartDecorator(this, {
-      nextTagRule: constants.NEXT_TAGS_REPLACE,
-    });
-  }
-
-  IgnoreNextTags() {
-    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_IGNORE });
-  }
-
-  MergeNextTags() {
-    return standartDecorator(this, { nextTagRule: constants.NEXT_TAGS_MERGE });
-  }
-
   // склеить и вернуть валидный список тегов по ключам
   mergeAndExtractTags(tagsKeys = []) {
     const { mergeSeparator } = this;
-    const validTags = tagsKeys.filter((tagKey) => this.tagsSet.has(tagKey));
-    const validTagsName = validTags.map((tagKey) => Reflect.get(this.tagsMap.get(tagKey), "name"));
+    const validTags = tagsKeys.filter((tagContainer) =>
+      Reflect.getOwnMetadata(constants.OPENAPI_TAG, tagContainer)
+    );
+
+    const validTagsName = validTags.map((tagContainer) => {
+      const tagData = Reflect.getOwnMetadata(constants.OPENAPI_TAG, tagContainer);
+      if (!this.tagsSet.has(tagContainer)) {
+        this.tagsSet.add(tagContainer);
+        this.tagsMap.set(tagContainer, tagData);
+      }
+      return Reflect.get(tagData, "name");
+    });
+
     // если в списке больше чем один тег, то производим хитрую операцию слияния
     if (validTags.length > 1) {
-      const resultTagCode = validTags.join(mergeSeparator);
       const resultTagName = validTagsName.join(mergeSeparator);
-      this.AddTags({
-        [`${resultTagCode}`]: { name: resultTagName },
-      });
+      if (!this.tagsSet.has(resultTagName)) {
+        // console.log("add new tags", { validTags });
+        this.tagsSet.add(resultTagName);
+        this.tagsMap.set(resultTagName, { name: resultTagName });
+      } else {
+        // console.log("this tags exists", validTags);
+      }
+
+      // console.log(this.tagsSet, this.tagsMap);
+
       return [resultTagName];
     } else {
       // иначе возвращаем то, что получилось (1 тег или пустой массив)
@@ -334,12 +236,12 @@ class OpenAPI {
   toJSON() {
     // add tags data
     const tags = [];
-    this.tagsSet.forEach((tagName) => tags.push(this.tagsMap.get(tagName)));
+    this.tagsSet.forEach((tagContainer) => tags.push(this.tagsMap.get(tagContainer)));
     // add security schemas
     const securitySchemes = {};
-    this.securitySet.forEach((securityName) =>
+    this.securitySet.forEach((securityContainer) =>
       Object.assign(securitySchemes, {
-        [securityName]: this.securityMap.get(securityName),
+        [securityContainer.name]: this.securityMap.get(securityContainer),
       })
     );
     //
@@ -363,4 +265,4 @@ class OpenAPI {
   }
 }
 // export module
-module.exports = OpenAPI;
+exports.OpenApi = OpenApi;
