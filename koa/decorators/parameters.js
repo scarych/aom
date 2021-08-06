@@ -168,23 +168,23 @@ function Routes() {
 exports.Routes = Routes;
 
 // ---
-export function $StateMap(constructor = undefined) {
+export function StateMap(constructor = undefined) {
   const handler = ({ ctx }) => {
     return constructor ? ctx.$StateMap.get(constructor) : ctx.$StateMap;
   };
   return Args(handler);
 }
-exports.$StateMap = $StateMap;
+exports.StateMap = StateMap;
 // ---
-function $This() {
+function This() {
   const handler = ({ ctx, cursor }) => {
-    let $this = ctx.$StateMap.get(cursor.constructor);
-    if (!$this) {
-      $this = new cursor.constructor();
-      ctx.$StateMap.set(cursor.constructor, $this);
+    let _this = ctx.$StateMap.get(cursor.constructor);
+    if (!_this) {
+      _this = new cursor.constructor();
+      ctx.$StateMap.set(cursor.constructor, _this);
     }
-    return $this;
+    return _this;
   };
   return Args(handler);
 }
-exports.$This = $This;
+exports.This = This;
