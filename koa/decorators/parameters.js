@@ -166,3 +166,25 @@ function Routes() {
   return Args(handler);
 }
 exports.Routes = Routes;
+
+// ---
+export function $StateMap(constructor = undefined) {
+  const handler = ({ ctx }) => {
+    return constructor ? ctx.$StateMap.get(constructor) : ctx.$StateMap;
+  };
+  return Args(handler);
+}
+exports.$StateMap = $StateMap;
+// ---
+function $This() {
+  const handler = ({ ctx, cursor }) => {
+    let $this = ctx.$StateMap.get(cursor.constructor);
+    if (!$this) {
+      $this = new cursor.constructor();
+      ctx.$StateMap.set(cursor.constructor, $this);
+    }
+    return $this;
+  };
+  return Args(handler);
+}
+exports.$This = $This;

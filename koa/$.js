@@ -6,6 +6,11 @@ const constants = require("../common/constants");
 const { join } = require("path");
 const { checkOpenAPIContainer, restoreReverseMetadata } = require("../common/functions");
 
+const $StateMap = (ctx, next) => {
+  ctx.$StateMap = new WeakMap();
+  return next();
+};
+
 // сгенерировать последовательность вызовов
 async function nextSequences(handlers = [], defaultArguments = {}) {
   //
@@ -219,16 +224,18 @@ function buildRoutesList(
 
       Object.assign(target, {
         exec: (routes) =>
-          callstack
-            .map((middleware) =>
-              makeCtx(middleware, {
-                ...env,
-                routes,
-              })
-            )
-            .concat(
-              makeCtx({ constructor, property, handler, prefix: target.path }, { ...env, routes })
-            ),
+          [$StateMap].concat(
+            callstack
+              .map((middleware) =>
+                makeCtx(middleware, {
+                  ...env,
+                  routes,
+                })
+              )
+              .concat(
+                makeCtx({ constructor, property, handler, prefix: target.path }, { ...env, routes })
+              )
+          ),
       });
       routesList.push(target);
     });
