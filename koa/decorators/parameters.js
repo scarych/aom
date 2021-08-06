@@ -176,11 +176,11 @@ export function StateMap(constructor = undefined) {
 }
 exports.StateMap = StateMap;
 // ---
-function This() {
+function This(...args) {
   const handler = ({ ctx, cursor }) => {
     let _this = ctx.$StateMap.get(cursor.constructor);
     if (!_this) {
-      _this = new cursor.constructor();
+      _this = Reflect.construct(cursor.constructor, args);
       ctx.$StateMap.set(cursor.constructor, _this);
     }
     return _this;

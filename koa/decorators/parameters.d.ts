@@ -49,4 +49,4 @@ export declare function Target(): ParameterDecorator;
 export declare function Routes(): ParameterDecorator;
 
 export declare function StateMap(constructor?: Function): ParameterDecorator;
-export declare function This(): ParameterDecorator;
+export declare function This(...args: any[]): ParameterDecorator;
