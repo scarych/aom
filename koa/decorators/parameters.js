@@ -168,7 +168,7 @@ function Routes() {
 exports.Routes = Routes;
 
 // ---
-export function StateMap(constructor = undefined) {
+function StateMap(constructor = undefined) {
   const handler = ({ ctx }) => {
     return constructor ? ctx.$StateMap.get(constructor) : ctx.$StateMap;
   };
