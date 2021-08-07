@@ -5,6 +5,6 @@ type CombinedDecorator = <T extends Function>(
 ) => void;
 export declare function Use(...handlers: Function[]): CombinedDecorator;
 export declare function Middleware(): MethodDecorator;
-export declare function Bridge(url: string, nextRoute: any): CombinedDecorator;
+export declare function Bridge(prefix: string, nextRoute: Function): CombinedDecorator;
 export declare function Marker(handler): MethodDecorator;
 export declare function Sticker(): MethodDecorator;

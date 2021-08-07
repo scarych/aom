@@ -40,14 +40,14 @@ function Query(queryHandler = _default) {
 
 exports.Query = Query;
 // ---
-function Param(paramName = undefined) {
+function Params(paramName = undefined) {
   const handler = function ({ ctx }) {
     return paramName ? Reflect.get(ctx.params, paramName) : ctx.params;
   };
   return Args(handler);
 }
 
-exports.Param = Param;
+exports.Params = Params;
 // ---
 function State(stateName = undefined) {
   const handler = function ({ ctx }) {

@@ -32,7 +32,7 @@ export declare interface $Target extends Omit<$Cursor, "prefix"> {
 export declare function Args(handler?: Function): ParameterDecorator;
 export declare function Query(queryHandler?: Function): ParameterDecorator;
 export declare function Body(bodyHandler?: Function): ParameterDecorator;
-export declare function Param(paramName?: string): ParameterDecorator;
+export declare function Params(paramName?: string): ParameterDecorator;
 export declare function State(stateName?: string): ParameterDecorator;
 export declare function Session(sessionName?: string): ParameterDecorator;
 export declare function Headers(headerName?: string): ParameterDecorator;

@@ -245,8 +245,8 @@ function buildRoutesList(
 
   if (bridges) {
     bridges.forEach((bridgeData) => {
-      const { url, nextRoute, property, descriptor } = bridgeData;
-      const newPrefix = join(prefix, url);
+      const { prefix: nextPrefix, nextRoute, property, descriptor } = bridgeData;
+      const newPrefix = join(prefix, nextPrefix);
       const bridgeMiddlewares = property
         ? extractMiddlewares({ constructor, property, prefix: newPrefix })
         : [];

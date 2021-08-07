@@ -39,14 +39,14 @@ function Middleware() {
 exports.Middleware = Middleware;
 
 // ...
-function Bridge(url, nextRoute) {
+function Bridge(prefix, nextRoute) {
   return function (constructor, property = undefined, descriptor = undefined) {
     checkConstructorProperty(constructor, property);
 
     const metakey = constants.BRIDGE_METADATA;
     // ...
     const bridges = Reflect.getOwnMetadata(metakey, constructor) || [];
-    bridges.push({ url, nextRoute, constructor, property, descriptor });
+    bridges.push({ prefix, nextRoute, constructor, property, descriptor });
     Reflect.defineMetadata(metakey, bridges, constructor);
   };
 }
