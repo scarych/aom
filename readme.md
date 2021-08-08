@@ -993,3 +993,129 @@ class Users {
 следует применить проверки контроля доступа.
 
 #### Sticker
+
+Декоратор `@Sticker()` используется в ситуациях, когда для создания маршрутных узлов используются типовые
+классы, от которых наследуются активные маршрутные узлы.
+
+Пример:
+
+```ts
+// для быстрого создания апи методов вокруг моделей данных каталога создадим класс
+// который будет предоставлять стандартные middleware для этого сегмента данных
+// каким-то образом безопасно фильтрующих входящие значения
+class Catalogs {
+  model: Model;
+  where = {};
+  body = {};
+
+  @Middleware()
+  static SafeQuery(@Query() query, @This() _this, @Next() next) {
+    _this.where = this.FilterQuery(_this.model, query);
+    return next();
+  }
+
+  @Middleware()
+  static SafeBody(@Body() body, @This() _this, @Next() next) {
+    _this.body = this.FilterBody(_this.model, body);
+    return next();
+  }
+
+  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
+  static FilterQuery(model, query) {
+    return model.safeQuery(query);
+  }
+
+  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
+  static FilterBody(model, body) {
+    return model.safeBody(body);
+  }
+}
+
+// унаследуем от данного класса маршрутный узел для работы с категориями
+class Categories extends Catalogs {
+  model = models.Categories;
+
+  @Get()
+  // применим типовую фильтрацию данных для создания критериев поиска в модели данных
+  @Use(Categories.SafeQuery)
+  static Index(@This() _this) {
+    return _this.model.find(_this.where);
+  }
+
+  @Post()
+  // применим типовую фильтрацию данных для ограничения входящих значений
+  @Use(Categories.SafeBody)
+  static Add(@This() _this) {
+    return _this.model.create(_this.body);
+  }
+}
+
+// унаследуем от данного класса маршрутный узел для работы с брендами
+class Brands extends Catalogs {
+  model = models.Brands;
+
+  @Get()
+  // применим типовую фильтрацию данных для создания критериев поиска в модели данных
+  @Use(Brands.SafeQuery)
+  static Index(@This() _this) {
+    return _this.model.find(_this.where);
+  }
+
+  @Post()
+  // применим типовую фильтрацию данных для ограничения входящих значений
+  @Use(Brands.SafeBody)
+  static Add(@This() _this) {
+    return _this.model.create(_this.body);
+  }
+}
+```
+
+Несмотря на то, что данный код не содержит комплируемых ошибок, он не будет работать корректным образом.
+Ввиду особенностей механизма наследования классов в JS, функции `Brands.SafeBody` и `Brands.SafeQuery`
+(равно как `Categories.SafeBody` и `Categories.SafeQuery`) будут фактически возвращать дескриптор функций
+`Catalogs.SafeQuery` и `Catalogs.SafeBody`, и при вызове декоратор `@This` будет создавать экземпляр класса
+`Catalogs`, а при обращении к методы `FilterQuery` и `FilterBody` возникнут ошибки, так как в контексте
+класса `Catalogs` нет определенных моделей данных.
+
+Для того, чтобы данный код заработал, необходимо для `middleware`-функций `Catalogs.SafeQuery`
+и `Catalogs.SafeBody` добавить декоратор `@Sticker()`
+
+```ts
+class Catalogs {
+  model: Model;
+  where = {};
+  body = {};
+
+  @Sticker()
+  @Middleware()
+  static SafeQuery(@Query() query, @This() _this, @Next() next) {
+    _this.where = this.FilterQuery(_this.model, query);
+    return next();
+  }
+
+  @Sticker()
+  @Middleware()
+  static SafeBody(@Body() body, @This() _this, @Next() next) {
+    _this.body = this.FilterBody(_this.model, body);
+    return next();
+  }
+
+  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
+  static FilterQuery(model, query) {
+    return model.safeQuery(query);
+  }
+
+  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
+  static FilterBody(model, body) {
+    return model.safeBody(body);
+  }
+}
+```
+
+В этом случае для отмеченных этим декоратором методов будет осуществляться проверка: является ли
+`target.constructor` потомком `cursor.constructor`, и если да, то значение `cursor.constructor` в этом
+методе будет заменено на значение `target.constructor` (значение будет как-бы "заклеено", отсюда название
+декоратора).
+
+Данная методика также работает только для `middleware`, и пока не подходит для `endpoint`. Таким образом,
+что нельзя использовать мост на родительский класс с типовыми процедурами. Такая возможность появится позже.
