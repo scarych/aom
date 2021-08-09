@@ -12,6 +12,8 @@ declare type OpenApiSecuritySchema = Omit<SecuritySchemeObject, "type"> & {
 declare interface OpenApiParameterObject {
   name: string;
   description?: string;
+  in?: "query" | "path" | "header" | "cookie" | string;
+  required?: Boolean;
   schema: OpenApiSchemaObject;
 }
 
