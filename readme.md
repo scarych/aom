@@ -86,7 +86,7 @@ class Index {
   }
 
   @Get("/choose/:variant")
-  static Variant(@Param("variant") variant) {
+  static Variant(@Params("variant") variant) {
     return { variant };
   }
 }
@@ -404,7 +404,7 @@ class Files {
   static Index(@Query() query) {
     const { name } = query;
     return fs
-      .readDirSync(__dirname)
+      .readdirSync(__dirname)
       .filter((filename) => (name ? filename.search(name) >= 0 : true));
   }
 }
@@ -631,9 +631,9 @@ class Files {
 
 #### StateMap
 
-`aom` расширяет контекстное значение `koa` специальным значением `ctx.$StateMap = new WeakMap()`, которое
+`aom` расширяет контекстное значение `koa` специальной конструкцией `ctx.$StateMap = new WeakMap()`, которое
 позволяет сохранять в контексте связи, основанные на ассоциациях с абстрактными ключами. В частности для `koa`
-это позволяет сохранять ассоциации в контексте классов, образующих маршрутные узлы.
+это позволяет сохранять ассоциации на классах, образующих маршрутные узлы.
 
 Наиболее частый способ применения `@StateMap()` - сохранение в `middleware`-функции локальные состояния
 экземпляров класса с последующим их применением в других методах.
@@ -648,7 +648,7 @@ class Auth {
   user: models.Users;
   login: models.UserLogins;
   // создадим прослойку, которая по токену определяет, доступна ли пользователю авторизация
-  // и если доступна, сохраняет в stateMap по ключу класса
+  // и если доступна, сохраняет в stateMap по ключу класса авторизационную информацию: пользователя и логин
   @Middleware()
   static Init(@Headers("authorization") token, @Next() next, @StateMap() stateMap, @Err() err) {
     const authData = models.Auth.checkToken(token);
@@ -709,8 +709,8 @@ class Root {
 проверяет, есть ли в `StateMap` экземпляр данного класса, который сейчас выполняет работу, и если нет, создает
 его и возвращает.
 
-Наиболее частый способ применения декоратора `This` - использование в иницирующей middleware и endpoint-ах
-одного и того же маршрутного узла.
+Наиболее частый способ применения декоратора `@This()` - использование в иницирующей `middleware`
+и `endpoint`-ах одного и того же маршрутного узла.
 
 ```ts
 @Use(User.Init)
@@ -719,7 +719,7 @@ class User {
   stat: any;
 
   @Middleware()
-  static async Init(@Param() { user_id }, @Next() next, @Err() err, @This() _this: User) {
+  static async Init(@Params() { user_id }, @Next() next, @Err() err, @This() _this: User) {
     const userInfo = await models.Users.findById(user_id);
     if (userInfo) {
       _this.user = userInfo;
@@ -807,7 +807,7 @@ import FileInfo from "./fileinfo";
 class Files {
   @Get()
   static Index() {
-    return fs.readDirSync(__dirname);
+    return fs.readdirSync(__dirname);
   }
 
   @Bridge("/:filename", FileInfo) // ожидает параметр - имя файла - в качестве следующего фрагмента пути
@@ -951,7 +951,7 @@ class Users {
 
   @Delete("/:user_id")
   @Use(Access.Check)
-  static Delete(@Param() { user_id }) {
+  static Delete(@Params() { user_id }) {
     return models.Users.remove({ _id: user_id });
   }
 }
@@ -1119,3 +1119,897 @@ class Catalogs {
 
 Данная методика также работает только для `middleware`, и пока не подходит для `endpoint`. Таким образом,
 что нельзя использовать мост на родительский класс с типовыми процедурами. Такая возможность появится позже.
+
+## aom/openapi
+
+Декораторы коллекции `aom/openapi` позволяют обогощать маршрутные узлы информацией, которая при сборке
+формирует документацию в формате [`OAS3`](https://swagger.io/specification/), обеспечивая таким образом
+естественную автодокументацию кода.
+
+При генерации документации используется тот же принцип последовательной обработки участков маршрутных
+узлов - прослоек, мостов - с накоплением релевантной информации и применением полученной совокупности
+к конечной точке маршрута.
+
+Таким образом, что если одна из прослоек при проверке данных генерирует ошибку `403`, то при ее описании
+для этой middleware она распространится на информацию в структуре responses на все множество использующих
+эту прослойку endpoint-ов. Аналогичное поведение будет при генерации информации о параметрах адресной
+строки, протоколах безопасности.
+
+**Важно**: далее в этой документации будет упоминаться тип данных `SchemaObject`. В данном случае
+это означает применение интерфейса из библиотеки `openapi3-ts`, означающий типовую конфигурацию
+схемы данных объекта в спецификации `openapi`.
+
+```ts
+import { SchemaObject } from "openapi3-ts";
+```
+
+### Методология формирования окружения
+
+В своей основе `aom` стремится к сокращению количества используемого кода, и минимизации дубликатов структур
+данных. Эти же принципы используются для того, чтобы максимально использовать возможности языка `JavaScript`
+и обогатить используемые структуры данных окружением, которое позволит генерировать необходимый код по запросу.
+
+Декораторы из `aom/openapi` применяются исключительно для маршрутных узлов, однако они принимают в
+качестве значений своих аргументов указания на модели данных. Генерация файла документации происходит
+при вызове метода `toJSON`, таким образом необходимо позаботиться, чтобы такие структуры данных
+обладали возможностью возвращать валидную структуру, описывающую его в стандарте `JSON-schema`, используя
+собственные методы `toJSON` (для классов или объектов)
+
+Хорошей практикой можно считать использование декораторов из библиотек
+[`class-validator`](https://www.npmjs.com/package/class-validator) и
+[`class-validator-jsonschema`](https://www.npmjs.com/package/class-validator-jsonschema).
+
+Например, в сочетании с использованием методологии `typeorm` или `typegoose` это позволяет создавать
+конструкции следующего вида:
+
+```ts
+// пример с typeorm
+// используем декораторы из библиотек "class-validator-jsonschema" и "class-validator"
+import { targetConstructorToSchema, JSONSchema } from "class-validator-jsonschema";
+import { IsEnum, IsOptional, IsString, IsEnum } from "class-validator";
+// используем декораторы и базовые классы из typeorm
+import { EventSubscriber, Entity, Column, UpdateDateColumn, CreateDateColumn } from "typeorm";
+import { Index, ObjectIdColumn } from "typeorm";
+import { BaseEntity } from "typeorm";
+
+enum YesNo {
+  YES = "yes",
+  NO = "no",
+}
+// опишем модели данных: создадим базовую модель, от которой будут унаследованы остальные
+@EventSubscriber()
+export default class BaseModel extends BaseEntity {
+  @ObjectIdColumn()
+  @JSONSchema({
+    type: "string",
+    readOnly: true,
+  })
+  _id: ObjectId;
+
+  @Expose()
+  @Column({ nullable: false, default: () => YesNo.NO })
+  @Index()
+  @IsEnum(YesNo)
+  @IsOptional()
+  isBlocked: YesNo;
+
+  @CreateDateColumn()
+  @Index()
+  @IsOptional()
+  @JSONSchema({
+    format: "date",
+    type: "string",
+    readOnly: true,
+  })
+  createdAt: Date;
+
+  @UpdateDateColumn()
+  @Index()
+  @IsOptional()
+  @JSONSchema({
+    format: "date",
+    type: "string",
+    readOnly: true,
+  })
+  updatedAt: Date;
+
+  // создадим статичный метод JSON, который позволит получить JSON-schema для текущего класса
+  static toJSON(): SchemaObject {
+    return targetConstructorToSchema(this);
+  }
+}
+
+// создадим модель данных Files, унаследованую от базовой модели
+@Entity()
+export default class Files extends BaseModel {
+  @Column()
+  @Index()
+  @IsString()
+  name: string;
+
+  @Column()
+  @IsString()
+  path: string;
+
+  @Column()
+  @IsString()
+  type: string;
+
+  @Column()
+  @IsString()
+  @IsOptional()
+  location?: string;
+}
+```
+
+Таким образом, когда будет использовано прямое обращение к классу Files, то при генерации JSON будет вызван
+унаследованный им метод `static toJSON()`, который вернет корректное для спецификации `OAS3` значение с
+описанием структуры данных.
+
+Тот же принцип следует использовать и для частных случаев структур данных, которые могут использоваться
+в ходе разработки: входящие значения или специфические ответы.
+
+```ts
+// пример для описания данных, характеризущих авторизацию пользователя
+class toJSONSchema {
+  static toJSON(): SchemaObject {
+    return targetConstructorToSchema(this);
+  }
+}
+
+class AuthForm extends toJSONSchema {
+  @IsString()
+  @JSONSchema({
+    description: "auth login value",
+    example: "user127",
+  })
+  login: string;
+
+  @IsString()
+  @JSONSchema({
+    description: "auth password value",
+    format: "password",
+  })
+  password: string;
+}
+```
+
+Также, вместо использования структур, генерирующих схему данных при помощи метода `toJSON`, можно использовать
+объект с существующей схемой данных, в том числе содержащий ссылки на другие значения в документации.
+В этом случае необходимо будет вручную контролировать целостность таких связей, что может осложнить разработку.
+
+### Как это работает
+
+Декораторы из `aom/openapi` описывают общие характеристики, которые будут включены в документацию.
+Для получения конечной структуры следует использовать сборщик `aom/$`, в который необходимо передать
+экземпляр класса `OpenApi`, с инициированной контекстной данному api-сервису информацией.
+
+Затем данный класс, обогащенный в процессе декомпозиции маршрутных узлов релевантными данными, можно вернуть
+в одном из методов инициированного API, либо передать в библиотеку типа `swagger-ui` в качестве источника
+JSON-данных.
+
+Подробнее о процессе сборки написано в соответствующем [разделе](#сборка)
+
+Пример:
+
+```ts
+// ... openapi.ts
+import { OpenApi } from "aom/openapi";
+// создадим экземпляр класса документацией, с базовой информацией, контекстной данному api-сервису
+export default new OpenApi({
+  info: {
+    title: "Тестовая документация",
+    description: "Пример автодокументации, собираемой на декораторах к маршрутам",
+    contact: {
+      name: "Kholstinnikov Grigory",
+      email: "mail@scarych.ru",
+    },
+    version: "1.0.0",
+  },
+  openapi: "3.0.1",
+});
+
+// ... root.ts
+import Docs from "./openapi";
+
+@Bridge("/users", Users)
+@Bridge("/files", Files)
+class Root {
+  @Summary("Главная страница")
+  @Get()
+  static Index() {
+    return "aom is working";
+  }
+
+  @Summary("Документация")
+  @Description("Полная документация в формате [`OAS3`](https://swagger.io/specification/)")
+  @Get("/openapi.json")
+  static OpenApi() {
+    return Docs; // будет автоматически преобразовано в JSON
+  }
+}
+```
+
+### Описание конечной точки маршрута: Summary и Description
+
+Для описания конечной точки маршрута используются декораторы `@Summary()` и `@Description()`. Каждый из них
+принимает в качестве аргумента строковое значение.
+
+```ts
+import { Summary, Description } from "aom/openapi";
+import { Get, Post } from "aom/koa";
+
+class Users {
+  @Summary("Список пользователей")
+  @Description("Возвращает список активных пользователей")
+  @Get()
+  static List() {
+    return models.Users.find({ active: true });
+  }
+
+  @Summary("Добавить пользователя")
+  @Description("Создает нового пользователя и возвращает информацию о нем")
+  @Post()
+  static Add(@Body() body) {
+    return models.Users.create({ ...body });
+  }
+}
+```
+
+Описание метода не является накопительной информацией, и используется целенаправленно для каждой конечной
+точки маршрута.
+
+### Ответы: Responses
+
+Информация о структуре возвращаемых в методе ответах создается декоратором `@Responses()`. Данный декоратор
+позволяет накапливать множество вариантов ответов, если это подразумевается логикой маршрута.
+
+В качестве аргументов принимает последовательность объектов, удовлетворяющих следующей структуре:
+
+```ts
+interface OpenApiResponse {
+  status: number; // код ответа
+  description: string; // описание ответа
+  contentType?: string; // тип данных, по умолчанию `application/json`
+  isArray?: boolean; // признак того, что возвращается список объектов (коллекция), по умолчанию `false`
+  schema: SchemaObject | Function | any; // схема в формате JSON-schema, или объект, генерирующий JSON подходящего формата
+}
+```
+
+Пример работы данного декоратора:
+
+```ts
+// опишем типовую ошибку, которая может быть возвращена
+@JSONSchema({
+  description: "standart error response",
+})
+export class ErrorResponse extends Error {
+  @IsNumber()
+  @JSONSchema({
+    description: "code of error",
+    examples: ["404", "500"],
+  })
+  status: number;
+
+  @IsString()
+  @JSONSchema({
+    description: "error message",
+    examples: ["Not Found", "Access denied"],
+  })
+  message: string;
+
+  @IsOptional()
+  @JSONSchema({
+    anyOf: [{ type: "array", items: { type: "object" } }, { type: "object" }],
+    description: "error details",
+    examples: [
+      `[{"property": "name", "error": "must be not empty"}]`,
+      `{"errors": ["wrong value", "weak password"]}`,
+    ],
+  })
+  data: any;
+
+  constructor(message, status = 500, data = undefined) {
+    super(message);
+    this.status = status;
+    this.data = data;
+  }
+
+  toJSON() {
+    return { message: this.message, status: this.status, data: this.data };
+  }
+
+  static toJSON(): SchemaObject {
+    return targetConstructorToSchema(this);
+  }
+}
+
+// ... auth.ts
+class Auth {
+  // на уровне middleware добавим вариант ответа 403, который распространится на все endpoint-ы
+  // требующие авторизации
+  @Middleware()
+  @Responses({ status: 403, description: "access denied error", schema: ErrorResponse })
+  static async Required(@Headers("authorization") token, @Err(ErrorResponse) err, @Next() next) {
+    const authData = await models.Auth.checkToken(token);
+    if (authData) {
+      return next();
+    } else {
+      return err("access denied", 403, { token });
+    }
+  }
+}
+
+// ... users.ts
+@Use(Auth.Required)
+class Users {
+  @Get()
+  @Summary("Получить список пользователей")
+  @Responses({
+    status: 200,
+    desciption: "Список пользователей",
+    isArray: true,
+    schema: models.Users,
+  })
+  static Index() {
+    return models.Users.find();
+  }
+
+  @Post()
+  @Summary("Добавить пользователя")
+  @Responses(
+    {
+      status: 200,
+      description: "Информация о пользователе",
+      schema: models.Users,
+    },
+    { status: 500, description: "Ошибка добавления пользователя", schema: ErrorResponse }
+  )
+  static Add(@Body() body) {
+    return models.Users.create({ ...body });
+  }
+}
+```
+
+Таким образом, что для методов маршрутного узла `Users` помимо объявленных для них ответов, будет добавлен
+и вариант с ошибкой `403`, так как каждый из этих методов требует прохождения авторизации.
+
+### Тело запроса: RequestBody
+
+Декоратор `@RequestBody` позволяет добавить описание для структуры данных, передаваемой в методах
+`post`/`put`/`patch`.
+
+Декоратор принимает аргумент, имеющую структуру:
+
+```ts
+interface OpenApiRequestBody {
+  description: string; // описание ответа
+  contentType?: string; // тип данных, по умолчанию application/json
+  schema: SchemaObject | Function | any; // схема данных, удовлетворяющая спецификации OAS
+}
+```
+
+Применяется исключительно для конечной точки маршрута, добавляет соответствующее значение в структуру
+`requestBody` соответствующего метода.
+
+Пример использования:
+
+```ts
+//
+
+class AuthForm extends toJSONSchema {
+  @IsString()
+  @JSONSchema({
+    description: "auth login value",
+    example: "user127",
+  })
+  login: string;
+
+  @IsString()
+  @JSONSchema({
+    description: "auth password value",
+    format: "password",
+  })
+  password: string;
+}
+class Auth {
+  @Summary("Авторизация пользователя")
+  @Description("Ожидает логин/пароль для авторизации. Возвращает токен")
+  @RequestBody({ description: "Авторизационные данные", schema: AuthForm })
+  @Responses({ status: 200, description: "Bearer токен для входа", schema: models.Tokens })
+  @Post()
+  static Login(@Body() { login, password }) {
+    // ... login process
+  }
+}
+```
+
+Для загрузки файлов следует использовать корректный `contentType` с описанием ожидаемых полей данных.
+
+```ts
+class Files {
+  @Post("/upload")
+  @RequestBody({
+    description: "файл для загрузки",
+    contentType: "multipart/form-data",
+    schema: {
+      properties: {
+        file: {
+          type: "string",
+          format: "binary",
+        },
+      },
+    },
+  })
+  @Summary("Загрузка файла")
+  @Responses({ status: 200, description: "Информация о загруженном файле", schema: models.Files })
+  static Upload(@Files("file") file: File) {
+    // ...
+  }
+}
+```
+
+### Параметры ссылки: Parameters
+
+Декоратор `@Parameters()` позволяет охарактеризовать параметр ссылки, который подразумевает некое
+динамическое значение. Чаще всего - идентификатор записи в базе данных, или какой-то вариант значения
+из ограниченного списка.
+
+Декоратор позволяет накапливать значения, если это подразумевается логикой маршрута. Декоратор может быть
+установлен на `middleware`- или на `bridge`-функцию. В этом случае он распространяется на все методы, которые
+находятся в подключаемом узле.
+
+Декоратор принимает в качестве аргумента объект следующей структуры:
+
+```ts
+interface OpenApiParameter {
+  // ключ - полное значение параметра в адресной строке, включая ограничители регулярным выражением
+  [parameter: string]: {
+    name: string; // собственное имя параметра
+    description?: string; // описание параметра
+    in?: "query" | "header" | "cookie" | "path"; // местоположение аргумента: заголовок, путь, строка запроса, cookie
+    required?: Boolean; // признак обязательности
+    schema: SchemaObject; // схема данных параметра, удовлевторяющая критериям OAS
+  };
+}
+```
+
+Пример:
+
+```ts
+class Users {
+  @Bridge("/user_:user_id", User)
+  @Parameters({
+    ":user_id": {
+      name: "user_id",
+      description: "Идентификатор пользователя",
+      schema: { type: "number" },
+    },
+  })
+  static User(@Next() next) {
+    return next();
+  }
+}
+
+class User {
+  @Get()
+  @Summary("Информация о пользователе")
+  static Info(@Params("user_id") userId) {
+    return models.Users.findById(userId);
+  }
+
+  @Delete()
+  @Summary("Удалить пользователя")
+  static Info(@Params("user_id") userId) {
+    return models.Users.remove({ id: userId });
+  }
+}
+```
+
+Для всех методов в маршрутном узле `User` в документации в значении path будет заменено значение
+на `/user_{user_id}`, и в список `parameters` добавлено значение
+
+```json
+{
+  "name": "user_id",
+  "description": "Идентификатор пользователя",
+  "schema": {
+    "type": "number"
+  },
+  "in": "path",
+  "required": true
+}
+```
+
+**Важно** Следует уделить особое внимание тому, как именно указывается параметр в данной структуре.
+Поскольку спецификация `OpenApi` подразумевает для описания параметра в пути использовать нотацию вида
+`{param}`, в то время как `koa` и другие веб-фреймворки используют для определения параметров нотацию
+`:param`, подразумевающую также уточнение регулярным выражением, то в качестве значения `parameter` следует
+использовать именно полное написание параметра, включая символ `:` и возможные уточнения регулярным выражением.
+
+Поэтому, если подразумевается сложное ограничение значение параметра, например, при работе со значениями типа
+`ObjectId`, характерными для базы `MongoDb` (то есть 24 символа, сочетающих латинские буквы и цифры), которое
+может быть написано как `user_:user_id(.{24})`, то в качестве ключа обязано быть именно это написание. Иначе
+парсер не сможет сделать замену, и в документации будет отсутствовать требуемое значение.
+
+Для оптимизации данного процесса рекомендуется использовать следующий вариант описания параметров и их паттернов:
+
+```ts
+// используем класс User, чтобы сохранить в нем информацию о том
+// какими параметрами он будет подключаться в другие узлы
+@Use(User.Init)
+class User {
+  // имя параметра, по которому его можно получить в аргументах к методам
+  static id = "user_id";
+  // полное написание параметра с учетом ограничений регулярным выражением
+  static toString() {
+    return `:${this.id}(.{24})`;
+  }
+  // схема параметра, использующая оба точных значения имени и написания
+  static parameterSchema() {
+    return {
+      [`${this}`]: {
+        name: this.id,
+        description: "Идентификатор пользователя",
+        schema: {
+          type: "string",
+          pattern: "[a-z,0-9]{24}",
+        },
+      },
+    };
+  }
+
+  @Middleware()
+  @Parameters(User.parameterSchema())
+  static Init(@Params(User.id) userId, @Next() next, @Err() err) {
+    // ... логика инициации
+  }
+}
+
+//... применение в других маршрутных узлах
+@Bridge(`/user_${User}`, User) // будет получено написание параметра включая ограничения
+class Users {
+  // ... методы класса Users
+}
+```
+
+### Параметры поисковой строки: QueryString
+
+### Управление тегами: AddTag и UseTag
+
+Документация средствами `aom` поддерживает группировку данных по тегам. Для создания тега необходимо для
+класса - маршрутного узла - применить декоратор `@AddTag`, который принимает в качестве аргумента структуру
+данных `TagObject`:
+
+```json
+{
+    name: string; // имя тега
+    description?: string; // описание тега
+    externalDocs?: ExternalDocumentationObject; // ссылка на внешнее описание
+}
+```
+
+Для того, чтобы применить созданный тег, необходимо его добавить к `middleware`- или `endpoint`-функции,
+используя декоратор `@UseTag`.
+
+Тег, примененный к прослойке распространяется на все конечные точки маршрута, до тех пор не будет заменен
+другим тегом на маршруте, либо объединен с ним, если установлены специальные правила (подробности ниже).
+
+Пример:
+
+```ts
+@AddTag({ name: "Работа с файлами", description: "Стандартные методы работы с файлами" })
+@Use(Files.Init)
+class Files {
+  @Get()
+  @Summary("Files list")
+  static Index() {
+    return fs.readdirSync(__dirname);
+  }
+
+  @Middleware()
+  @UseTag(Files)
+  static Init(@Next() next) {
+    return next();
+  }
+}
+```
+
+#### Приоритеты тегов и правила замены: IgnoreNextTags, ReplaceNextTags, MergeNextTags
+
+Тег, установленный при помощи `@UseTag` на `endpoint` имеет наивысший приоритет и не может быть чем-то заменен.
+В то время как теги, примененные к `middleware` хоть и распространяются на все "нижележащие" функции,
+могут быть заменены, проигнорированы или объединены с тегами, которые могут появиться "дальше по списку".
+
+Рассмотрим пример:
+
+```ts
+// ... root.ts
+
+@Bridge("/users", Users)
+@Bridge("/files", Files)
+@AddTag({ name: "Основные методы" })
+class Root {
+  @Get("/docs.json")
+  @Summary("Документация")
+  static Docs() {
+    return docs;
+  }
+
+  @Get("/routes")
+  @Summary("Список маршрутов")
+  static Routes(@Routes() routes) {
+    return routes;
+  }
+}
+
+// ... users.ts
+@AddTag({ name: "Списки пользователей" })
+@Bridge("/user_:user_id", User)
+@Use(Users.Init)
+class Users {
+  @Summary("Список пользователей")
+  @Get()
+  static Index() {
+    return models.Users.find();
+  }
+
+  @Summary("Добавить пользователя")
+  @Post()
+  static Add(@Body() body) {
+    return models.Users.create({ ...body });
+  }
+
+  @UseTag(Users)
+  @Middleware()
+  static Init(@Next() next) {
+    return next();
+  }
+}
+
+// ... user.ts
+@AddTag({ name: "Информация о пользователе" })
+@Use(User.Init)
+class User {
+  user: models.Users;
+
+  @Summary("Данные пользователя")
+  @Get()
+  static Index(@This() { user }: User) {
+    return user;
+  }
+
+  @Summary("Удалить пользователя")
+  @Delete()
+  static Delete(@This() { user }: User) {
+    const result = await user.delete();
+    return result;
+  }
+
+  @UseTag(User)
+  @Middleware()
+  static async Init(@This() _this: User, @Param() userId, @Next() next) {
+    _this.user = await models.Users.findById(userId);
+    return next();
+  }
+}
+
+// ... files.ts
+@AddTag("Работа с файлами")
+@Bridge("/file_:file_id", File)
+@Use(Files.Init)
+class Files {
+  where = {}; // специальные критерии для отбора
+
+  @Summary("Список файлов")
+  @Get()
+  static Index(@This() _this: Files) {
+    return models.Files.find(where);
+  }
+
+  @UseTag(Files)
+  @Middleware()
+  static Init(@Next() next) {
+    return next();
+  }
+}
+
+// ... file.ts
+@AddTag("Данные файла")
+@Use(File.Init)
+class File {
+  file: models.Files;
+
+  @Summary("Информация о файле")
+  @Get()
+  static Index(@This() { file }: Files) {
+    return file;
+  }
+
+  @Summary("Удалить файл")
+  @Delete()
+  static Delete(@This() { file }: Files) {
+    return file.remove();
+  }
+
+  @UseTag(File)
+  @Middleware()
+  static Init(
+    @This() _this: File,
+    @Param("file_id") fileId,
+    @StateMap(Files) { where }: Files,
+    @Next() next
+  ) {
+    _this.file = await models.Files.find({ _id: fileId, ...where });
+    return next();
+  }
+}
+```
+
+По умолчанию для всех тегов работает правило по умолчанию, а именно `ReplaceNextTags`. Оно означает, что
+по мере "погружения" в структуру запросов, каждый новый встречаемый тег будет заменять собой предыдуший.
+
+Таким образом в указанном примере всех тегов сработает правило по умолчанию, и каждая группа запросов
+будет правильно промаркирована тегом собственного класса, который распространится на них через
+соответствующую прослойку.
+То есть маркировка будет следующая
+
+```
+> Основные методы
+  -- GET /docs.json
+  -- GET /routes
+> Списки пользователей
+  - GET /users
+  - POST /users
+> Информация о пользователе
+  - GET /users/user_{user_id}
+  - DELETE /users/user_{user_id}
+> Работа с файлами
+  - GET /files
+> Данные файла
+  - GET /files/file_{file_id}
+  - DELETE /files/file_{file_id}
+```
+
+Рассмотрим ситуацию, когда необходимо расширить функциональность маршрутного узла `User`, добавив в него
+возможность работать с файлами, принадлежающими этому пользователю, аналогично тем же методам, которые
+применяются для прочих файлов.
+
+```ts
+// ... user.ts
+@AddTag({ name: "Информация о пользователе" })
+@Use(User.Init)
+class User {
+  user: models.Users;
+
+  @Summary("Данные пользователя")
+  @Get()
+  static Index(@This() { user }: User) {
+    return user;
+  }
+
+  @Summary("Удалить пользователя")
+  @Delete()
+  static Delete(@This() { user }: User) {
+    const result = await user.delete();
+    return result;
+  }
+
+  // создадим мост на маршрутный узел Files
+  @Bridge("/files", Files)
+  static files(@Next() next, @This() { user }: User, @StateMap() stateMap) {
+    // в StateMap добавим экземпляр класса Files
+    // у которого будет установлены специальные критерии отбора
+    // только те файлы, которые принадлежат контекстному пользователю
+    const userFiles = new Files();
+    files.where = { userId: user._id };
+    stateMap.set(Files, userFiles);
+    return next();
+  }
+
+  @UseTag(User)
+  @Middleware()
+  static async Init(@This() _this: User, @Param() userId, @Next() next) {
+    _this.user = await models.Users.findById(userId);
+    return next();
+  }
+}
+```
+
+В результате данной модификации получится ситуация, что после подключения моста в тег
+"Работа с файлами" (`@UseTag(Files)`) и "Информация о файле" (`@UseTag(File)`) попадут также
+методы, которые входят в контекст работы с пользователем.
+
+То есть список методов в тегах будет следующим:
+
+```
+> Основные методы
+  -- GET /docs.json
+  -- GET /routes
+> Списки пользователей
+  - GET /users
+  - POST /users
+> Информация о пользователе
+  - GET /users/user_{user_id}
+  - DELETE /users/user_{user_id}
+> Работа с файлами
+  - GET /files
+  - GET /users/user_{user_id}/files
+> Данные файла
+  - GET /files/file_{file_id}
+  - DELETE /files/file_{file_id}
+  - GET /users/user_{user_id}/files/file_{file_id}
+  - DELETE /users/user_{user_id}/files/file_{file_id}
+```
+
+Очевидно, что такая разбивка не совсем корректна, и ожидается, что методы работы с пользовательскими
+файлами будут как-то привязаны к контексту тегов "Информация о пользователе".
+
+Для того, чтобы модифицировать логику обработки тегов, имеются три декоратора, применяемые к
+`bridge`-функциям:
+
+- `@IgnoreNextTags()` - все теги, идущие после данного декоратора игнорируются. Для маркировки используется
+  последний активный тег.
+- `@MergeNextTags()` - все теги, идущие после данного декоратора объединяются с последним активным тегом.
+  При этом, количество дальнейших тегов может быть больше 1, и все они будут объединены последовательно.
+  Для объединения используется символ, храняшийся в свойстве `mergeSeparator` экземпляра класса `OpenApi`.
+  По умолчанию равен `+`.
+- `@ReplaceNextTags()` - последующий тег, а также все дальнейшие заменяют последний активный тег
+  (режим работы "по умолчанию")
+
+Таким образом, если к `bridge`-функции `User.files` применить декоратор `@IgnoreNextTags()`, то структура
+принадлежности маршрутов тегам будет следующей:
+
+```
+> Основные методы
+  -- GET /docs.json
+  -- GET /routes
+> Списки пользователей
+  - GET /users
+  - POST /users
+> Информация о пользователе
+  - GET /users/user_{user_id}
+  - DELETE /users/user_{user_id}
+  - GET /users/user_{user_id}/files
+  - GET /users/user_{user_id}/files/file_{file_id}
+  - DELETE /users/user_{user_id}/files/file_{file_id}
+> Работа с файлами
+  - GET /files
+> Данные файла
+  - GET /files/file_{file_id}
+  - DELETE /files/file_{file_id}
+```
+
+Если применить декоратор `@MergeNextTags()`, то получится следующая структура:
+
+```
+> Основные методы
+  -- GET /docs.json
+  -- GET /routes
+> Списки пользователей
+  - GET /users
+  - POST /users
+> Информация о пользователе
+  - GET /users/user_{user_id}
+  - DELETE /users/user_{user_id}
+> Информация о пользователе+Работа с файлами
+  - GET /users/user_{user_id}/files
+> Информация о пользователе+Работа с файлами+Данные файла
+  - GET /users/user_{user_id}/files/file_{file_id}
+  - DELETE /users/user_{user_id}/files/file_{file_id}
+> Работа с файлами
+  - GET /files
+> Данные файла
+  - GET /files/file_{file_id}
+  - DELETE /files/file_{file_id}
+```
+
+В зависимости от предпочтений и применяемых методологий можно выбирать ту или иную стратегию
+маркировки тегами.
+
+Декораторы `IgnoreNextTags`, `MergeNextTags` и `IgnoreNextTags` работают по принципу переключателей:
+то есть каждый последующий заменяет собой действие предыдущего, и после него начинают действовать
+новые правила. Таким образом, можно комбинировать сочетания объединений, замены или использования
+последнего активного тега.
+
+### Протоколы безопасности: AddSecurity и UseSecurity
