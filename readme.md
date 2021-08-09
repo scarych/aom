@@ -1788,7 +1788,7 @@ class User {
 
   @UseTag(User)
   @Middleware()
-  static async Init(@This() _this: User, @Param() userId, @Next() next) {
+  static async Init(@This() _this: User, @Params("user_id") userId, @Next() next) {
     _this.user = await models.Users.findById(userId);
     return next();
   }
@@ -1836,7 +1836,7 @@ class File {
   @Middleware()
   static Init(
     @This() _this: File,
-    @Param("file_id") fileId,
+    @Params("file_id") fileId,
     @StateMap(Files) { where }: Files,
     @Next() next
   ) {
@@ -1909,7 +1909,7 @@ class User {
 
   @UseTag(User)
   @Middleware()
-  static async Init(@This() _this: User, @Param() userId, @Next() next) {
+  static async Init(@This() _this: User, @Params("user_id") userId, @Next() next) {
     _this.user = await models.Users.findById(userId);
     return next();
   }
