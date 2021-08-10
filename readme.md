@@ -34,6 +34,110 @@
   `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Target`, `Cursor`, `Routes`, `StateMap`, `This`.
   Также допускается возможность создания собственных декораторов аргументов для реализации специальных логик.
 
+Пример:
+
+```ts
+@Bridge("/auth", Auth)
+@Bridge("/shop", Shop)
+@Bridge("/account", Account)
+class Root {
+  @Get()
+  static Index() {
+    return models.Settings.findOne({ enabled: true });
+  }
+}
+
+class Auth {
+  user: models.Users;
+  login: models.UserLogins;
+  token: models.AuthTokens;
+
+  @Middleware()
+  static async Required(
+    @Headers("authorization") token,
+    @This() _this: Auth,
+    @Next() next,
+    @Err() err
+  ) {
+    const authToken = await models.AuthTokens.checkToken(token);
+    if (authData) {
+      _this.token = authToken;
+      _this.user = await models.Users.findById(authToken.userId);
+      _this.login = await models.UserLogins.findById(authToken.loginId);
+      return next();
+    } else {
+      return err("access denied", 403);
+    }
+  }
+
+  @Post()
+  static async Login(@Body() { login, password }, @Err() err) {
+    const authLogin = await models.UserLogins.authLogin(login, password);
+    if (checkLogin) {
+      return models.AuthTokens.generateToken(authLogin);
+    } else {
+      return err("wrong login", 403);
+    }
+  }
+}
+
+class Shop {
+  @Get()
+  static Index(@Query() query) {
+    return models.Products.find({ ...query });
+  }
+
+  @Get("/categories")
+  static Categories(@Query() query) {
+    return models.Categories.find({ ...query });
+  }
+
+  @Get("/brands")
+  static Brands(@Query() query) {
+    return models.Brands.find({ ...query });
+  }
+
+  @Post("/add_to_cart")
+  @Use(Auth.Required)
+  static AddToCart(@Body() { productId, quantity }, @StateMap(Auth) { user }: Auth) {
+    const addUserCart = await user.addProductToCart(productId, quantity);
+    return user.getProductsCart();
+  }
+}
+
+@Use(Auth.Required)
+class Account {
+  @Get()
+  static async Index(@StateMap(Auth) { user, login }: Auth) {
+    const orders = await user.getOrders();
+    return { user, login, orders };
+  }
+
+  @Post("/logout")
+  static async Logout(@StateMap(Auth) { token }: Auth) {
+    await token.logout;
+    return { message: "success logout" };
+  }
+}
+```
+
+Приведенный выше код заменяет собой необходимость перечень маршрутов "классического" вида:
+
+```ts
+router.get("/", Root.Index);
+router.post("/auth", Auth.Login);
+router.get("/shop", Shop.Index);
+router.get("/shop/categories", Shop.Categories);
+router.get("/shop/brands", Shop.Brands);
+router.post("/shop/add_to_cart", Auth.Required, Shop.AddToCart);
+router.get("/account", Auth.Required, Account.Index);
+router.post("/account/logout", Auth.Required, Account.Logout);
+```
+
+Другие плюсы такого подхода состоят в возможности использовании дополнительных декораторов, которые
+позволяют составить автодокументацию в формате [`Open Api`](#aom/openapi), и в целом является более
+структурным и понятным, удобным для рефакторинга и контроля данных.
+
 ### Как это работает
 
 Маршрутный узел - это класс, отвечающий за локальный фрагмент маршрутной карты. Все элементы маршрутного
