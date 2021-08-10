@@ -12,7 +12,7 @@ declare type OpenApiSecuritySchema = Omit<SecuritySchemeObject, "type"> & {
 declare interface OpenApiParameterObject {
   name: string;
   description?: string;
-  in?: "query" | "path" | "header" | "cookie" | string;
+  in: "query" | "path" | "header" | "cookie" | string;
   required?: Boolean;
   schema: OpenApiSchemaObject;
 }
@@ -30,8 +30,13 @@ export declare interface OpenApiRequestBody {
   schema: OpenApiSchemaObject | Function | any;
 }
 
-export declare type OpenApiParameters = {
-  [parameter: string]: OpenApiParameterObject;
+// для аргумента в декоратор PathParameters сделаем значение `in` необязательным
+export declare type OpenApiPathParameterObject = Omit<OpenApiParameterObject, "in"> & {
+  in?: OpenApiParameterObject["in"];
+};
+
+export declare type OpenApiPathParameters = {
+  [parameter: string]: OpenApiPathParameterObject;
 };
 
 export declare function AddTag(tagSchema: TagObject): ClassDecorator;
@@ -43,7 +48,8 @@ export declare function AddSecurity(securitySchema: OpenApiSecuritySchema): Clas
 export declare function UseSecurity(securityContainer: Function): MethodDecorator;
 export declare function Summary(summary: string): MethodDecorator;
 export declare function Description(description: string): MethodDecorator;
-export declare function Parameters(parameters: OpenApiParameters): MethodDecorator;
-export declare function QueryString(...queryParams: OpenApiParameterObject[]): MethodDecorator;
+export declare function PathParameters(pathParameters: OpenApiPathParameters): MethodDecorator;
+export declare function Parameters(...parameters: OpenApiParameterObject): MethodDecorator;
+// export declare function QueryString(...queryParams: OpenApiParameterObject[]): MethodDecorator;
 export declare function Responses(...responses: OpenApiResponse[]): MethodDecorator;
 export declare function RequestBody(requestBody: OpenApiRequestBody): MethodDecorator;

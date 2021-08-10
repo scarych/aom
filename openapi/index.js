@@ -38,13 +38,13 @@ class OpenApi {
       requestBody,
       tag,
       security = [],
-      queryString = [],
+      parameters = [],
     } = handlerOpenApiData;
     // инициируем базовую информацию о текущем методе
     Object.assign(currentMethod, {
       description,
       summary,
-      parameters: [...queryString],
+      parameters,
     });
     // далее следует сборка response, body и других контекстных значений,
     // которые в том числе опираются на структуры данных, которые следует дампить отдельным образом
@@ -82,20 +82,23 @@ class OpenApi {
           responses.push(...middlewareOpenApiData.responses);
         }
 
-        // build parameters in branch
-        if (middlewareOpenApiData.parameters) {
-          const { parameters } = middlewareOpenApiData;
+        // build path parameters in branch
+        if (middlewareOpenApiData.pathParameters) {
+          const { pathParameters } = middlewareOpenApiData;
 
           const currentParameters = currentMethod.parameters;
-          Object.keys(parameters).forEach((parameter) => {
-            const parameterProps = parameters[parameter];
+          Object.keys(pathParameters).forEach((parameterKey) => {
+            const parameterProps = pathParameters[parameterKey];
             const { name } = parameterProps;
             // здесь происходит замена полного написания параметра на его openApi валидную нотацию
-            path = path.replace(parameter, `{${name}}`);
+            path = path.replace(parameterKey, `{${name}}`);
+            // добавим в список параметров новые значения, добавив значения по умолчанию
+            // но не ограничив их наличие в других местах
+            // (например та же query_string, выраженная в виде обязательного параметра)
             currentParameters.push({
-              ...parameterProps,
               in: "path",
               required: true,
+              ...parameterProps,
             });
           });
         }

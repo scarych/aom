@@ -83,17 +83,24 @@ function Description(description) {
 }
 exports.Description = Description;
 
-function Parameters(parameters) {
+function PathParameters(pathParameters) {
+  // ...
+  return standartDecorator({ pathParameters });
+}
+exports.PathParameters = PathParameters;
+
+function Parameters(...parameters) {
   // ...
   return standartDecorator({ parameters });
 }
 exports.Parameters = Parameters;
-
+/*
 function QueryString(...queryParams) {
   // ...
   return standartDecorator({ queryString: queryParams });
 }
 exports.QueryString = QueryString;
+*/
 
 function Responses(...responses) {
   // ...
