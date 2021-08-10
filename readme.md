@@ -115,7 +115,7 @@ class Account {
 
   @Post("/logout")
   static async Logout(@StateMap(Auth) { token }: Auth) {
-    await token.logout;
+    await token.remove();
     return { message: "success logout" };
   }
 }
