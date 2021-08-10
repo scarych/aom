@@ -300,6 +300,7 @@ interface $Args {
   handler: Function; // собственно функция, которая будет вызвана в конечной точке маршрута (handler === constructor[property])
   method: string; // метод, который сейчас
   path: string; // полный путь маршрута (в виде паттерна с параметрами `/files/:filename`)
+  middlewares: Function[]; // список всех middleware, предшествующих финальному вызову (дескрипторы на статичные методы классов)
 }
 ```
 
