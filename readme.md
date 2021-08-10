@@ -1444,10 +1444,10 @@ class Users {
 ```ts
 interface OpenApiResponse {
   status: number; // код ответа
-  description: string; // описание ответа
+  schema: SchemaObject | Function | any; // схема в формате JSON-schema, или объект, генерирующий JSON подходящего формата
   contentType?: string; // тип данных, по умолчанию `application/json`
   isArray?: boolean; // признак того, что возвращается список объектов (коллекция), по умолчанию `false`
-  schema: SchemaObject | Function | any; // схема в формате JSON-schema, или объект, генерирующий JSON подходящего формата
+  description?: string; // описание ответа
 }
 ```
 
@@ -1624,9 +1624,9 @@ class Files {
 }
 ```
 
-### Параметры ссылки: Parameters
+### Параметры ссылки: PathParameters
 
-Декоратор `@Parameters()` позволяет охарактеризовать параметр ссылки, который подразумевает некое
+Декоратор `@PathParameters()` позволяет охарактеризовать параметр ссылки, который подразумевает некое
 динамическое значение. Чаще всего - идентификатор записи в базе данных, или какой-то вариант значения
 из ограниченного списка.
 
@@ -1637,13 +1637,13 @@ class Files {
 Декоратор принимает в качестве аргумента объект следующей структуры:
 
 ```ts
-interface OpenApiParameter {
+interface OpenApiPathParameter {
   // ключ - полное значение параметра в адресной строке, включая ограничители регулярным выражением
   [parameter: string]: {
     name: string; // собственное имя параметра
     description?: string; // описание параметра
-    in?: "query" | "header" | "cookie" | "path"; // местоположение аргумента: заголовок, путь, строка запроса, cookie
-    required?: Boolean; // признак обязательности
+    in?: "query" | "header" | "cookie" | "path"; // местоположение аргумента: заголовок, путь, строка запроса, cookie, по умолчанию `path`
+    required?: Boolean; // признак обязательности, по умолчанию `true`
     schema: SchemaObject; // схема данных параметра, удовлевторяющая критериям OAS
   };
 }
@@ -1654,7 +1654,7 @@ interface OpenApiParameter {
 ```ts
 class Users {
   @Bridge("/user_:user_id", User)
-  @Parameters({
+  @PathParameters({
     ":user_id": {
       name: "user_id",
       description: "Идентификатор пользователя",
@@ -1735,7 +1735,7 @@ class User {
   }
 
   @Middleware()
-  @Parameters(User.parameterSchema())
+  @PathParameters(User.parameterSchema())
   static Init(@Params(User.id) userId, @Next() next, @Err() err) {
     // ... логика инициации
   }
@@ -1748,7 +1748,42 @@ class Users {
 }
 ```
 
-### Параметры поисковой строки: QueryString
+### Параметры поисковой строки, заголовков и cookie: Parameters
+
+Чтобы добавить в документацию информацию о параметрах, которые могут передаваться в поисковой строке
+(query_string), заголовках (headers) и cookie, необходимо использовать декоратор `@Parameters`.
+
+В качестве аргументов он принимает последовательность значений, удовлетворяющих структуре:
+
+```ts
+interface OpenApiParameter {
+  name: string; // собственное имя параметра
+  in: "query" | "header" | "cookie" | "path"; // местоположение аргумента: заголовок, путь, строка запроса, cookie
+  schema: SchemaObject; // схема данных параметра, удовлевторяющая критериям OAS
+  description?: string; // описание параметра
+  required?: Boolean; // признак обязательности
+}
+```
+
+Пример:
+
+```ts
+class Brands {
+  @Summary("Справочник брендов")
+  @Responses({ status: 200, isArray: true, schema: models.Brands })
+  // доступны возможность использования поиска по полям
+  @Parameters(
+    // `title` (строка)
+    { name: "title", in: "query", schema: { type: "string" } },
+    // `enabled` (значение из списка)
+    { name: "enabled", in: "query", schema: { type: "string", enum: ["yes", "no"] } }
+  )
+  @Get()
+  static Index(@Query() query) {
+    return models.Brands.find({ ...query });
+  }
+}
+```
 
 ### Управление тегами: AddTag и UseTag
 
@@ -2172,14 +2207,21 @@ class Account {
 }
 ```
 
-**Важно**: в настоящее время не реализована полноценная поддержка протокола `OAuth`, подразумевающих
+**Важно**: в настоящее время не реализована полноценная поддержка протокола `OAuth`, подразумевающая
 наличие специфических разрешений на чтение/запись/удаление.
 
 ## Развитие
 
+`aom` находится в состоянии открытой беты, и будет расширяться новыми возможностями. Не исключены ошибки,
+а также замена и переименование ряда функций и декораторов. Все обсуждение, вопросы и багрепорты в разделе
+[Issues](https://github.com/scarych/aom/issues)
+
 В планах:
 
+- обогащение JSDoc документации
+- перевод документации на английский язык
 - реализация декораторов для создания api-сервисов на `express` (аналогично `koa`)
 - декораторы для расширения функциональности работы с базами данных (`mongoose`, `typeorm`)
 - разработка функционала для микросервисных взаимодействий (`kafkajs`)
 - разработка функционала для поддержки `GraphQL`
+- добавление возможности создания мультиязычной документации
