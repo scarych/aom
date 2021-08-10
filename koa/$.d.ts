@@ -5,7 +5,8 @@ type routeElem = { method: string; path: string; routes: Function[] };
 type routesList = routeElem[];
 export declare class $ {
   constructor(target: Function, prefix?: string);
-  routes(handler?: routesHandler): $ | routesList;
+  routes(handler: routesHandler): $;
+  routes(): routesList;
   docs(docs: OpenApi): $;
 }
 
