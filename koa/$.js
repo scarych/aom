@@ -3,8 +3,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 
 const { Promise } = require("bluebird");
 const constants = require("../common/constants");
+const { OpenApi } = require("../openapi");
 const { join } = require("path");
-const { checkOpenAPIContainer, restoreReverseMetadata } = require("../common/functions");
+const { restoreReverseMetadata } = require("../common/functions");
 
 const $StateMap = (ctx, next) => {
   ctx.$StateMap = new WeakMap();
@@ -155,11 +156,10 @@ function makeCtx(cursor, env = {}) {
 {
   ctx, next - базовые контексты koa
 
-  route - конечный элемент маршрута, endpoint с его окружением: path, method, handler, constructor, propertyKey, callstack
+  route - конечный элемент маршрута, endpoint с его окружением: path, method, handler, constructor, propertyKey, middlewares
   cursor - текущий элемент миддлвари, с префиксом, характеризующим участок его выполнения
 
   // seq - последовательность всех миддлварей, которые делались на каждом из этапов
-  callstack - цепочка всех миддлварей в данном ендпоинте
 
 
 }
@@ -171,7 +171,7 @@ seq -
 function safeJSON(data) {
   Object.assign(data, {
     toJSON() {
-      const skipKeys = ["constructor", "handler", "property"];
+      const skipKeys = ["constructor", "handler", "property", "middlewares"];
       const safeEntries = Object.entries(data).filter(([key]) => skipKeys.indexOf(key) < 0);
       return Object.fromEntries(safeEntries);
     },
@@ -179,12 +179,7 @@ function safeJSON(data) {
   return data;
 }
 
-function buildRoutesList(
-  constructor,
-  prefix = "/",
-  middlewares = [],
-  openApiContainter = undefined
-) {
+function buildRoutesList(constructor, prefix = "/", middlewares = []) {
   const routesList = [];
   const commonMiddlewares = extractMiddlewares({ constructor, prefix });
 
@@ -211,21 +206,16 @@ function buildRoutesList(
         property,
         prefix: target.path,
       });
-      const callstack = [].concat(middlewares, commonMiddlewares, propertyMiddlewares);
+      const fullMiddlewaresList = [].concat(middlewares, commonMiddlewares, propertyMiddlewares);
       const env = { target };
 
-      // если для ендпоинта есть openApi контейнер, который хранит даные для контекста
-      // const openApiContainter = checkOpenAPIContainer(constructor, property);
-      if (openApiContainter) {
-        // и в нем зарегистрируем маршрут целиком, передав в него также callstack вызовов,
-        // откуда будут взяты дополнительные аргументы
-        openApiContainter.registerPath(target, callstack);
-      }
-
       Object.assign(target, {
-        exec: (routes) =>
+        // добавим информацию о всем стеке middleware, который предшествует данному методу
+        middlewares: fullMiddlewaresList,
+        // создадим функцию генерации вызовов для koa
+        generateCtx: (routes) =>
           [$StateMap].concat(
-            callstack
+            fullMiddlewaresList
               .map((middleware) =>
                 makeCtx(middleware, {
                   ...env,
@@ -263,8 +253,7 @@ function buildRoutesList(
         ...buildRoutesList(
           nextRoute,
           newPrefix,
-          [].concat(middlewares, commonMiddlewares, bridgeMiddlewares),
-          openApiContainter
+          [].concat(middlewares, commonMiddlewares, bridgeMiddlewares)
         )
       );
     });
@@ -273,15 +262,52 @@ function buildRoutesList(
   return routesList;
 }
 
-function $(constructor, prefix = "/", doc = undefined) {
+class $ {
+  routesData;
+  constructor(root, prefix = "/") {
+    this.routesData = buildRoutesList(root, prefix);
+  }
+  routes(handler = undefined) {
+    const result = [];
+    this.routesData.forEach((routeData) => {
+      const { method, path, generateCtx } = routeData;
+      const routes = generateCtx(this.routesData);
+      if (handler) {
+        Reflect.apply(handler, null, [method, path, routes]);
+      } else {
+        result.push({ method, path, routes });
+      }
+    });
+    if (handler) {
+      return this;
+    } else {
+      return result;
+    }
+  }
+  // подключить документацию
+  docs(docsContainer) {
+    if (docsContainer instanceof OpenApi) {
+      this.routesData.forEach((target) => docsContainer.registerPath(target));
+    } else {
+      throw new Error(constants.OPENAPI_INSTANCE_ERROR);
+    }
+    return this;
+  }
+}
+
+exports.$ = $;
+
+/*
+function $(constructor, prefix = "/") {
   return (router) => {
-    const routesList = buildRoutesList(constructor, prefix, [], doc);
+    const routesList = buildRoutesList(constructor, prefix);
     routesList.forEach((routeData) => {
-      const { method, path, exec } = routeData;
-      router[method](path, ...exec(routesList));
+      const { method, path, generateCtx } = routeData;
+      router[method](path, ...generateCtx(routesList));
     });
     return router;
   };
 }
 
 exports.$ = $;
+*/

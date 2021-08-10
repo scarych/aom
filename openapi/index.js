@@ -23,8 +23,8 @@ class OpenApi {
   securityMap = new Map();
 
   paths = {};
-  registerPath(route, middlewares = []) {
-    let { constructor, property, path, method } = route;
+  registerPath(route) {
+    let { constructor, property, path, method, middlewares } = route;
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     if (!handlerOpenApiData) return;
     // console.log(handlerOpenApiData);

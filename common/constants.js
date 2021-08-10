@@ -17,7 +17,8 @@ exports.CONSTRUCTOR_PROPERTY_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods only";
 exports.IS_MIDDLEWARE_ERROR = "Wrong middleware! The handler isn't marked as middleware";
 exports.PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";
-// ... 
+// ...
+exports.OPENAPI_INSTANCE_ERROR = "Wrong instance for OpenApi documentation container!";
 exports.OPENAPI_TAG = "aom:openapi_tag_schema";
 exports.OPENAPI_SECURITY = "aom:openapi_security_schema";
 exports.NEXT_TAGS_REPLACE = "aom:next_tags_replace";
