@@ -271,11 +271,12 @@ class $ {
     const result = [];
     this.routesData.forEach((routeData) => {
       const { method, path, generateCtx } = routeData;
-      const routes = generateCtx(this.routesData);
+      const middlewares = generateCtx(this.routesData);
+      const routeElem = { method, path, middlewares };
       if (handler) {
-        Reflect.apply(handler, null, [method, path, routes]);
+        Reflect.apply(handler, null, [routeElem]);
       } else {
-        result.push({ method, path, routes });
+        result.push(routeElem);
       }
     });
     if (handler) {

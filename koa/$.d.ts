@@ -1,7 +1,7 @@
 import { OpenApi } from "../openapi";
 
-type routesHandler = (method: string, path: string, routes: Function[]) => void;
-type routeElem = { method: string; path: string; routes: Function[] };
+type routeElem = { method: string; path: string; middlewares: Function[] };
+type routesHandler = (route: routeElem) => void;
 type routesList = routeElem[];
 export declare class $ {
   constructor(target: Function, prefix?: string);
