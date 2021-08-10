@@ -19,10 +19,10 @@ declare interface OpenApiParameterObject {
 
 export declare interface OpenApiResponse {
   status: number;
-  description: string;
+  schema: OpenApiSchemaObject | Function | any;
+  description?: string;
   contentType?: string;
   isArray?: boolean;
-  schema: OpenApiSchemaObject | Function | any;
 }
 export declare interface OpenApiRequestBody {
   description: string;
@@ -50,6 +50,5 @@ export declare function Summary(summary: string): MethodDecorator;
 export declare function Description(description: string): MethodDecorator;
 export declare function PathParameters(pathParameters: OpenApiPathParameters): MethodDecorator;
 export declare function Parameters(...parameters: OpenApiParameterObject[]): MethodDecorator;
-// export declare function QueryString(...queryParams: OpenApiParameterObject[]): MethodDecorator;
 export declare function Responses(...responses: OpenApiResponse[]): MethodDecorator;
 export declare function RequestBody(requestBody: OpenApiRequestBody): MethodDecorator;
