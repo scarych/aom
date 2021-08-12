@@ -1,14 +1,6 @@
-export declare enum HTTPMethods {
-  GET = "get",
-  POST = "post",
-  PUT = "put",
-  PATCH = "patch",
-  DELETE = "delete",
-  OPTIONS = "options",
-  ALL = "all",
-}
+export type HTTPMethods = "get" | "post" | "put" | "patch" | "delete" | "options" | "all";
 
-export declare function Endpoint(url?: string, method?: string): MethodDecorator;
+export declare function Endpoint(url?: string, method?: HTTPMethods): MethodDecorator;
 export declare function Get(url?: string): MethodDecorator;
 export declare function Post(url?: string): MethodDecorator;
 export declare function Put(url?: string): MethodDecorator;
