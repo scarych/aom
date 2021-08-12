@@ -1,4 +1,4 @@
-import { $Cursor, $Target } from "./parameters";
+import { ICursor, ITarget } from "./parameters";
 
 type CombinedDecorator = <T extends Function>(
   target: T,
@@ -6,7 +6,7 @@ type CombinedDecorator = <T extends Function>(
   descriptor?: any
 ) => void;
 
-type markerHandler = (target: $Target, cursor: $Cursor) => void | unknown;
+type markerHandler = (target: ITarget, cursor: ICursor) => void | unknown;
 
 export declare function Use(...handlers: Function[]): CombinedDecorator;
 export declare function Middleware(): MethodDecorator;

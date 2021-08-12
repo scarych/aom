@@ -176,12 +176,16 @@ function StateMap(constructor = undefined) {
 }
 exports.StateMap = StateMap;
 // ---
-function This(...args) {
+function This(constructor = undefined) {
+  if (constructor && !(constructor instanceof Function)) {
+    throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
+  }
   const handler = ({ ctx, cursor }) => {
-    let _this = ctx.$StateMap.get(cursor.constructor);
+    constructor = constructor || cursor.constructor;
+    let _this = ctx.$StateMap.get(constructor);
     if (!_this) {
-      _this = Reflect.construct(cursor.constructor, args);
-      ctx.$StateMap.set(cursor.constructor, _this);
+      _this = Reflect.construct(constructor);
+      ctx.$StateMap.set(constructor, _this);
     }
     return _this;
   };

@@ -1,9 +1,9 @@
-export declare interface $Args {
-  target: $Target;
-  cursor: $Cursor;
-  next: $Next;
+export declare interface IArgs {
+  target: ITarget;
+  cursor: ICursor;
+  next: Function;
   ctx: $Ctx;
-  routes: $Target[];
+  routes: ITarget[];
 }
 export declare interface $Ctx {
   req: any;
@@ -15,15 +15,19 @@ export declare interface $Ctx {
   session: any;
   query: any;
 }
-export declare type $Next = (...handlers: Function[]) => Function;
-export declare type $Err = <T extends Error>(message: string, status?: number, data?: any) => T;
-export declare interface $Cursor {
+export declare type NextFunction = (...middlewares: Function[]) => Function;
+export declare type ErrorFunction = <T extends Error>(
+  message: string,
+  status?: number,
+  data?: any
+) => T;
+export declare interface ICursor {
   constructor: typeof Function;
   property: string;
   handler: Function;
   prefix: string;
 }
-export declare interface $Target extends Omit<$Cursor, "prefix"> {
+export declare interface ITarget extends Omit<ICursor, "prefix"> {
   method: string;
   path: string;
   [key: string]: any;
@@ -49,4 +53,4 @@ export declare function Target(): ParameterDecorator;
 export declare function Routes(): ParameterDecorator;
 
 export declare function StateMap(constructor?: Function): ParameterDecorator;
-export declare function This(...args: any[]): ParameterDecorator;
+export declare function This(constructor?: Function): ParameterDecorator;
