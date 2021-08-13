@@ -1,40 +1,40 @@
 # AOM: API Over Models
 
-`aom` - это мета-фреймворк из typescript-декораторов, которые позволяют быстро и удобно создавать
-безопасные api-сервисы, используя принцип накопления слоев данных, обогащенных абстракциями.
+[Russian readme](https://github.com/scarych/aom/blob/master/readme.ru.md)
 
-Основная идея состоит в том, чтобы не писать повторно одни и те же операции и инструкции,
-а использовать данные, сгенерированные на предыдущих этапах, которые удовлетворяют требованиям
-общей структурности кода. При этом не ограничивать разработчика рамками одного фреймворка, а дать
-возможность использовать сторонние библиотеки и инструменты.
+`aom` - it is meta-framework made of typescript-decorators, which allows to fast and comfortable
+create safe api-services, using the principle of accumulation data layers, enriched with abstractions.
 
-`aom` не является "вещью в себе" - фреймворком, который функционирует исключительно на собственной
-кодовой базе и работает только в собственном окружении. Важной его особенностью является возможность
-совмещения с "классическим" кодом на `koa`, что делает его полезным при миграции функционала уже
-существующих проектов.
+The main idea sounds like: "don't duplicate the code, link the code". `aom` allows to use data
+proccessing, made to cover most cases you need. At the same time `aom` do not limit the developer
+in frames of the only framework, but gives the ability to use third-party libraries and packages.
 
-`aom` не запускает код в изолированном окружении, а генерирует структуры, совместимые с
-популярными библиотеками: `koa-router`, `koa-session` и другими, что позволяет при необходимости
-сохранять существующий технологический стек, и комфортно расширять его в методологии `aom`+`typescript`.
+`aom` is not a "thing in itself "- a framework that operates exclusively on its own codebase and only
+works in its own environment. Its important feature is the ability to combine with the "classic" code
+on `koa`, which makes it useful when migrating functionality already existing projects.
+
+`aom` does not run code in an isolated environment, but generates structures that are compatible with
+popular libraries: `koa-router`,` koa-session` and others, which allows, if necessary,
+keep the existing code-stack, and comfortably extend it in the `aom` +` typescript` methodology.
 
 ## aom/koa
 
-В настоящее время реализована функциональность для работы в рамках фреймворка
+At the present time realised the functionality based on http-framework
 [`koa@2`](https://www.npmjs.com/package/koa).
 
-Построение маршрутной карты осуществляется с применением набора декораторов, различающихся по типам:
+The construction of a route map is making using a set of decorators that differ in types:
 
-- `endpoints` - для обозначения конечных точек маршрута. Включает в себя декораторы:
-  `Endpoint`, `Get`, `Post`, `Patch`, `Put`, `Options`, `Delete`, `All`
-- `middlewares` - для обозначения middleware-функций, "мостов" и расширения контекста. Список включает
-  в себя: `Middleware`, `Use`, `Bridge`, `Marker` и `Sticker`
-- `parameters` - для параметризации входящих аргументов, применяются для получения типовых или
-  специализированных значений в `middleware`- или `endpoint`-функциях. Список включает в себя, но
-  не ограничивается этими значениями: `Args`, `Ctx`, `Body`, `Query`, `Session`, `State`,
-  `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Target`, `Cursor`, `Routes`, `StateMap`, `This`.
-  Также допускается возможность создания собственных декораторов аргументов для реализации специальных логик.
+- `endpoints` - to indicate the endpoints of the route. Includes decorators:
+  `Endpoint`,` Get`, `Post`,` Patch`, `Put`,` Options`, `Delete`,` All`
+- `middlewares` - to indicate middleware-functions, "bridges" and expansion of the context.
+  The list includes to itself: `Middleware`,` Use`, `Bridge`,` Marker` and `Sticker`
+- `parameters` - for parameterization of incoming arguments, used to get typical or
+  specialized values ​​into middlewares or endpoints functions. The list includes but
+  not limited to these values: `Args`,` Ctx`, `Body`,` Query`, `Session`,` State`,
+  `Headers`,` Param`, `Files`,` Next`, `Req`,` Res`, `Target`,` Cursor`, `Routes`,` StateMap`, `This`.
+  It is also possible to create your own argument decorators to implement special logics.
 
-Пример кода с декораторами `aom/koa`:
+The code sample with `aom/koa` decorators:
 
 ```ts
 @Bridge("/auth", Auth)
@@ -124,9 +124,8 @@ class Account {
 }
 ```
 
-Приведенный выше код заменяет собой необходимость использовать перечень маршрутов "классического"
-вида с соответствующим ограничениями в аргументации middleware (возможность использовать
-только `async (ctx, next)=>{...}`):
+The above code replaces the need to use the "classic" route list with appropriate restrictions
+in the middlewares arguments (the ability to use only `async (ctx, next) => {...}`):
 
 ```ts
 router.get("/", Root.Index);
@@ -139,104 +138,100 @@ router.get("/account", Auth.Required, Account.Index);
 router.post("/account/logout", Auth.Required, Account.Logout);
 ```
 
-Другие плюсы такого подхода состоят в возможности использовании дополнительных декораторов, которые
-позволяют составить автодокументацию в формате [`OpenApi`](#aom/openapi), и в целом является более
-структурным и понятным, удобным для рефакторинга и контроля данных.
+Other advantages of this approach consist in the ability to use additional decorators that allows you
+to compose autodocumentation in the format [`OpenApi`](#aom/openapi), and to have more
+structured and understandable code, convenient for refactoring and data control.
 
-### Как это работает
+### How does this works
 
-Маршрутный узел - это класс, отвечающий за локальный фрагмент маршрутной карты. Все элементы маршрутного
-узла становятся доступны после его подключения к другому узлу.
+A route node - is a class responsible for a local fragment of a route map. All elements of the route
+node become available after it is connected to another node.
 
-После сборки маршрутные узлы разворачиваются в последовательности `middleware`-функций, и заканчиваются
-вызовом финального `endpoint`-а, создавая тем самым полную структуру всех маршрутов, использующих все
-описанные в узлах связи.
+After assembly, route nodes unfolds in a sequence of `middleware` functions, which ends by the final
+`endpoint`, thereby creating a complete structure of all routes, described in communication nodes.
 
-Маршрутные узлы создаются с учетом того, чтобы их элементы могли быть повторно использованы
-в других участках маршрута, в том числе другого api-сервиса.
+Route nodes are created so that their elements can be reused in other parts of the routes, including
+another api-services.
 
-Все `endpoint`-, `middleware`- и `bridge`-функции создаются над статическими методами класса, в то время
-как методы и свойства экземпляров могут применяться в качестве контекстных элементов данных, доступ
-к которым осуществляется через [`StateMap`](#statemap) и [`This`](#this).
+All `endpoint`-,` middleware`- and `bridge`-functions are created above the static methods of the class,
+while the methods and properties of instances can be applied as contextual data items, which accessed
+via decorators [`StateMap`](#statemap) and [`This`](#this).
 
-Маршрутный узел не обладает собственным адресом доступа, и может быть подключен к другому элементу
-через произвольное значение адреса или параметр, используя мосты `@Bridge`
+The routing node does not have its own path address, and can be connected to another node
+via the custom prefix value or parameter, using bridges `@Bridge`
 
-Совокупность узлов и связей между ними создают маршрутную карту, которая может быть целиком или
-фрагментарно применена к `koa-router`-у (или одному из его разновидностей), чтобы создать в
-контексте приложения `koa` требуемый набор маршрутов.
-
-Все маршруты формируют изолированные цепочки вызовов `(ctx, next)=>{...}`, в рамках которых ограничиваются
-данные, используемые в различных запросах. Можно сказать, что в общем случае формируются и выполняются
-цепочки, состоящие из `middleware`, и оканчивающиеся `endpoint`-ом, вида:
+The collection of nodes and connections between them creates a route map, which can be entirely or
+fragmentarily applied to `koa-router` (or one of its variants) to create the required set of routes
+in the context of the `koa` application. At the end of assembly the routes nodes forms isolated
+chains of functions `(ctx, next) => {...}`.
 
 ```ts
 router[method](url, ...[Route1.Middleware1, Route2.Middleware2, Route3.Bridge, Route4.Endpoint]);
 ```
 
-Подключение маршрутных узлов к серверу на `koa` происходит следующим образом:
+Connecting route nodes to the server on `koa` is as follows:
 
 ```ts
 import koa from "koa";
 import koaRouter from "koa-router";
-import { $ } from "aom/koa"; // сборщик маршрутной карты
-import Index from "./routes"; // корневой маршрутный узел
+import { $ } from "aom/koa"; // assembler of routes map
+import Index from "./routes"; // root route node
 
 const app = new koa();
 const router = new router();
 
-// инициируем сборку маршрутов: первый аргумент - корневой узел, второй - префикс
-// в качестве корневого узла может быть произвольно взятый узел
-// в этом случае будут активированы только те связи, которые связаны непосредственно с ним
-// префикс позволяет установить общий префикс для всех адресов на маршруте,
-// например `/v1` для указания версионности API, по умолчанию `/`,
+// initiate the assembly of routes: the first argument is the root node, the second is the prefix
+// a custom route node can be used as a root node
+// in this case, only those links will be activated that are connected directly with it
+// prefix allows you to set a common prefix for all addresses on the route,
+// for example `/ v1` to specify API versioning, by default` / `,
 const $aom = new $(Index, "/");
 
-// получить список адресов, методов и функций обработчиков
-// [{method: string, path: string, middlewares: Function[]}]
+// get a list of addresses, methods and middlewares functions
+// collection of [{method: string, path: string, middlewares: Function []}]
+
 const routes = $aom.routes();
-// применим маршруты к используемому роутеру
+// apply the routes to the koa-router instance
 routes.forEach(({ method, path, middlewares }) => {
   router[method](path, ...middlewares);
 });
 
-// альтернативный способ: передать в метод handler, использующий те же значения
-// и применить их к используемому роутеру
+// alternative way: pass to the handler method using the same values
+// and apply them to the used router
 $aom.routes(({ method, path, middlewares }) => {
   router[method](path, ...middlewares);
 });
 
-// перенесем данные из роутера в сервер
+// transfer data from the router to the server
 app.use(router.routes()).use(router.allowedMethods());
 
-// запустим сервер на указанном порту
+// run server on neccessary port
 app.listen(3000);
 ```
 
-При необходимости можно использовать другие библиотеки стека `koa`, создавая нужные middleware перед
-или после подключения маршрутов на декораторах `aom/koa`.
+If necessary, you can use other `koa` stack libraries, creating the necessary middleware before
+or after connecting routes on the `aom/koa` decorators.
 
-### Конечные точки маршрута
+### The routes endpoints
 
-Все `endpoint`-ы создаются при помощи декораторов из следующего списка:
+All endpoints are created using decorators from the following list:
 
-- `@Endpoint(url, method = 'get'|'post'|'put'|'patch'|'delete'|'options'|'all')` - указывает,
-  что создается `endpoint`, указывающий на адрес `url`, и доступный через метод `method`. По умолчанию
-  `url='/'`, `method='get'`.
-- `@Get(url)` - сокращение для `@Endpoint(url, 'get')`
-- `@Post(url)` - сокращение для `@Endpoint(url, 'post')`
-- `@Put(url)` - сокращение для `@Endpoint(url, 'put')`
-- `@Patch(url)` - сокращение для `@Endpoint(url, 'patch')`
-- `@Delete(url)` - сокращение для `@Endpoint(url, 'delete')`
-- `@Options(url)` - сокращение для `@Endpoint(url, 'options')`
-- `@All(url)` - сокращение для `@Endpoint(url, 'all')`
+- `@Endpoint(url, method = 'get'|'post'|'put'|'patch'|'delete'|'options'|'all')` - creates
+  `endpoint`, pointing to the address `url` on the `method` method. Default: `url='/'`, `method='get'`.
+- `@Get(url)` - shortcut for `@Endpoint(url, 'get')`
+- `@Post(url)` - shortcut for `@Endpoint(url, 'post')`
+- `@Put(url)` - shortcut for `@Endpoint(url, 'put')`
+- `@Patch(url)` - shortcut for `@Endpoint(url, 'patch')`
+- `@Delete(url)` - shortcut for `@Endpoint(url, 'delete')`
+- `@Options(url)` - shortcut for `@Endpoint(url, 'options')`
+- `@All(url)` - shortcut for `@Endpoint(url, 'all')`
 
-Значение `url` может иметь несколько уровней вложенности, и даже содержать типовой `koa-router`-параметр.
-В качестве значения ссылки используется фрагмент адреса, который характеризует данный метод исключительно
-в пределах данного маршрутного узла. Полное имя адреса будет построено на основании всех связей,
-которые предшествовали данному `endpoint`-у.
+The `url` value can have several levels of nesting, and even contain a typical `koa-router` parameter.
+As the value of the link, a fragment of the address is used, which characterizes this method exclusively
+within the given route node. The full name of the address will be built based on all links,
+which preceded the given `endpoint`.
 
-Указанные декораторы применяются следующим образом:
+The specified decorators are applied as follows:
 
 ```ts
 // ... index.ts
@@ -260,21 +255,21 @@ class Index {
 }
 ```
 
-Таким образом будет создан маршрутный элемент, обладающий методами: `GET /`, `POST /save` и
-`GET /choose/:variant`, который, после подключения в маршрутную карту, предоставит к ним доступ
-с учетом возможных префиксов.
+This will create a route node with methods: `GET /`, `POST / save` and `GET / choose /: variant`,
+which, after connecting to the route map, will provide access to them using the declared prefixes.
 
-### Декораторы аргументов
+### Arguments decorators
 
-Все методы, участвующие в маршрутных участках должны использовать декорированные аргументы, чтобы корректно
-оперировать контекстом действий. Все декораторы возвращают изолированные значения в контексте текущего запроса.
+All methods participating in route nodes must use decorated arguments in order to correctly
+operate with the context of actions. All decorators return isolated values in the context of
+the current request.
 
 #### Args
 
-Базовый декоратор `@Args` позволяет получить общую структуру данных, являющихся текущим контекстом
-выполняемого запроса.
+The basic decorator `@Args` allows you to get the general data structure that is the current context
+of query being executed.
 
-В общем виде эта структура имеет вид:
+This structure has the interface:
 
 ```ts
 interface IArgs {
@@ -286,51 +281,50 @@ interface IArgs {
 }
 ```
 
-Где:
+Where:
 
-- `ctx` и `next` - типовые значения, которыми оперирует `koa`
-- `target` - структура, указывающая на конечную точку маршрута
-- `cursor` - структура, указывающая на текущую точку маршрута
-- `routes` - полный список всех маршрутов с возможными маркерными расширениями.
+- `ctx` and` next` are typical values used by `koa`
+- `target` is a structure, pointing to the endpoint of the route
+- `cursor` is a structure pointing to the current point of the route
+- `routes` - a complete list of all routes with possible marker extensions
 
-Остановимся подробнее на `cursor` и `target`, так как они играют важную роль в организации структур
-маршрутов.
-Структура `cursor` имеет вид:
+Let's dwell on `cursor` and` target`, as they play an important role in organizing routes structures.
+
+The `cursor` has the interface:
 
 ```ts
 interface ICursor {
-  constructor: Function; // класс, который в данный момент вызывается
-  property: string; // имя метода, который в данный момент исполняется
-  handler: Function; // собственно функция, которая в данный момент исполняется (handler === constructor[property])
-  prefix: string; // префикс участка маршрутного пути, который в данный момент проходит курсор
+  constructor: Function; // the class that is currently being executed
+  property: string; // the method name that is currently being executed
+  handler: Function; // the function that is currently being executed (handler === constructor[property])
+  prefix: string; // prefix of the route segment that the cursor is currently traversing
 }
 ```
 
-Структура `target` имеет вид:
+The `target` has the interface:
 
 ```ts
 interface ITarget {
-  constructor: Function; // класс, который содержит конечную точку маршрута
-  property: string; // имя метода, который будет вызван в конечной точке маршрута
-  handler: Function; // собственно функция, которая будет вызвана в конечной точке маршрута (handler === constructor[property])
-  method: string; // метод, который применяется для конечной точки
-  path: string; // полный путь маршрута (в виде паттерна с параметрами `/files/:filename`)
-  middlewares: Function[]; // список всех middleware, предшествующих финальному вызову (дескрипторы на статичные методы классов)
+  constructor: Function; // the class that contains the endpoint of the route
+  property: string; // the name of the method to be called at the endpoint of the route
+  handler: Function; // the function that will be called at the end point of the route (handler === constructor[property])
+  method: string; // the method that is applied to the endpoint
+  path: string; // full path of the route (as a pattern with parameters `/ files /: filename`)
+  middlewares: Function[]; // a list of all middlewares preceding the final call (descriptors to static class methods)
 }
 ```
 
-Рассмотрим пример вызова метода `GET /users/user_:id`, который в общем случае составлен из цепочки
-задекорированных при помощи `@Middleware`, `@Bridge` и `@Endpoint` статичных методов трех классов:
+Consider an example of the method `GET /users/user_:id`, which is composed of a chain static methods
+of three classes, decorated with `@Middleware`,` @Bridge` and `@Endpoint`:
 
 ```ts
 [Root.Init, Users.Init, Users.UserBridge, User.Init, User.Index];
 ```
 
-При обращении к данному маршруту будут последовательно вызваны все функции цепочки, и в случае, если
-каждая из них корректно вернет `next`-значение, будет вызвана конечная функция, в которой ожидается
-результат.
+When accessing this route, all functions of the chain will be sequentially called, and if each of them
+will correctly return a `next` value, will be called the final function in which is expected the result.
 
-На любом из участков маршрута в любой middleware значение `target` будет иметь вид:
+On any part of the route in any middleware, the `target` value will look like:
 
 ```ts
 {
@@ -343,11 +337,11 @@ interface ITarget {
 }
 ```
 
-Таким образом в любом месте маршрута можно получить информацию о точке назначения, и при необходимости
-выполнить какие-либо проверки или залогировать действия.
+Thus, at any point on the route, you can get information about the destination, and if necessary
+perform any checks or log actions.
 
-Значение `cursor` в каждом месте маршрута будет отличаться.
-Для первого элемента он будет равен:
+The value of `cursor` will be different at each location in the route.
+For the first element, it will be equal to:
 
 ```ts
 {
@@ -358,7 +352,7 @@ interface ITarget {
 }
 ```
 
-Для второго элемента он будет равен:
+For the second element, it will be:
 
 ```ts
 {
@@ -369,7 +363,7 @@ interface ITarget {
 }
 ```
 
-Для третьего:
+For the third:
 
 ```ts
 {
@@ -380,7 +374,7 @@ interface ITarget {
 }
 ```
 
-Для четвертого:
+For the fourth:
 
 ```ts
 {
@@ -391,7 +385,7 @@ interface ITarget {
 }
 ```
 
-Для пятого:
+For the fifth:
 
 ```ts
 {
@@ -402,25 +396,27 @@ interface ITarget {
 }
 ```
 
-Таким образом на каждом шаге маршрута может быть получена рефлексивная информация о том, кто и на каком
-участке его обрабатывает. Может быть использовано для логирования, контроля доступа к маршрутам, а также
-к сохранению и применению контекстных данных на любом из его участков.
+Thus, at each step of the route, reflexive information about who is processing it and in what section
+can be obtained. It can be used for logging, controlling access to routes, as well as saving and
+applying contextual data in any of its sections.
 
-Наличие в `target` и `cursor` значения `constructor` дает возможность использовать значения из структуры
-`ctx.$StateMap = new WeakMap`, которые более подробно рассматриваются в описании к декораторам
-[`StateMap`](#statemap) и [`This`](#this).
+The presence of the `constructor` value in `target` and `cursor` makes it possible to use values from
+the structure `ctx.$StateMap = new WeakMap`, which are described in more detail in the description
+for decorators [`StateMap`](#statemap) and [`This`](#this).
 
-Значения объекта `target` одинаково для всех точек на ветке маршруте. Для объекта `cursor` значение
-`constructor` может быть изменено в особом случае: если применяется декоратор перегрузки
-[`Sticker`](#sticker) (описан ниже)
+The values of the `target` object are the same for all points along the route. For a `cursor` object,
+the value `constructor` can be changed in a special case: if is applied the overload decorator
+[`Sticker`](#sticker) (described below)
 
-Структура `routes` содержит список всех возможных `target` в данной сборке, предоставляя таким образом
-полный перечень всех маршрутов, доступных для данной конфигурации. Значения в структуре `target`
-могут быть расширены за счет декоратора [`@Marker`](#marker) (описан ниже)
+The `routes` structure contains a list of all possible `target`-s in a given routes assembly, providing a
+complete list of all routes available for a given configuration. The values in the `target` structure
+can be extended with the [`@Marker`](#marker) decorator (described below)
 
-Декоратор `Args` позволяет принять на вход функцию, которой будет передана структура аргументов `IArgs`,
-из которых могут быть извлечены и возвращены специфические значения. Допускается применение асинхронных функций.
-Пример:
+The `@Args` decorator allows you to accept a function as argument, which will be passed a structure
+of `IArgs` from which specific values can be retrieved and returned. Asynchronous functions
+are allowed.
+
+Example:
 
 ```ts
 import { Args, Get } from "aom/koa";
@@ -433,7 +429,7 @@ class Index {
 }
 ```
 
-Допускается создание собственных декораторов аргументов, используя вызов `Args`
+You can create your own argument decorators using the `Args` call:
 
 ```ts
 import { Args, Get } from "aom/koa";
@@ -449,32 +445,30 @@ class Index {
 }
 ```
 
-Все существующие декораторы аргументов являются частными случаями применения декоратора `@Args`:
+All existing argument decorators are special cases of the `@Args` decorator.
 
 #### Ctx
 
-Декоратор `@Ctx()` - возвращает стандартный для `koa` объект `ctx`, к которому могут быть применены
-его типовые методы, извлечены стандартные или, если использовались специфические библиотеки,
-особые значения.
+Decorator `@Ctx()` returns the standard `koa` object `ctx`, to which its typical methods can be applied,
+extracted standard, or, if specific libraries were used, special values.
 
 #### Req, Res
 
-Декораторы `@Req()` и `@Res()` возвращают стандартные для `koa` объекты `ctx.req` и `ctx.res`
-соответственно. Не принимают никаких аргументов, позволяют на низком уровне работать с контекстом.
+The decorators `@Req()` and `@Res()` return the standard `koa` objects` ctx.req` and `ctx.res`.
+They do not accept any arguments, and allows to work with the context values at a low level.
 
 #### Next
 
-Декоратор `@Next()` позволяет получить специальную `next`-функцию.
+The `@Next()` decorator allows you to get a special `next`-function.
 
-В общем случае `next`-функция используется аналогично стандартной `next`-функции `koa`: указывает,
-что далее ожидается результат из следующей функции в цепочке. Чаще всего применяется в качестве
-значения, возвращаемого в `middleware`.
+In general, the `next`-function is used in the same way as the standard `koa` `next`-function:
+it indicates that is expected the result from the next function in the middlewares chain. Most often
+used as a return value in `middleware`.
 
-При использовании аргументов `next`-функция позволяет вернуть результат из другого `endpoint`
-или `middleware`. В качестве аргументов принимает последовательность статичных методов, являющихся
-точкой назначения или прослойкой.
+When using arguments, the `next`-function allows you to return the result from another` endpoint`
+or `middleware`. Accepts a sequence of static methods as arguments, which are the endpoint or middleware.
 
-Пример:
+Example:
 
 ```ts
 @Use(User.Init)
@@ -484,7 +478,7 @@ class User {
   @Middleware()
   static async Init(@Params("user_id") userId, @This() user: User, @Next() next) {
     user.data = await models.Users.findById(userId);
-    return next(); // при вызове без аргументов указывает, что ожидается следующая функция в цепочке
+    return next(); // when called with no arguments, indicates that the next function in the chain is expected
   }
 
   @Get()
@@ -496,9 +490,9 @@ class User {
   static async Update(@This() { data }: User, @Body() body, @Next() next) {
     const { _id } = data;
     await models.Users.update({ _id }, { $set: body });
-    // может принимать в качестве аргументов цепочку middleware и endpoint
-    // выполняет их последовательно и возвращает результат, соответствующий последнему значению в цепочке
-    // прерывает выполнение в случае ошибки
+    // can take a chain of middleware and endpoint as arguments
+    // executes them sequentially and returns the result corresponding to the last value in the chain
+    // breaks the execution in the case of error
     return next(User.Init, User.Info);
   }
 }
@@ -506,27 +500,29 @@ class User {
 
 #### Err
 
-Декоратор `@Err()` возвращает `error`-функцию. В общем случае `aom` отреагирует на `throw` в произвольном
-месте цепочки вызовов, и вернет ее как 500 ошибку (или использует значение `status` из объекта ошибки).
+The `@Err()` decorator returns an `error`-function. In general, `aom` will react to `throw` anywhere
+in the call chain, and return it as a 500 error (or use the value of `status` from the error object).
 
-`error`-функция, полученная декоратором `@Err` позволит вернуть ошибку с указанным кодом `status`
-и дополнительной информацией `data`.
+The `error`-function received by the `@Err` decorator will return an error with the specified
+`status` code and additional `data` information.
 
-Декоратор может принимать аргументом конструктор ошибки, который будет создан при генерации ошибки.
-**Важно**: конструктор ошибки должен быть унаследован от класса `Error`.
+The decorator can take as an argument an error constructor, which will be used when an error is generated.
+**Important**: the error constructor must be inherited from the class `Error`.
 
-Создаваемая `error`-функция при вызове использует аргументы:
+The `error` function uses the arguments:
 
-- message: string - сообщение об ошибке, обязательно
-- status?: number - код ошибки, по умолчанию 500
-- data?: any - произвольная структура с данными об ошибке
+- message: string - error message, required
+- status?: number - error code, default 500
+- data?: any - custom structure with error data
 
-Функцию можно вернуть через `return` или `throw`.
-Пример:
+The function result can be returned via `return` or `throw`.
+
+Example:
 
 ```ts
 import { Params, Err, Next, Middleware } from "aom/koa";
 
+// define specific ErrorResponse class extends on standart Error
 class ErrorResponse extends Error {
   status: number;
   data: any;
@@ -549,44 +545,45 @@ class User {
     if (user) {
       return next();
     } else {
-      // вернет ошибку с кодом 404 и сообщением "user not found"
-      // в качестве data будет значение объект с параметром, не прошедшим проверку
-      // будет создан экземпляр класса ErrorReponse
+      // will return an error with a 404 code and the message "user not found"
+      // the value `data` will be an object with a parameter that did not pass validation
+      // an instance of the ErrorResponse class will be created
       return err("user not found", 404, { user_id: userId });
     }
   }
-  // или
+  // or
   @Middleware()
   static async Init(@Params("user_id") userId, @Err() err, @Next() next) {
     const user = await models.Users.findById(userId);
     if (user) {
       return next();
     } else {
-      // вернет ошибку с кодом 404 и сообщением "user not found", в качестве data будет значение
-      // в качестве ошибки будет экземпляр класса Error
+      // will return an error with a 404 code and the message "user not found"
+      // the value `data` will be an object with a parameter that did not pass validation
+      // an instance of the Error class will be created
       return err("user not found", 404, { user_id: userId });
     }
   }
 }
 ```
 
-##### Другие способы перехвата ошибок
+##### Other ways to catch errors
 
-Вызов задекорированных методов в `aom` происходит внутри конструкции `try { } catch (e) { }`: таким образом
-любой `throw` будет интерпретирован как ошибка на маршруте, даже если был вызван сторонней библиотекой,
-и будет возвращен в качестве значения `ctx.body = e`, прервав выполнение маршрута.
+The call of the decorated methods in `aom` occurs inside the `try {} catch (e) {}` construct:
+any` throw` will be interpreted as an error on the route, even if it was called by a third-party library,
+and will be returned as the value of `ctx.body = e`, interrupting the route.
 
-Вместо вызова `error`-функции также можно возвращать экземпляр ошибки: `aom` проверяет, если
-возвращаемое значение является объектом ошибки, то прекратит выполнение маршрута, и вернет ошибку
-с кодом 500, или со значением `status`, если таковое присутствует в значении.
+Instead of calling the `error` function, you can also return an error instance: `aom` checks
+if the returned value is an error object, then it will stop executing the route, and return
+an error with a code of 500, or with the value `status`, if it present in the object values.
 
-Таким образом, вместо `error`-функции можно использовать собственный тип ошибок, который унаследован
-от класса `Error`.
+Thus, instead of the `error`-function, you can use your own error type, which is inherited from the
+`Error` class, using the `throw` or returning the instance of class.
 
-Например:
+Example:
 
 ```ts
-// ... используем класс ErrorResponse, описанный выше
+// ... use the classs ErrorResponse, decribed above
 class Auth {
   @Middleware()
   static Required(@Next() next, @Headers("authorization") token) {
@@ -601,7 +598,7 @@ class Auth {
 
 #### Query
 
-Декоратор `@Query()` позволяет получить значение `ctx.query`, типичное для `koa`.
+The `@Query()` decorator allows you to get the `ctx.query` value typical of` koa`.
 
 ```ts
 import { Get, Query } from "aom/koa";
@@ -618,8 +615,8 @@ class Files {
 }
 ```
 
-Декоратор может принимать в качестве аргумента функцию-обработчик, в которой можно преобразовать
-или проверять значения входящего объекта.
+The decorator can take a handler function as an argument, in which you can transform or
+check the incoming values.
 
 ```ts
 const QueryParser = (query) => {
@@ -637,7 +634,7 @@ class Users {
 
 #### Body
 
-Декоратор `@Body()` позволяет получить значение `ctx.request.body`, типичное для `koa`.
+The `@Body()` decorator allows you to get the `ctx.request.body` value typical of` koa`.
 
 ```ts
 import { Get, Body } from "aom/koa";
@@ -651,15 +648,15 @@ class Users {
 }
 ```
 
-Декоратор может принимать в качестве аргумента функцию-обработчик, в которой можно преобразовать
-или проверять значения входящего объекта.
+The decorator can take a handler function as an argument, in which you can transform or
+check the incoming values.
 
 ```ts
-// использутся `class-transformer` и `class-validator`, подразумевая, что в модели данных
-// применяются соответствующие декораторы
+// using the packages `class-transformer` и `class-validator`
+// assuming that the data model applies the appropriate decorators
 import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
-// разрешается использовать асинхронные функции
+// allowed to use asynchronous functions in handlers
 const ValidateBody = async (body) => {
   const safeBody = plainToClass(models.Users, { ...body });
   const validateErrors = await validate(safeBody, { whitelist: true });
@@ -673,7 +670,7 @@ const ValidateBody = async (body) => {
 class Users {
   @Post("/add")
   static Add(@Body(ValidateBody) userData) {
-    // в `userData` заведомо точно будут безопасные данные, которые можно добавлять в базу
+    // `userData` will definitely contain safe data that can be added to the database
     return models.Users.create({ ...userData });
   }
 }
@@ -681,8 +678,8 @@ class Users {
 
 #### Params
 
-Декоратор `@Params()` позволяет получить значения `ctx.params`, типичное для `koa`. Может принимать
-в качестве аргумента имя параметра, возвращая его значение.
+The `@Params()` decorator allows you to get `ctx.params` values typical of `koa`. May take a parameter
+name as an argument, returning its value.
 
 ```ts
 import { Get, Middleware, Params, Next } from "aom/koa";
@@ -693,7 +690,7 @@ class User {
     const user = await models.Users.findById(params.user_id);
     return next();
   }
-  // или
+  // or
   @Middleware()
   static async Init(@Params("user_id") userId, @Next() next) {
     const user = await models.Users.findById(userId);
@@ -704,8 +701,8 @@ class User {
 
 #### Headers
 
-Декоратор `@Headers()` позволяет получить значения `ctx.headers`, типичное для `koa`. Может принимать
-в качестве аргумента имя заголовка, возвращая его значение.
+The `@Headers()` decorator allows you to get `ctx.headers` values typical of `koa`. May take a parameter
+name as an argument, returning its value.
 
 ```ts
 import { Get, Headers, Middleware, Next } from "aom/koa";
@@ -716,7 +713,7 @@ class Auth {
     const checkToken = await models.Auth.checkToken(headers.authorization);
     return next();
   }
-  // или
+  // or
   @Middleware()
   static async Init(@Headers("authorization") authToken, @Next() next) {
     const checkToken = await models.Auth.checkToken(authToken);
@@ -727,22 +724,22 @@ class Auth {
 
 #### State
 
-Декоратор `@State()` позволяет получить значения `ctx.state`, типичное для `koa`. Может принимать
-в качестве аргумента имя аттрибута, возвращая его значение.
+The `@State()` decorator allows you to get `ctx.state` values typical of `koa`. May take a parameter
+name as an argument, returning its value.
 
 ```ts
 import { Get, State, Params, Middleware, Next } from "aom/koa";
 
 @Use(User.Init)
 class User {
-  // сохраним значение в state
+  // save the object into `state`
   @Middleware()
   static async Init(@State() state, @Params("user_id") userId, @Next() next) {
     state.user = await models.Users.findById(userId);
     return next();
   }
 
-  // извлечем значение из state
+  // get the values from `state`
   @Get()
   static async Index(@State("user") user) {
     return user;
@@ -752,20 +749,18 @@ class User {
 
 #### Session
 
-Декоратор `@Session()` позволяет получить значения `ctx.session`, типичное для `koa`. Может принимать
-в качестве аргумента имя аттрибута, возвращая его значение.
+The `@Session()` decorator allows you to get `ctx.session` values typical of `koa`. May take a parameter
+name as an argument, returning its value.
 
-**Важно**: необходимо использовать middleware-библиотеки для использования сессий в `koa`
-(например: [`koa-session`](https://www.npmjs.com/package/koa-session))
-
-Пример:
+**Important**: you must use middleware libraries to use sessions in `koa`
+(for example: [`koa-session`](https://www.npmjs.com/package/koa-session))
 
 ```ts
 import { Middleware, Post, Delete, Session, Body } from "aom/koa";
 
 @Use(Basket.Init)
 class Basket {
-  // убедимся, что есть список для хранения товаров в корзине
+  // make sure there is a list for storing items in the basket
   @Middleware()
   static Init(@Session() session, @Next() next) {
     if (!session.basket) {
@@ -773,14 +768,14 @@ class Basket {
     }
     return next();
   }
-  // добавим предмет в корзину
+  // add item to cart
   @Post()
   static async AddItem(@Body() item, @Session("basket") basket) {
     basket.push(item);
     return basket;
   }
 
-  // очистим корзину
+  // clear the basket
   @Delete()
   static async Clear(@Session() session) {
     session.basket = [];
@@ -791,11 +786,11 @@ class Basket {
 
 #### Files
 
-Декоратор `@Files()` позволяет получить данные из `ctx.request.files`, типичного для большинства
-библиотек `koa`, позволяющего загружать файлы.
+The `@Files()` decorator allows you to get data from `ctx.request.files`, which is typical for the most
+`koa` libraries to upload files.
 
-**Важно**: необходимо использовать middleware-библиотеки для загрузки файлов в `koa`
-(например: [`koa-body`](https://www.npmjs.com/package/koa-body))
+**Important**: you must use middleware libraries to upload files in `koa`
+(for example: [`koa-body`](https://www.npmjs.com/package/koa-body))
 
 ```ts
 import { Post, Files } from "aom/koa";
@@ -803,14 +798,14 @@ import fs from "fs";
 import path from "path";
 
 class Files {
-  // загрузка одного файла
+  // wait for uploading the only file
   @Post()
   static UploadFiles(@Files("file") file: File) {
     const filename = path.join(__dirname, file.name);
     fs.renameSync(file.path, filename);
     return file;
   }
-  // загрузка нескольких файлов
+  // wait for uploading the list of files
   @Post("/mass_upload")
   static UploadFiles(@Files() files: Record<string, File>) {
     const filenames = [];
@@ -827,41 +822,41 @@ class Files {
 
 #### Cursor
 
-Декоратор `@Cursor()` позволяет получить значение `cursor`, описанное выше.
+The `@Cursor()` decorator allows you to get the `cursor` value described above.
 
 #### Target
 
-Декоратор `@Target()` позволяет получить значение `target`, описанное выше.
+The `@Target()` decorator allows you to get the `target` value described above.
 
 #### Routes
 
-Декоратор `@Routes()` позволяет получить значение `routes`, описанное выше.
+The `@Routes()` decorator allows you to get the `routes` value described above.
 
 #### StateMap
 
-`aom` расширяет контекстное значение `koa` специальной конструкцией `ctx.$StateMap = new WeakMap()`, которое
-позволяет сохранять в контексте связи, основанные на ассоциациях с абстрактными ключами. В частности
-для `aom` это позволяет сохранять ассоциации на классах, образующих маршрутные узлы.
+`aom` extends the context value of `koa` with the special construction `ctx.$StateMap = new WeakMap()`,
+which allows you to store associations based on abstract keys in the context. This allows to make
+associations based on the classes that make up the route nodes.
 
-Наиболее частый способ применения `@StateMap()` - сохранение в `middleware`-функции локальные состояния
-экземпляров класса с последующим их применением в других методах.
+The most common use of `@StateMap()` is to store local states of class instances in a `middleware`
+function and then apply them in other methods.
 
-Декоратор `StateMap` может принимать аргумент, который вернет из хранилища значение по ключу, равному этому
-аргументу.
+The `@StateMap()` decorator can take an argument that will return a value from the store with a key
+equal to this argument.
 
-Пример:
+Example:
 
 ```ts
 class Auth {
   user: models.Users;
   login: models.UserLogins;
-  // создадим прослойку, которая по токену определяет, доступна ли пользователю авторизация
-  // и если доступна, сохраняет в stateMap по ключу класса авторизационную информацию: пользователя и логин
+  // create a layer that determines by the token whether authorization is available to the user
+  // and if available, saves authorization information in stateMap by the class key: user and login
   @Middleware()
   static Init(@Headers("authorization") token, @Next() next, @StateMap() stateMap, @Err() err) {
     const authData = models.Auth.checkToken(token);
     if (authData) {
-      const auth = new this(); // поскольку метод вызывается с сохранением контекста, то `this` - это класс `Auth`
+      const auth = new this(); // since the method is called with the same context, `this` is the `Auth` class
       auth.user = await models.Users.findById(authData.userId);
       auth.login = await models.UserLogins.findById(authData.userLoginId);
       stateMap.set(this, auth);
@@ -870,35 +865,36 @@ class Auth {
     }
   }
 }
-// ... затем извлечем доступ к авторизационной информации в другом middleware или endpoint
+// ... then we will get the authorization information in another middleware or endpoint
 
-@Use(Auth.Init) // отметим, что для доступа к маршрутному узлу обязательна успешная авторизация
+@Use(Auth.Init) // define that successful authorization is required to access the route node
 class Account {
-  // этот метод будет гарантированно вызван, если авторизация по токену была успешно совершена
-  // а значит в StateMap будет значение по ключу Auth, являющееся экземпляром этого класса
-  // с установленными значеними
+  // this method will be guaranteed to be called if authorization by token was successful
+  // which means that StateMap will have a value by the Auth key, which is an instance of this class
+  // with defined values
   @Get()
   static async Index(@StateMap(Auth) auth: Auth, @Next() next) {
     const { user, login } = auth;
-    // поскольку user - это объект модели данных `models.Users`, то для него доступны все его методы
+    // user is a data model object `models.Users`, all its methods are available to it
     const stat = await user.getStat();
     return { user, login, stat };
   }
 }
 ```
 
-Использование `WeakMap` обусловленно критериями скорости и оптимизации памяти для хранения значений.
-При желании его можно перегрузить, создав `middleware`, в котором будет использовано хранилище `Map`.
+The use of `WeakMap` is due to the criteria for speed and memory optimization for storing values.
+If desired, you can overload it by creating a `middleware` that will use the `Map` store.
 
-Например:
+Example:
 
 ```ts
-@Use(Root.Init) // Root.Init будет вызываться перед всеми запросами во всех маршрутных ветках
+@Use(Root.Init) // being the first, Root.Init will be called before all requests in all route branches
 @Bridge("/files", Files)
 @Bridge("/users", Users)
 class Root {
   @Middleware()
   static Init(@Ctx() ctx, @Next() next) {
+    // overload the ctx variable
     ctx.$StateMap = new Map();
     return next();
   }
@@ -912,13 +908,13 @@ class Root {
 
 #### This
 
-Декоратор `@This()` является расширением декоратора `@StateMap()`. Он проверяет, есть ли в `ctx.$StateMap`
-значение по ключу, равного значению `constructor` в текущем `cursor`. Таким образом в общем случае он
-проверяет, есть ли в `StateMap` значение для текущего класса, который сейчас выполняет работу, и если нет,
-создает его singletone-экземпляр и возвращает значение.
+The `@This()` decorator is an extension of the `@StateMap()` decorator. It checks
+if `ctx.$StateMap` has a key value equal to the value of `constructor` in the current `cursor`. Thus,
+in general, it checks if the `StateMap` has a value for the current class that is currently doing the work,
+and if not, creates its singletone instance and returns the value.
 
-Наиболее частый способ применения декоратора `@This()` - использование в иницирующей `middleware`
-и `endpoint`-ах одного и того же маршрутного узла.
+The most common case of the `@This()` decorator is to use the same route node in the initiating
+`middleware` and` endpoints`.
 
 ```ts
 @Use(User.Init)
@@ -940,7 +936,7 @@ class User {
 
   @Get()
   static Info(@This() user: User) {
-    return user; // вернет { user, stat }
+    return user; // returns { user, stat }
   }
 
   @Delete()
@@ -951,9 +947,9 @@ class User {
 }
 ```
 
-Декоратор `@This()` может принимать в качестве аргумента, другой класс. В этом случае будет возвращено
-значение для этого класса из `ctx.$StateMap`, а, если его там не было, будет создан и возвращен экземпляр
-этого класса, с сохранением по указанному аргументу в `ctx.$StateMap`.
+The `@This()` decorator can take another class as an argument. In this case, will be returned the value for
+this class from `ctx.$StateMap`, and if it was not there, an instance of this class will be created
+and returned, with the specified argument stored in `ctx.$StateMap`.
 
 ```ts
 class Files {
@@ -977,36 +973,36 @@ class User {
 }
 ```
 
-Таким образом, использование декоратора `@StateMap()` позволяет хранить по ключу произвольное значение,
-в то время как `@This()` всегда возвращает singletone-экземпляр класса, переданного в аргументе или
-в текущем курсоре.
+Thus, using the decorator `@StateMap()` allows you to store an arbitrary value by key,
+while `@This()` always returns a singletone instance of the class passed in the argument
+or in the current cursor.
 
-**Важно**: все классы, для которых будет применяться декоратор `@This`, должны уметь создавать свои
-экземпляры без аргументов, так как декоратор не поддерживает передачу каких-либо значений в конструктор.
+**Important**: all classes for which the `@This` decorator will be used must be able to create their
+own instances without arguments, since the decorator does not support passing any values to the constructor.
 
 ### Мосты (Bridge) и прослойки (Middleware)
 
-Прослойки создаются при помощи декоратора `@Middleware()`. Он не принимает аргументов, и просто позволяет
-использовать указанный метод как промежуточный слой к любому другому элементу маршрутного узла:
-конечной точкой, мостом, другой прослойкой или маршрутным узлом целиком.
+Middleware layers are created using the `@Middleware()` decorator. It takes no arguments, and
+simply allows the specified method to be used as an intermediate layer to any other element of
+the route node: an endpoint, bridge, other middleware, or the entire route node.
 
-Подключение `middleware` происходит при помощи декоратора `@Use()`, принимающего в качестве аргументов
-последовательность `middleware`-функций: `@Use(Root.Init, Auth.Required, Users.Init)`.
-Декоратор `@Use()` может быть применен к endpoint-у, маршрутному узлу целиком, другой прослойке или мосту.
-Все прослойки всегда выполняются перед элементом, к которому они применены.
+Connection of `middleware` is done using the decorator `@Use()`, which takes as arguments
+a sequence of `middleware`-functions: `@Use (Root.Init, Auth.Required, Users.Init)`.
 
-Для соединения маршрутных элементов между собой используются мосты, создаваемые декоратором `@Bridge`.
-Аргументами к декоратору являются:
+The `@Use()` decorator can be applied to an endpoint, an entire route node, another middleware, or a bridge.
+All middlewares are always executed before the element to which they are applied.
 
-- `prefix: string` - адресный префикс маршрута, может содержать параметр, контекстный целевому маршрутному
-  элементу
-- `nextRoute: Function` - следующий маршрутный узел: задекорированный класс, который может содержать другие
-  мосты, прослойки и `endpoint`-ы
+To connect route elements to each other use the `@Bridge` decorator.
 
-Декоратор `@Bridge` может применяться как к классу, так и к методу класса. В последнем случае метод класса
-выступает как прослойка к подключаемому маршруту.
+The arguments to the decorator are:
 
-Пример:
+- `prefix: string` - route address prefix, may contain a parameter contextual to the target route element
+- `nextRoute: Function` - next route node: a decorated class that can contain other bridges, middlewares, and endpoints
+
+The `@Bridge` decorator can be applied to a class or a static class method. In the second case, the
+class method acts as a middleware to the route node being connected.
+
+Example:
 
 ```ts
 // ... index.ts
@@ -1014,10 +1010,10 @@ import { Get, Bridge, Use, Middleware } from "aom/koa";
 import logger from "logger";
 import Files from "./files";
 
-@Bridge("/files", Files) // маршрутный узел Files доступен по префиксу `/files` относительно текущего узла
+@Bridge("/files", Files) // the Files route node is accessible by the `/files` prefix relative to the current node
 class Index {
   @Get()
-  @Use(Root.Logger) // перед методом `GET /` будет использована прослойка с логированием
+  @Use(Root.Logger) // before the `GET /` method, a middleware with logging will be used
   static Hello() {
     return `Hello, I'm aom`;
   }
@@ -1041,22 +1037,22 @@ class Files {
     return fs.readdirSync(__dirname);
   }
 
-  @Bridge("/:filename", FileInfo) // ожидает параметр - имя файла - в качестве следующего фрагмента пути
+  @Bridge("/:filename", FileInfo) // expects a parameter - filename - as the next chunk of the path
   static prepare(
     @Params("filename") filename: string,
     @StateMap() stateMap: WeakMap<any, any>,
     @Err() err,
     @Next() next
   ) {
-    // получим полное имя файла с учетом директории
+    // get the full name of the file, using the directory name
     filename = path.join(__dirname, filename);
-    // если файл найден
+    // if file exists
     if (fs.existsSync(filename)) {
-      // создает экземпляр маршрутного узла
+      // make and instance of connected class
       const fileInfo = new FileInfo();
-      // сохраняет в него полученное имя файла
+      // save the filename
       fileInfo.filename = filename;
-      // и сохраняет в stateMap (контекстный объект WeakMap)
+      // save the instance to StateMap
       stateMap.set(FileInfo, fileInfo);
       return next();
     } else {
@@ -1069,14 +1065,14 @@ class Files {
 import getFileInfo from "get-file-info";
 import fs from "fs";
 
-@Use(FileInfo.Init) // перед всеми методами узла выполняется прослойка `FileInfo.Init`
+@Use(FileInfo.Init) // before all node methods, the `FileInfo.Init` middleware is executed
 class FileInfo {
-  filename: string; // полное имя файла
-  info: any; // информация о файле
+  filename: string; // full filename
+  info: any; // file info
 
   @Get()
   static Index(@Ctx() ctx, @This() _this: FileInfo) {
-    // установим тип возвращаемого контента согласно mime-type файла
+    // set the content type according to the mime-type of the file
     ctx.set("Content-Type", _this.info.type);
     return fs.readFileSync(_this.filename);
   }
@@ -1089,81 +1085,82 @@ class FileInfo {
 
   @Middleware()
   static Init(@This() _this: FileInfo, @Next() next) {
-    // поскольку заведомо точно известно, что данный файл существует
-    // то получаем о нем информацию без проверок на ошибки
+    // since it is known for sure that this file exists
+    // then we get information about it without checking for errors
     _this.info = getFileInfo(_this.filename);
     return next();
   }
 }
 ```
 
-Мост может быть подключен с префиксом `/`: в этом случае все методы подключаемого узла будут находиться
-в адресном пространстве узла, к которому происходит подключение.
+The bridge can be connected with the `/` prefix: in this case, all methods of the connected node
+will be located in the prefix-space of the node to which the connection is made.
 
-**Важно**: при сборке все мосты подключаются после `endpoint`-ов текущего узла. Таким образом, если вдруг
-возникнет коллизия в значениях `url` и/или `prefix`, то приоритет останется за методами, подключенными
-последними, то есть через `@Bridge`. Разработчик обязан самостоятельно следить за адресным пространством,
-которое он использует.
+**Important**: during assembly, all bridges are connected after the `endpoints` of the current route node.
+Thus, if a collision suddenly occurs in the values of `url` and/or `prefix`, the priority will remain
+with the methods connected last, that is, via `@Bridge`. The developer is obliged to independently
+monitor the address space, which he or she uses.
 
 #### Marker
 
-Декоратор `@Marker()` позволяет обогатить информацию о точке назначения в маршрутной карте, указав,
-что для элемента `target` в цепочке предшествующих ему `middleware` есть элементы `cursor` с определенными
-значениями `prefix`, к который применяется какая-то особая логика.
+The `@Marker()` decorator allows you to enrich the information about the destination in the route map,
+specifying that for the `target` element in the chain of `middleware` preceding it there are `cursor`
+elements with certain `prefix` values, to which some special logic applied.
 
-Декоратор применяется на `middleware`-функцию, таким образом, что в момент, когда эта `middleware`
-используется на любом из участков маршрутной карты, маркер применяется к конечной точке согласно правилам
-функции маркировки.
+The decorator is applied to the `middleware`-function, so that the moment this middleware is used
+in any part of the route map, the marker is applied to the endpoint according to the rules of the
+marking function.
 
-Декоратор `@Marker()` принимает аргументом функцию маркировки, которая должна принимать два аргумента:
-`target` и `cursor`. Курсором будет всегда прослойка, к которой применен декоратор `@Marker`
+The `@Marker()` decorator accepts a mark function as an argument, which must take two arguments:
+`target` and` cursor`. The cursor will always be the middleware to which the `@Marker` decorator is applied
 
-Маркировка устанавливается в процессе сбора маршрутной карты и не оперирует контекстом. Наличие маркировки
-в элементе маршрута может служить основанием для дополнительных контекстных проверок: полномочий,
-прав доступа и других составных операций.
+Marking is set in the process of assembling a route map and does not operate with context. The
+presence of a marking in a route element can serve as a basis for additional contextual checks:
+authority roles, access rights, and other compound operations.
 
-Рассмотрим использование маркировки на примере контроля доступа к маршрутным точкам.
+Let's consider the use of markings using the example of access control to waypoints.
 
 ```ts
-// для проверки прав доступа применяется модель данных, которая использует точечное хранение
-// конечных и промежуточных участков маршрута с указанием ролей, которым данные полномочия разрешены
-// пользователи могут иметь одну или несколько ролей, которые позволяют ему обращаться к разным методам
+// for checking access rights, is used a data model that store the final and intermediate sections
+// of the route with an indication of the roles that these rights are allowed
+// users can have one or more roles that allow him to access different methods
 class Access {
-  // прослойка, выполняющая проверку, что пользователю, авторизованному в контексте, разрешен
-  // доступ к данному участку маршрута
+  // a middleware that checks that a user authorized in the context is allowed access
+  // to this segment of the route
   @Middleware()
-  // укажем, что данная прослойка является маркером, использущим указанную функцию маркировки
+  // define that this layer is a `@Marker` using the specific marking function
   @Marker(Access.setMark)
   static Check(
-    @StateMap(Auth) { user }: Auth, // авторизационные данные пользователя
-    @Target() target, // точка назначения, из которой важно знать `path` и `method`
-    @Cursor() cursor, // курсор, в котором важно знать значение `prefix`
+    @StateMap(Auth) { user }: Auth, // user credentials
+    @Target() target, // endpoint from which it is important to know `path` and` method` values
+    @Cursor() cursor, // cursor from which it is important to know `prefix` value
     @Next() next,
     @Err() err
   ) {
-    // если для пользователя выполняется проверка, то позволим пройти данную прослойку, ведущую к указанному адресу
+    // if a check is performed for the user, then let him pass this layer leading to the specific endpoint
     if (user.checkAccess(target, cursor)) {
       return next();
     } else {
-      // иначе вернем ошибку 403
+      // otherwise we will return a 403 error
       return err("access denied", 403);
     }
   }
 
-  // создадим имя маркера
+  // define the marker name
   static markerName = "check_access";
-  // функция маркировки
+  // marking funciton
   static setMark(target: ITarget, cursor: ICursor) {
     const { markerName } = this;
-    // если для элемента `target` нет требуемого маркера, то создадим его
+    // if there is no required marker for the `target` element, then create it
     if (!target[markerName]) {
       target[markerName] = [];
     }
-    // добавим текущий курсор в маркерный список для target
+    // add the current cursor to the list for target
     target[markerName].push(cursor);
   }
 }
-// ... применим созданный маркер
+// ... apply the created marker
+// ...
 @Bridge("/users", Users)
 class Root {
   @Get()
@@ -1172,16 +1169,15 @@ class Root {
   }
 
   @Get("/info")
-  // применим middleware, выполняющую функцию маркировки
-  // маркировка распространится на метод `Root.Secure`
+  // apply middleware that performs the marking function
+  // marking will propagate to the `Root.Secure` method
   @Use(Access.Check)
   static Secure() {
     return "this route is secure";
   }
 }
-
-// применим middleware, выполняющую функцию маркировки
-// маркировка распространится на все методы узла Users
+// apply middleware that performs the labeling function
+// marking will apply to all methods of the `Users` route node
 @Use(Access.Check)
 class Users {
   @Get()
@@ -1202,7 +1198,7 @@ class Users {
 }
 ```
 
-В результате данной операции в списке маршрутов `routes` появятся следующие значения
+As a result of this operation, the following values will appear in the list of `routes`
 
 ```ts
 [
@@ -1233,22 +1229,21 @@ class Users {
 ];
 ```
 
-Наличие значения `check_access` для конечных точек будет являться признаком того, что эти точки
-управляются функцией контроля доступа. Таким образом маркировка "подняла наверх" информацию, которую
-можно использовать для визуализации структуры запросов и использовании тех из них, к которым
-следует применить релевантные маркировке процедуры.
+The presence of a `check_access` value for endpoints will indicate that these points are
+controlled by `Access.Check` middleware. Thus, the marking "raised up" information that
+can be used to visualize the structure of requests and use those of them to which the
+relevant marking procedures should be applied.
 
 #### Sticker
 
-Декоратор `@Sticker()` используется в ситуациях, когда для создания маршрутных узлов используются типовые
-классы, от которых наследуются активные маршрутные узлы.
+The `@Sticker ()` decorator is used in situations where generic classes are used to create route nodes
+from which active route nodes inherit.
 
-Пример:
+Example:
 
 ```ts
-// для быстрого создания апи методов вокруг моделей данных каталога создадим класс
-// который будет предоставлять стандартные middleware для этого сегмента данных
-// каким-то образом безопасно фильтрующих входящие значения
+// // to quickly create api methods around the catalog data models, we will create a class
+// that will provide standard middleware for this data segment, somehow safely filtering incoming values
 class Catalogs {
   model: Model;
   where = {};
@@ -1266,49 +1261,49 @@ class Catalogs {
     return next();
   }
 
-  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
+  // only use values that have passed safe internal validation in the data model
   static FilterQuery(model, query) {
     return model.safeQuery(query);
   }
 
-  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
+  // only use values that have passed safe internal validation in the data model
   static FilterBody(model, body) {
     return model.safeBody(body);
   }
 }
 
-// унаследуем от данного класса маршрутный узел для работы с категориями
+// inherit from this class the route node for working with categories
 class Categories extends Catalogs {
   model = models.Categories;
 
   @Get()
-  // применим типовую фильтрацию данных для создания критериев поиска в модели данных
+  // let's apply typical data filtering to create search criteria in the data model
   @Use(Categories.SafeQuery)
   static Index(@This() _this) {
     return _this.model.find(_this.where);
   }
 
   @Post()
-  // применим типовую фильтрацию данных для ограничения входящих значений
+  // apply typical data filtering to restrict incoming values
   @Use(Categories.SafeBody)
   static Add(@This() _this) {
     return _this.model.create(_this.body);
   }
 }
 
-// унаследуем от данного класса маршрутный узел для работы с брендами
+// inherit from this class the route node for working with brands
 class Brands extends Catalogs {
   model = models.Brands;
 
   @Get()
-  // применим типовую фильтрацию данных для создания критериев поиска в модели данных
+  // let's apply typical data filtering to create search criteria in the data model
   @Use(Brands.SafeQuery)
   static Index(@This() _this) {
     return _this.model.find(_this.where);
   }
 
   @Post()
-  // применим типовую фильтрацию данных для ограничения входящих значений
+  // apply typical data filtering to restrict incoming values
   @Use(Brands.SafeBody)
   static Add(@This() _this) {
     return _this.model.create(_this.body);
@@ -1316,15 +1311,16 @@ class Brands extends Catalogs {
 }
 ```
 
-Несмотря на то, что данный код не содержит комплируемых ошибок, он не будет работать корректным образом.
-Ввиду особенностей механизма наследования классов в JS, функции `Brands.SafeBody` и `Brands.SafeQuery`
-(равно как `Categories.SafeBody` и `Categories.SafeQuery`) будут фактически возвращать дескриптор функций
-`Catalogs.SafeQuery` и `Catalogs.SafeBody`, и при вызове декоратор `@This` будет создавать экземпляр класса
-`Catalogs`, а при обращении к методы `FilterQuery` и `FilterBody` возникнут ошибки, так как в контексте
-класса `Catalogs` нет определенных моделей данных.
+Although this code contains no compliant errors, it will not work correctly.
 
-Для того, чтобы данный код заработал, необходимо для `middleware`-функций `Catalogs.SafeQuery`
-и `Catalogs.SafeBody` добавить декоратор `@Sticker()`
+Due to the class inheritance mechanism in JS, the `Brands.SafeBody` and `Brands.SafeQuery` functions
+(as well as `Categories.SafeBody` and `Categories.SafeQuery`) will actually return a handle to
+the `Catalogs.SafeQuery` and `Catalogs.SafeBody` functions, and when called the `@This` decorator
+will create an instance of the `Catalogs` class, and when calling the `FilterQuery` and `FilterBody`
+methods, errors will occur, since there are no data models defined in the context of the `Catalogs` class.
+
+In order for this code to work, you need to add the decorator `@Sticker()` for the `middleware` functions
+`Catalogs.SafeQuery` and `Catalogs.SafeBody`
 
 ```ts
 class Catalogs {
@@ -1345,78 +1341,69 @@ class Catalogs {
     _this.body = this.FilterBody(_this.model, body);
     return next();
   }
-
-  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
-  static FilterQuery(model, query) {
-    return model.safeQuery(query);
-  }
-
-  // используем только те значения, которые прошли безопасную внутренную проверку в модели данных
-  static FilterBody(model, body) {
-    return model.safeBody(body);
-  }
+  // ...
 }
 ```
 
-В этом случае для отмеченных этим декоратором методов будет осуществляться проверка: является ли
-`target.constructor` потомком `cursor.constructor`, и если да, то значение `cursor.constructor` в этом
-методе будет заменено на значение `target.constructor` (значение будет как-бы "заклеено", отсюда название
-декоратора).
+In this case, for the methods marked with this decorator, a check will be performed:
+whether `target.constructor` is a descendant of` cursor.constructor`, and if so, the
+value of `cursor.constructor` in this method will be replaced with the value of
+`target.constructor` (the value will be, as it were, "sticked", hence the name of the decorator).
 
-Данная методика работает только для `middleware`, и пока не подходит для `endpoint`. Таким образом,
-что нельзя использовать мост на родительский класс с типовыми процедурами. Такая возможность появится позже.
+This technique works only for `middleware`, and is not yet suitable for `endpoint`. Thus, you
+cannot use a bridge to the parent class with type procedures. This opportunity may appear later.
 
-**Важно**: декоратор `@Sticker` является экспериментальной функцией, и может быть значительно переработан
-и изменен.
+**Important**: The `@Sticker` decorator is an experimental feature and could be significantly
+redesigned and modified.
 
 ## aom/openapi
 
-Декораторы коллекции `aom/openapi` позволяют обогащать маршрутные узлы информацией, которая при сборке
-формирует документацию в формате [`OAS3`](https://swagger.io/specification/), обеспечивая таким образом
-естественную автодокументацию кода.
+Decorators of the `aom/openapi` collection allow to enrich route nodes with information that,
+when assembled, generates schemas in the format [`OAS3`](https://swagger.io/specification/),
+providing code auto-documentation.
 
-При генерации документации используется тот же принцип последовательной обработки участков маршрутных
-узлов - прослоек, мостов - с накоплением релевантной информации и применением полученной совокупности
-к конечной точке маршрута.
+In documentation generation uses principle of sequential processing of sections of
+route nodes - middlewares and bridges - with the accumulation of relevant information and
+the compilation of the resulting set on the route endpoint.
 
-Таким образом, что если одна из прослоек при проверке данных генерирует специальную ошибку `403`, то при
-ее описании для этой middleware она распространится на информацию в структуре `responses` на все
-множество использующих эту прослойку endpoint-ов. Аналогичное поведение будет при генерации информации
-о параметрах адресной строки, протоколах безопасности и тегах.
+Thus, if one of the layers during data validation generates a special `403` error, then when
+it is described for this middleware, it will propagate to the information in the `responses`
+structure for the entire set of endpoints using this layer. Similar behavior will occur
+when generating information about url parameters, security protocols and tags.
 
-**Важно**: далее в этой документации будет упоминаться тип данных `SchemaObject`. В данном случае
-это означает применение интерфейса из библиотеки `openapi3-ts`, означающий типовую конфигурацию
-схемы данных объекта в спецификации `openapi`.
+**Important**: in this documentation will be mentioned the data type `SchemaObject`. In this case,
+it means using the interface from the `openapi3-ts` library, which means the typical configuration
+of the object data schema in the `openapi` specification.
 
 ```ts
 import { SchemaObject } from "openapi3-ts";
 ```
 
-### Методология формирования окружения
+### Environment formation methodology
 
-В своей основе `aom` стремится к сокращению количества используемого кода и минимизации дубликатов структур
-данных. Эти же принципы используются для того, чтобы максимально использовать возможности языка `JavaScript`
-и обогатить используемые структуры данных окружением, которое позволит генерировать необходимый код по запросу.
+At its core, `aom` aims to reduce the amount of code used and minimize duplicate data structures.
+The same principles are used in order to make the most of the possibilities of the `JavaScript`
+language and to enrich the used data structures with an environment that will allow generating
+the necessary code on demand.
 
-Декораторы из `aom/openapi` применяются исключительно для маршрутных узлов, однако они принимают в
-качестве значений своих аргументов указания на модели данных. Генерация файла документации происходит
-при вызове метода `toJSON`, таким образом необходимо позаботиться, чтобы такие структуры данных
-обладали возможностью возвращать валидную структуру, описывающую его в стандарте `JSON-schema`, используя
-собственные методы `toJSON` (для классов или объектов)
+Decorators from `aom/openapi` are used exclusively for route nodes, but they accept data model
+references as their arguments. The documentation file is generated when the `toJSON` method
+is called, so you need to take care that such data structures have the ability to return a
+valid structure describing it with the` JSON-schema` standard using their own `toJSON` methods
+(for classes or objects)
 
-Хорошей практикой можно считать использование декораторов из библиотек
-[`class-validator`](https://www.npmjs.com/package/class-validator) и
-[`class-validator-jsonschema`](https://www.npmjs.com/package/class-validator-jsonschema).
+It is good practice to use decorators from the libraries [`class-validator`](https://www.npmjs.com/package/class-validator)
+and [`class-validator-jsonschema`](https://www.npmjs.com/package/class-validator-jsonschema).
 
-Например, в сочетании с использованием методологии `typeorm` или `typegoose` это позволяет создавать
-конструкции следующего вида:
+For example, in combination with the using the `typeorm` or` typegoose` methodology, this allows you
+to create constructs like this:
 
 ```ts
-// пример с typeorm
-// используем декораторы из библиотек "class-validator-jsonschema" и "class-validator"
+// typeorm example
+// use decorators from "class-validator-jsonschema" and "class-validator"
 import { targetConstructorToSchema, JSONSchema } from "class-validator-jsonschema";
 import { IsEnum, IsOptional, IsString, IsEnum } from "class-validator";
-// используем декораторы и базовые классы из typeorm
+// use decorators and constructors from typeorm
 import { EventSubscriber, Entity, Column, UpdateDateColumn, CreateDateColumn } from "typeorm";
 import { Index, ObjectIdColumn } from "typeorm";
 import { BaseEntity } from "typeorm";
@@ -1425,7 +1412,7 @@ enum YesNo {
   YES = "yes",
   NO = "no",
 }
-// опишем модели данных: создадим базовую модель, от которой будут унаследованы остальные
+// describe data model: make BaseModel from which will be inherits another classes
 @EventSubscriber()
 export default class BaseModel extends BaseEntity {
   @ObjectIdColumn()
@@ -1462,13 +1449,13 @@ export default class BaseModel extends BaseEntity {
   })
   updatedAt: Date;
 
-  // создадим статичный метод JSON, который позволит получить JSON-schema для текущего класса
+  // need to create a static toJSON method that will get the JSON-schema for the current class
   static toJSON(): SchemaObject {
     return targetConstructorToSchema(this);
   }
 }
 
-// создадим модель данных Files, унаследованую от базовой модели
+// make data model Files extends on BaseModel
 @Entity()
 export default class Files extends BaseModel {
   @Column()
@@ -1491,15 +1478,16 @@ export default class Files extends BaseModel {
 }
 ```
 
-Таким образом, когда будет использовано прямое обращение к классу `Files`, то при генерации JSON будет
-вызван унаследованный им метод `static toJSON()`, который вернет корректное для спецификации `OAS3`
-значение с описанием структуры данных.
+Thus, when the `Files` class will be used for generating JSON, the inherited method` static toJSON()`
+will be called and will return a value correct of the `OAS3` specification with a description of
+the data structure.
 
-Тот же принцип следует использовать и для частных случаев структур данных, которые могут использоваться
-в ходе разработки: входящие значения или специфические ответы.
+The same principle should be used for special cases of data structures that can be used during
+development: input values or specific responses.
+
+Example for describing user authorization form:
 
 ```ts
-// пример для описания данных, характеризущих авторизацию пользователя
 class toJSONSchema {
   static toJSON(): SchemaObject {
     return targetConstructorToSchema(this);
@@ -1523,31 +1511,32 @@ class AuthForm extends toJSONSchema {
 }
 ```
 
-Также, вместо использования структур, генерирующих схему данных при помощи метода `toJSON`, можно
-использовать объект с существующей схемой данных, в том числе содержащий ссылки на другие значения
-в документации. В этом случае необходимо будет вручную контролировать целостность таких связей,
-что может осложнить разработку.
+Instead of using structures that generate a data schema using the `toJSON` method, you can
+use an object with an existing data schema, including references to other values in the documentation.
+In this case, it will be necessary to manually control the integrity of such links, which can
+complicate the development.
 
-### Как это работает
+### How does this works
 
-Декораторы из `aom/openapi` описывают общие характеристики, которые будут включены в документацию.
-Для получения конечной структуры следует использовать сборщик `aom/koa/$`, в который необходимо передать
-экземпляр класса `OpenApi`, с инициированной контекстной данному api-сервису информацией.
+Decorators from `aom/openapi` describe general schema properties that will be included in
+the documentation. To get the final structure, you should use the `aom/koa/$` assembler,
+into which you need to pass an instance of the `OpenApi` class, with information initiated
+by the context of this api-service.
 
-Затем данный класс, обогащенный в процессе декомпозиции маршрутных узлов релевантными данными, можно
-вернуть в одном из методов инициированного API, либо передать в библиотеку типа `swagger-ui`
-в качестве источника JSON-данных.
+After all this class, enriched with relevant data during the decomposition of route nodes,
+can be returned in one of the methods of the initiated API, or passed to a library like `swagger-ui`
+as a source of JSON data.
 
-Пример:
+Example:
 
 ```ts
 // ... openapi.ts
 import { OpenApi } from "aom/openapi";
-// создадим экземпляр класса документацией, с базовой информацией, контекстной данному api-сервису
+// create an instance of the class with the documentation, with basic information contextual to this api-service
 export default new OpenApi({
   info: {
-    title: "Тестовая документация",
-    description: "Пример автодокументации, собираемой на декораторах к маршрутам",
+    title: "Test documentation",
+    description: "Example for autodocumentation built on routes decorators",
     contact: {
       name: "Kholstinnikov Grigory",
       email: "mail@scarych.ru",
@@ -1563,23 +1552,23 @@ import Docs from "./openapi";
 @Bridge("/users", Users)
 @Bridge("/files", Files)
 class Root {
-  @Summary("Главная страница")
+  @Summary("Index page")
   @Get()
   static Index() {
     return "aom is working";
   }
 
-  @Summary("Документация")
-  @Description("Полная документация в формате [`OAS3`](https://swagger.io/specification/)")
+  @Summary("Documentation")
+  @Description("Complete [`OAS3`](https://swagger.io/specification/) documentation")
   @Get("/openapi.json")
   static OpenApi() {
-    return Docs; // будет автоматически преобразовано в JSON
+    return Docs; // will automaticaly transformed to JSON
   }
 }
 ```
 
-Для применения данных из декораторов к файлу документации необходимо в сборщике вызвать метод `docs`,
-передав в него инициированный экземпляр класса с документацией.
+To apply data from decorators to a documentation file, you need to call the `docs` method
+in the assembler, passing in it an initiated instance of the class with documentation.
 
 ```ts
 // ... server.ts
@@ -1593,36 +1582,36 @@ const app = new koa();
 const router = new koaRouter();
 
 new $(Root)
-  // соберем маршруты
+  // assemble the routes
   .routes(({ method, path, middlewares }) => {
     router[method](path, ...middlewares);
   })
-  // подключим документацию
+  // attach documentation
   .docs(Docs);
 
 app.use(router.routes()).use(router.allowedMethods());
 app.listen(3000);
 ```
 
-### Описание конечной точки маршрута: Summary и Description
+### Describe the endpoints: Summary и Description
 
-Для описания конечной точки маршрута используются декораторы `@Summary()` и `@Description()`. Каждый из них
-принимает в качестве аргумента строковое значение.
+The decorators `@Summary()` and `@Description()` are used to describe the endpoint of the route.
+Each of them takes a string value as an argument.
 
 ```ts
 import { Summary, Description } from "aom/openapi";
 import { Get, Post } from "aom/koa";
 
 class Users {
-  @Summary("Список пользователей")
-  @Description("Возвращает список активных пользователей")
+  @Summary("Users list")
+  @Description("Return the list of active users")
   @Get()
   static List() {
     return models.Users.find({ active: true });
   }
 
-  @Summary("Добавить пользователя")
-  @Description("Создает нового пользователя и возвращает информацию о нем")
+  @Summary("Add new user")
+  @Description("Create new user and return user info")
   @Post()
   static Add(@Body() body) {
     return models.Users.create({ ...body });
@@ -1630,30 +1619,31 @@ class Users {
 }
 ```
 
-Описание метода не является накопительной информацией, и используется целенаправленно для каждой конечной
-точки маршрута.
+The description of the method is not cumulative information, and is used purposefully for each
+endpoint of the route.
 
-### Ответы: Responses
+### Responses
 
-Информация о структуре возвращаемых в методе ответах создается декоратором `@Responses()`. Данный декоратор
-позволяет накапливать множество вариантов ответов, если это подразумевается логикой маршрута.
+Information about the structure of responses returned in a method is generated by the `@Responses()`
+decorator. This decorator allows you to accumulate many answer options, if it is implied by the
+logic of the route.
 
-В качестве аргументов принимает последовательность объектов, удовлетворяющих следующей структуре:
+It takes as arguments a sequence of objects that satisfy the following structure:
 
 ```ts
 interface OpenApiResponse {
-  status: number; // код ответа
-  schema: SchemaObject | Function | any; // схема в формате JSON-schema, или объект, генерирующий JSON подходящего формата
-  contentType?: string; // тип данных, по умолчанию `application/json`
-  isArray?: boolean; // признак того, что возвращается список объектов (коллекция), по умолчанию `false`
-  description?: string; // описание ответа
+  status: number; // response status code
+  schema: SchemaObject | Function | any; // a JSON-schema or an object that generates JSON in JSON-schema
+  contentType?: string; // content type, default `application/json`
+  isArray?: boolean; // a flag that a array of objects (collection) is returned, by default `false`
+  description?: string; // response description
 }
 ```
 
-Пример работы данного декоратора:
+An example of how this decorator works:
 
 ```ts
-// опишем типовую ошибку, которая может быть возвращена
+// describe a typical error that can be returned
 @JSONSchema({
   description: "standart error response",
 })
@@ -1700,8 +1690,7 @@ export class ErrorResponse extends Error {
 
 // ... auth.ts
 class Auth {
-  // на уровне middleware добавим вариант ответа 403, который распространится на все endpoint-ы
-  // требующие авторизации
+  // at the middleware add a 403 response that will apply to all endpoints requiring authorization
   @Middleware()
   @Responses({ status: 403, description: "access denied error", schema: ErrorResponse })
   static async Required(@Headers("authorization") token, @Err(ErrorResponse) err, @Next() next) {
@@ -1718,10 +1707,10 @@ class Auth {
 @Use(Auth.Required)
 class Users {
   @Get()
-  @Summary("Получить список пользователей")
+  @Summary("Get users list")
   @Responses({
     status: 200,
-    desciption: "Список пользователей",
+    desciption: "Users list",
     isArray: true,
     schema: models.Users,
   })
@@ -1730,14 +1719,14 @@ class Users {
   }
 
   @Post()
-  @Summary("Добавить пользователя")
+  @Summary("Add new user")
   @Responses(
     {
       status: 200,
-      description: "Информация о пользователе",
+      description: "user info",
       schema: models.Users,
     },
-    { status: 500, description: "Ошибка добавления пользователя", schema: ErrorResponse }
+    { status: 500, description: "adding user error", schema: ErrorResponse }
   )
   static Add(@Body() body) {
     return models.Users.create({ ...body });
@@ -1745,32 +1734,30 @@ class Users {
 }
 ```
 
-Таким образом, что для методов маршрутного узла `Users` помимо объявленных для них ответов, будет добавлен
-и вариант с ошибкой `403`, так как каждый из этих методов требует прохождения авторизации.
+Thus, for the methods of the route node `Users`, in addition to the responses declared for them, will
+also be added a variant with the error` 403`, since each of these methods requires authorization.
 
-### Тело запроса: RequestBody
+### RequestBody
 
-Декоратор `@RequestBody` позволяет добавить описание для структуры данных, передаваемой в методах
-`post`/`put`/`patch`.
+The `@RequestBody` decorator allows you to add a description for the data structure passed in the
+`post`/`put`/`patch` methods.
 
-Декоратор принимает аргумент, имеющую структуру:
+The decorator takes an argument that has the interface:
 
 ```ts
 interface OpenApiRequestBody {
-  description: string; // описание
-  contentType?: string; // тип данных, по умолчанию application/json
-  schema: SchemaObject | Function | any; // схема данных, удовлетворяющая спецификации OAS
+  description: string; //
+  contentType?: string; // content type, default: application/json
+  schema: SchemaObject | Function | any; // OAS-specified shema object
 }
 ```
 
-Применяется исключительно для конечной точки маршрута, добавляет соответствующее значение в структуру
-`requestBody` соответствующего метода.
+Applies exclusively to the route endpoint.
 
-Пример использования:
+Usage example:
 
 ```ts
-//
-
+// define class describing auth form fields
 class AuthForm extends toJSONSchema {
   @IsString()
   @JSONSchema({
@@ -1787,10 +1774,10 @@ class AuthForm extends toJSONSchema {
   password: string;
 }
 class Auth {
-  @Summary("Авторизация пользователя")
-  @Description("Ожидает логин/пароль для авторизации. Возвращает токен")
-  @RequestBody({ description: "Авторизационные данные", schema: AuthForm })
-  @Responses({ status: 200, description: "Bearer токен для входа", schema: models.Tokens })
+  @Summary("User authentication")
+  @Description("Accept login/password. Returns token")
+  @RequestBody({ description: "Authentication data", schema: AuthForm })
+  @Responses({ status: 200, description: "Authorization bearer token", schema: models.Tokens })
   @Post()
   static Login(@Body() { login, password }) {
     // ... login process
@@ -1798,13 +1785,13 @@ class Auth {
 }
 ```
 
-При загрузке файлов следует использовать корректный `contentType` с описанием ожидаемых полей данных.
+When uploading files, use the correct `contentType` describing the expected data fields.
 
 ```ts
 class Files {
   @Post("/upload")
   @RequestBody({
-    description: "файл для загрузки",
+    description: "uploading file",
     contentType: "multipart/form-data",
     schema: {
       properties: {
@@ -1815,40 +1802,39 @@ class Files {
       },
     },
   })
-  @Summary("Загрузка файла")
-  @Responses({ status: 200, description: "Информация о загруженном файле", schema: models.Files })
+  @Summary("File upload")
+  @Responses({ status: 200, description: "Uploaded file info", schema: models.Files })
   static Upload(@Files("file") file: File) {
     // ...
   }
 }
 ```
 
-### Параметры ссылки: PathParameters
+### PathParameters
 
-Декоратор `@PathParameters()` позволяет охарактеризовать параметр ссылки, который подразумевает некое
-динамическое значение. Чаще всего - идентификатор записи в базе данных, или какой-то вариант значения
-из ограниченного списка.
+The `@PathParameters()` decorator allows you to describe a reference url parameter with some kind
+of dynamic value. Most often it is an identifier of a database record, or some enum value.
 
-Декоратор позволяет накапливать значения, если это подразумевается логикой маршрута. Декоратор может быть
-установлен на `middleware`- или на `bridge`-функцию. В этом случае он распространяется на все методы, которые
-находятся в подключаемом узле.
+The decorator allows you to accumulate values if it is implied by the route logic. The decorator
+can be set to the `middleware`- or the `bridge`-function. In this case, it applies to all methods
+that are in the pluggable node.
 
-Декоратор принимает в качестве аргумента объект следующей структуры:
+The decorator takes as an argument an object of the following interface:
 
 ```ts
 interface OpenApiPathParameter {
-  // ключ - полное значение параметра в адресной строке, включая ограничители регулярным выражением
+  // key - the full value of the parameter in the url string, including regular expression delimiters
   [parameter: string]: {
-    name: string; // собственное имя параметра
-    description?: string; // описание параметра
-    in?: "query" | "header" | "cookie" | "path"; // местоположение аргумента: заголовок, путь, строка запроса, cookie, по умолчанию `path`
-    required?: Boolean; // признак обязательности, по умолчанию `true`
-    schema: SchemaObject; // схема данных параметра, удовлевторяющая критериям OAS
+    name: string; // parameter name
+    schema: SchemaObject; // parameter data schema OAS-specified
+    description?: string; // parameter description
+    in?: "query" | "header" | "cookie" | "path"; // parameter location: header, path, query string, cookie; default `path`
+    required?: Boolean; // required flag, default is `true`
   };
 }
 ```
 
-Пример:
+Example:
 
 ```ts
 class Users {
@@ -1856,7 +1842,7 @@ class Users {
   @PathParameters({
     ":user_id": {
       name: "user_id",
-      description: "Идентификатор пользователя",
+      description: "User identifier",
       schema: { type: "number" },
     },
   })
@@ -1867,26 +1853,27 @@ class Users {
 
 class User {
   @Get()
-  @Summary("Информация о пользователе")
+  @Summary("User info")
   static Info(@Params("user_id") userId) {
     return models.Users.findById(userId);
   }
 
   @Delete()
-  @Summary("Удалить пользователя")
+  @Summary("Delete user")
   static Info(@Params("user_id") userId) {
     return models.Users.remove({ id: userId });
   }
 }
 ```
 
-Для всех методов в маршрутном узле `User` в документации в значении `path` будет заменено значение
-`/user_:user_id` на `/user_{user_id}`, и в список `parameters` добавлено описание:
+For all methods in the route node `User` in the documentation will be modified `url` value:
+the fragment `/user_:user_id` will be replaced with `/user_{user_id}`; and to the list of `parameters`
+will be added next value:
 
 ```json
 {
   "name": "user_id",
-  "description": "Идентификатор пользователя",
+  "description": "User identifier",
   "schema": {
     "type": "number"
   },
@@ -1895,39 +1882,40 @@ class User {
 }
 ```
 
-**Важно** Следует уделить особое внимание тому, как именно указывается параметр в ключе данной структуры.
+**Important** You should pay special attention to how the parameter is specified in the key
+of this structure.
 
-Поскольку спецификация `OpenApi` обязывает для описания параметра в пути использовать нотацию вида
-`{param}`, в то время как `koa` и другие веб-фреймворки используют для определения параметров нотацию
-`:param`, подразумевающую также возможное уточнение регулярным выражением, то в качестве значения
-`parameter` следует использовать именно полное написание параметра, включая символ `:` и возможные
-уточняющие правила.
+Since the `OpenApi` specification obliges to use the notation like `{param}` to describe
+the parameter in the path, while `koa` and other web frameworks use the `:param` notation to
+define parameters, which also implies a possible refinement with a regular expression,
+then exactly the full spelling of the parameter should be used as the key value (`[parameter:string]`),
+including the symbol `:` and possible regexp rules.
 
-Поэтому, если подразумевается сложное ограничение значение параметра, например, при работе со значениями
-типа `ObjectId`, характерными для базы `MongoDb` (то есть 24 символа, сочетающих латинские буквы и цифры),
-которое может быть написано как `user_:user_id(.{24})`, то в качестве ключа обязано быть именно это
-написание. Иначе парсер не сможет сделать замену, и в документации будет отсутствовать требуемое значение.
+Therefore, if a complex restriction is implied, the parameter value, for example, when you works with
+values of the `ObjectId` type specific to the `MongoDb` database (that is, 24 characters combining
+Latin letters and numbers), which can be safe written as `user_:user_id(.{24})`, then this spelling
+must be the key. Otherwise, the parser will not be able to make the replacement, and the required
+value will be missing in the documentation.
 
-Для оптимизации данного процесса рекомендуется использовать следующий вариант описания параметров
-и их паттернов:
+To optimize this process, it is recommended to use the following description of parameters and
+their patterns:
 
 ```ts
-// используем класс User, чтобы сохранить в нем информацию о том
-// какими параметрами он будет подключаться в другие узлы
+// use the User class to store information about what parameters it will connect to other nodes
 @Use(User.Init)
 class User {
-  // имя параметра, по которому его можно получить в аргументах к методам
+  // the name of the parameter by which it can be obtained in the arguments to the methods
   static id = "user_id";
-  // полное написание параметра с учетом ограничений регулярным выражением
+  // full spelling of the parameter, using restrictions by regular expression
   static toString() {
     return `:${this.id}(.{24})`;
   }
-  // схема параметра, использующая оба точных значения имени и написания
+  // parameter schema using both the exact meanings of name and spelling
   static parameterSchema() {
     return {
       [`${this}`]: {
         name: this.id,
-        description: "Идентификатор пользователя",
+        description: "User identifier",
         schema: {
           type: "string",
           pattern: "[a-z,0-9]{24}",
@@ -1938,46 +1926,49 @@ class User {
 
   @Middleware()
   @PathParameters(User.parameterSchema())
+  // use the parameter name into argument decorator
   static Init(@Params(User.id) userId, @Next() next, @Err() err) {
-    // ... логика инициации
+    // ... some middleware logic
   }
 }
 
-//... применение в других маршрутных узлах
-@Bridge(`/user_${User}`, User) // будет получено написание параметра включая ограничения по количеству символов
+//... usage in other route nodes
+@Bridge(`/user_${User}`, User) // will be received the spelling of the parameter including restrictions on the number of characters
 class Users {
-  // ... методы класса Users
+  // ... some class methods
 }
 ```
 
-### Параметры поисковой строки, заголовков и cookie: Parameters
+### Parameters
 
-Чтобы добавить в документацию информацию о параметрах, которые могут передаваться в поисковой строке
-(query_string), заголовках (headers) и cookie, необходимо использовать декоратор `@Parameters`.
+To add to the documentation information about parameters that can be passed in the query string,
+headers and cookies, you need to use the `@Parameters` decorator.
 
-В качестве аргументов он принимает последовательность значений, удовлетворяющих структуре:
+It takes as arguments a sequence of values of interface:
 
 ```ts
 interface OpenApiParameter {
-  name: string; // собственное имя параметра
-  in: "query" | "header" | "cookie" | "path"; // местоположение аргумента: заголовок, путь, строка запроса, cookie
-  schema: SchemaObject; // схема данных параметра, удовлевторяющая критериям OAS
-  description?: string; // описание параметра
-  required?: Boolean; // признак обязательности
+  name: string; // parameter name
+  in: "query" | "header" | "cookie" | "path"; // parameter location: header, path, query string, cookie
+  schema: SchemaObject; // parameter data schema OAS-specified
+  description?: string; // parameter description
+  required?: Boolean; // flag of parameter required, default: false
 }
 ```
 
-Пример:
+`@Parameters` decorator applies exclusively to the route endpoint.
+
+Example:
 
 ```ts
 class Brands {
-  @Summary("Справочник брендов")
+  @Summary("Brands catalog")
   @Responses({ status: 200, isArray: true, schema: models.Brands })
-  // доступны возможность использования поиска по полям
+  // allows to use search by fields
   @Parameters(
-    // `title` (строка)
+    // `title` (string)
     { name: "title", in: "query", schema: { type: "string" } },
-    // `enabled` (значение из списка)
+    // `enabled` (enum)
     { name: "enabled", in: "query", schema: { type: "string", enum: ["yes", "no"] } }
   )
   @Get()
@@ -1987,40 +1978,40 @@ class Brands {
 }
 ```
 
-### Управление тегами: AddTag и UseTag
+### Tags processing: AddTag и UseTag
 
-Документация средствами `aom` поддерживает группировку данных по тегам. Для создания тега необходимо для
-класса - маршрутного узла - применить декоратор `@AddTag`, который принимает в качестве аргумента структуру
-данных `TagObject`:
+The aom documentation supports grouping data by tags. To create a tag, it is necessary for the
+class - route node - to apply the `@AddTag` decorator, which takes the `TagObject` data structure
+as an argument:
 
 ```ts
 interface TagObject {
-  name: string; // имя тега
-  description?: string; // описание тега
-  externalDocs?: ExternalDocumentationObject; // ссылка на внешнее описание
+  name: string; // tag name
+  description?: string; // tag description
+  externalDocs?: ExternalDocumentationObject; // external document object (https://swagger.io/specification/#external-documentation-object)
 }
 ```
 
-Для того, чтобы применить созданный тег, необходимо его добавить к `middleware`- или `endpoint`-функции,
-используя декоратор `@UseTag`.
+In order to apply the created tag, you need to add it to the `middleware` or `endpoint` function
+using the `@UseTag` decorator.
 
-Тег, примененный к прослойке распространяется на все конечные точки маршрута, до тех пор не будет заменен
-другим тегом на маршруте, либо объединен с ним, если установлены специальные правила (подробности ниже).
+The tag applied to the middleware applies to all endpoints of the route, until it is replaced
+by another tag on the route, or merged with it, if special rules are set (details below).
 
-Пример:
+Example:
 
 ```ts
-@AddTag({ name: "Работа с файлами", description: "Стандартные методы работы с файлами" })
+@AddTag({ name: "File processing", description: "Standart methods for files" })
 @Use(Files.Init)
 class Files {
   @Get()
-  @Summary("Список файлов")
+  @Summary("Files list")
   static Index() {
     return fs.readdirSync(__dirname);
   }
 
   @Post()
-  @Summary("Загрузка файла")
+  @Summary("File upload")
   static Upload(@Files("file") file: File) {
     const filename = path.join(__dirname, file.name);
     fs.renameSync(file.path, filename);
@@ -2028,56 +2019,55 @@ class Files {
   }
 
   @Middleware()
-  @UseTag(Files)
+  @UseTag(Files) //
   static Init(@Next() next) {
     return next();
   }
 }
 ```
 
-Все методы в узле `Files` будут отмечены тегом `Работа с файлами`.
+All methods in the `Files` route node will be tagged with the `File processing`.
 
-#### Приоритеты тегов и правила замены: IgnoreNextTags, ReplaceNextTags, MergeNextTags
+#### Tagging priority: IgnoreNextTags, ReplaceNextTags, MergeNextTags
 
-Тег, установленный при помощи `@UseTag` на `endpoint` имеет наивысший приоритет и не может быть
-чем-то заменен. В то же время теги, примененные к `middleware` хоть и распространяются на все
-"нижележащие" функции, могут быть заменены, проигнорированы или объединены с тегами, которые
-могут появиться "дальше по списку".
+A tag set with `@UseTag` to `endpoint` has the highest priority and cannot be overridden.
+At the same time, tags applied to `middleware`, although they apply to all "underlying "functions,
+can be replaced, ignored or combined with tags that may appear "further down the list".
 
-Рассмотрим пример:
+Let's consider an example:
 
 ```ts
 // ... root.ts
 
 @Bridge("/users", Users)
 @Bridge("/files", Files)
-@AddTag({ name: "Основные методы" })
+@AddTag({ name: "Basic methods" })
 class Root {
   @Get("/docs.json")
-  @Summary("Документация")
+  @Summary("Documentation")
   static Docs() {
     return docs;
   }
 
   @Get("/routes")
-  @Summary("Список маршрутов")
+  @Summary("Routes list")
   static Routes(@Routes() routes) {
     return routes;
   }
 }
 
 // ... users.ts
-@AddTag({ name: "Списки пользователей" })
+@AddTag({ name: "Users list processing" })
 @Bridge("/user_:user_id", User)
 @Use(Users.Init)
 class Users {
-  @Summary("Список пользователей")
+  @Summary("Users list")
   @Get()
   static Index() {
     return models.Users.find();
   }
 
-  @Summary("Добавить пользователя")
+  @Summary("Add new user")
   @Post()
   static Add(@Body() body) {
     return models.Users.create({ ...body });
@@ -2091,18 +2081,18 @@ class Users {
 }
 
 // ... user.ts
-@AddTag({ name: "Информация о пользователе" })
+@AddTag({ name: "Single user processing" })
 @Use(User.Init)
 class User {
   user: models.Users;
 
-  @Summary("Данные пользователя")
+  @Summary("User info")
   @Get()
   static Index(@This() { user }: User) {
     return user;
   }
 
-  @Summary("Удалить пользователя")
+  @Summary("Delete user")
   @Delete()
   static Delete(@This() { user }: User) {
     const result = await user.delete();
@@ -2118,13 +2108,13 @@ class User {
 }
 
 // ... files.ts
-@AddTag("Работа с файлами")
+@AddTag("Files list processing")
 @Bridge("/file_:file_id", File)
 @Use(Files.Init)
 class Files {
-  where = {}; // специальные критерии для отбора
+  where = {}; // files search criterias
 
-  @Summary("Список файлов")
+  @Summary("Files list")
   @Get()
   static Index(@This() _this: Files) {
     return models.Files.find(where);
@@ -2138,18 +2128,18 @@ class Files {
 }
 
 // ... file.ts
-@AddTag("Данные файла")
+@AddTag("Single file processing")
 @Use(File.Init)
 class File {
   file: models.Files;
 
-  @Summary("Информация о файле")
+  @Summary("File info")
   @Get()
   static Index(@This() { file }: Files) {
     return file;
   }
 
-  @Summary("Удалить файл")
+  @Summary("Delete file")
   @Delete()
   static Delete(@This() { file }: Files) {
     return file.remove();
@@ -2169,62 +2159,61 @@ class File {
 }
 ```
 
-По умолчанию для всех тегов работает правило по умолчанию, а именно `ReplaceNextTags`. Оно означает, что
-по мере "погружения" в цепочку функций, каждый новый встречаемый тег будет заменять собой предыдуший.
+By default, for all tags will be applied rule `ReplaceNextTags`. It means that as you "deep" into
+the chain of functions, each new tag encountered will replace the previous one.
 
-Таким образом в указанном примере для всех тегов сработает правило по умолчанию, и каждая группа
-запросов будет правильно промаркирована тегом собственного класса, который распространится
-на них через соответствующую прослойку.
+Thus, in the above example, the default rule will work for all tags, and each group of requests
+will be correctly marked with a tag of its own class, which will be propagated to them through
+the initiated middleware.
 
-То есть маркировка `endpoint`-ов тегами будет следующая:
+That is, the tagging of `endpoints` will be as follows:
 
 ```
-> Основные методы
+> Basic methods
   -- GET /docs.json
   -- GET /routes
-> Списки пользователей
+> Users list processing
   - GET /users
   - POST /users
-> Информация о пользователе
+> Single user processing
   - GET /users/user_{user_id}
   - DELETE /users/user_{user_id}
-> Работа с файлами
+> Files list processing
   - GET /files
-> Данные файла
+> Single file processing
   - GET /files/file_{file_id}
   - DELETE /files/file_{file_id}
 ```
 
-Рассмотрим ситуацию, когда необходимо расширить функциональность маршрутного узла `User`, добавив в него
-возможность работать с файлами, принадлежающими этому пользователю, аналогично тем же методам, которые
-применяются для прочих файлов.
+Let's consider a situation when it is necessary to extend the functionality of the `User`
+route node by adding the ability to work with files belonging to this user, in the same methods
+as for other files.
 
 ```ts
 // ... user.ts
-@AddTag({ name: "Информация о пользователе" })
+@AddTag({ name: "Single user processing" })
 @Use(User.Init)
 class User {
   user: models.Users;
 
-  @Summary("Данные пользователя")
+  @Summary("User info")
   @Get()
   static Index(@This() { user }: User) {
     return user;
   }
 
-  @Summary("Удалить пользователя")
+  @Summary("Delete user")
   @Delete()
   static Delete(@This() { user }: User) {
     const result = await user.delete();
     return result;
   }
 
-  // создадим мост на маршрутный узел Files
+  // create a bridge to the `Files` route node
   @Bridge("/files", Files)
   static files(@Next() next, @This() { user }: User, @StateMap() stateMap) {
-    // в StateMap добавим экземпляр класса Files
-    // у которого будет установлены специальные критерии отбора
-    // только те файлы, которые принадлежат контекстному пользователю
+    // add an instance of the Files class to StateMap,
+    // which will have special search criteria set only for those files that belong to the context user
     const userFiles = new Files();
     files.where = { userId: user._id };
     stateMap.set(Files, userFiles);
@@ -2240,48 +2229,48 @@ class User {
 }
 ```
 
-В результате данной модификации возникнет ситуация, что после подключения моста в тег
-"Работа с файлами" (`@UseTag(Files)`) и "Информация о файле" (`@UseTag(File)`) попадут также
-методы, которые входят в контекст работы с пользователем.
+As a result of this modification a situation arises that after connecting the bridge to
+the tag "Files list processing" ( `@UseTag(Files)`) and the "Single file processing"
+(`@UseTag(File)`) will fall as the methods that are provided in the context of work with the user.
 
-То есть список методов в тегах станет следующим:
+That is, the list of methods in tags will become as follows:
 
 ```
-> Основные методы
+> Basic methods
   -- GET /docs.json
   -- GET /routes
-> Списки пользователей
+> Users list processing
   - GET /users
   - POST /users
-> Информация о пользователе
+> Single user processing
   - GET /users/user_{user_id}
   - DELETE /users/user_{user_id}
-> Работа с файлами
+> Files list processing
   - GET /files
   - GET /users/user_{user_id}/files
-> Данные файла
+> Single file processing
   - GET /files/file_{file_id}
   - DELETE /files/file_{file_id}
   - GET /users/user_{user_id}/files/file_{file_id}
   - DELETE /users/user_{user_id}/files/file_{file_id}
 ```
 
-Очевидно, что такая разбивка не совсем корректна, и ожидается, что методы работы с пользовательскими
-файлами будут как-то привязаны к контексту тега "Информация о пользователе".
+Obviously, this tagging is not entirely correct, and it is expected that the methods
+of working with user files will be somehow tied to the context of the "Single user processing" tag.
 
-Для того, чтобы модифицировать логику обработки тегов, имеются три декоратора, применяемые к
-`middleware`- или `bridge`-функциям:
+To modify the tag processing logic, there are three decorators applied to the
+`middleware`- or` bridge`-functions:
 
-- `@IgnoreNextTags()` - все теги, идущие после данного декоратора игнорируются. Для маркировки используется
-  последний активный тег.
-- `@MergeNextTags()` - все теги, идущие после данного декоратора объединяются с последним активным тегом.
-  При этом, количество дальнейших тегов может быть больше 1, и все они будут объединены последовательно.
-  Для объединения используется символ, храняшийся в свойстве `mergeSeparator` экземпляра класса `OpenApi`.
-  По умолчанию равен `+`.
-- `@ReplaceNextTags()` - последующий тег, а также все дальнейшие заменяют последний активный тег
-  (режим работы "по умолчанию")
+- `@IgnoreNextTags()` - all tags following this decorator are ignored. The last active tag is
+  used for marking.
+- `@MergeNextTags()` - all tags following this decorator are merged with the last active tag.
+  In this case, the number of further tags can be more than 1, and all of them will be combined
+  sequentially. For merging, the symbol stored in the `mergeSeparator` property of an instance
+  of the` OpenApi` class is used. The default is `+`.
+- `@ReplaceNextTags()` - the subsequent tag as well as all further ones replace the last
+  active tag ("default" mode )
 
-Применим декоратор `@IgnoreNextTags()` к `bridge`-функции в `User.files`:
+Apply the decorator `@IgnoreNextTags()` to the `bridge`-function into `User.files`:
 
 ```ts
 class File {
@@ -2301,76 +2290,76 @@ class File {
 }
 ```
 
-Структура принадлежности маршрутов тегам станет следующей:
+Then the structure of the routes belonging to tags will be as follows:
 
 ```
-> Основные методы
+> Basic methods
   -- GET /docs.json
   -- GET /routes
-> Списки пользователей
+> Users list processing
   - GET /users
   - POST /users
-> Информация о пользователе
+> Single user processing
   - GET /users/user_{user_id}
   - DELETE /users/user_{user_id}
   - GET /users/user_{user_id}/files
   - GET /users/user_{user_id}/files/file_{file_id}
   - DELETE /users/user_{user_id}/files/file_{file_id}
-> Работа с файлами
+> Files list processing
   - GET /files
-> Данные файла
+> Single file processing
   - GET /files/file_{file_id}
   - DELETE /files/file_{file_id}
 ```
 
-Если применить декоратор `@MergeNextTags()`, то получится следующая структура:
+If we use the `@MergeNextTags()` decorator, we get the following structure:
 
 ```
-> Основные методы
+> Basic methods
   -- GET /docs.json
   -- GET /routes
-> Списки пользователей
+> Users list processing
   - GET /users
   - POST /users
-> Информация о пользователе
+> Single user processing
   - GET /users/user_{user_id}
   - DELETE /users/user_{user_id}
-> Информация о пользователе+Работа с файлами
+> Single user processing+Files list processing
   - GET /users/user_{user_id}/files
-> Информация о пользователе+Работа с файлами+Данные файла
+> Single user processing+Files list processing+Single file processing
   - GET /users/user_{user_id}/files/file_{file_id}
   - DELETE /users/user_{user_id}/files/file_{file_id}
-> Работа с файлами
+> Files list processing
   - GET /files
-> Данные файла
+> Single file processing
   - GET /files/file_{file_id}
   - DELETE /files/file_{file_id}
 ```
 
-В зависимости от предпочтений и применяемых методологий можно выбирать ту или иную стратегию
-маркировки тегами.
+Depending on preference and applied methodologies, you can choose one or another tagging strategy.
 
-Декораторы `@IgnoreNextTags()`, `@MergeNextTags()` и `@IgnoreNextTags()` работают по принципу
-переключателей: то есть каждый последующий заменяет собой действие предыдущего, и после него
-начинают действовать новые правила. Таким образом, можно комбинировать сочетания объединений,
-замены или использования последнего активного тега.
+The decorators `@IgnoreNextTags()`, `@MergeNextTags()` and `@IgnoreNextTags()` work on the principle
+of switches: that is, each subsequent one replaces the action of the previous one, and new rules
+take effect after it. Thus, you can combine combinations of merging, replacements, or the use of
+the last active tag.
 
-### Протоколы безопасности: AddSecurity и UseSecurity
-Для добавления информации о протоколах безопасности используется декоратор `@AddSecurity`, применяемый
-к классу - маршрутному узлу, создающему слой данных, требующих выполнение данного протокола.
+### Security protocol processing: AddSecurity and UseSecurity
 
-Декоратор `@AddSecurity` принимает в качестве аргумента объект, отвечающий структуре `SecuritySchemeObject`
-из библиотеки `openapi3-ts`, и соответствующий описанию
-[`Security Scheme Object`](https://swagger.io/specification/#security-scheme-object) в документации.
+To add information about the security protocols used decorator `@AddSecurity()`, applied
+to a class - of routing node, create a data layer, requiring the implementation of this Protocol.
 
-Для подключения созданного протокола безопасности, необходимо на `middleware`-функцию, после которой
-начинают действовать указанные правила, добавить декоратор `@UseSecurity`, передав в качестве аргумента
-класс, который инициирует данный протокол.
+The `@AddSecurity()` decorator takes as an argument an object that matches the `SecuritySchemeObject`
+structure from the `openapi3-ts` library and matches the description for OAS documentation for
+[`Security Scheme Object`](https://swagger.io/specification/#security-scheme-object).
 
-Пример:
+To connect the created security protocol, it is necessary to add the `@UseSecurity()` decorator
+to the `middleware`-function, after which the specified rules take effect, passing the class that
+initiates this protocol as an argument.
+
+Example:
 
 ```ts
-// опишем схему, которая соответствует авторизации по bearer токену
+// describe a schema that corresponds to the authorization of bearer token
 const BearerSecuritySchema = {
   type: "http",
   in: "header",
@@ -2378,32 +2367,32 @@ const BearerSecuritySchema = {
   scheme: "bearer",
 };
 
-// определим, что "носителем" протокола является класс `Auth`
+// define that the protocol "bearer" is the class `Auth`
 @AddSecurity(BearerSecuritySchema)
 export class Auth {
   user: models.Users;
   // ...
   @Post()
-  @Summary("Авторизация по логину/паролю")
+  @Summary("Login/password authentication")
   @Responses(
-    { status: 200, description: "Успешная авторизация", schema: models.Token },
-    { status: 500, description: "Ошибка авторизации", schema: ErrorResponse }
+    { status: 200, description: "Success authentication", schema: models.Token },
+    { status: 500, description: "Authentication error", schema: ErrorResponse }
   )
-  @RequestBody({ description: "Логин/пароль", schema: AuthForm })
+  @RequestBody({ description: "Login/password", schema: AuthForm })
   static async Login(@Body() { login, password }, @Next() next, @Err() err) {
     const authData = await models.Auth.checkAuth(login, password);
     if (models.Auth) {
       const token = await models.Token.generateToken(authData);
       return token;
     } else {
-      return err("Неверные авторизационные данные");
+      return err("Wrong authentication data");
     }
   }
 
-  // создадим прослойку, которая требует валидный токен для дальнейших действий
+  // create a layer that requires a valid token for further actions
   @Middleware()
-  @UseSecurity(Auth) // укажем, какой протокол безопасности используется
-  @Responses({ status: 403, description: "Доступ запрещен", schema: ErrorResponse })
+  @UseSecurity(Auth) // specify which security protocol is used
+  @Responses({ status: 403, description: "Access denied", schema: ErrorResponse })
   static async Required(
     @Headers("authorization") token,
     @This() _this: Auth,
@@ -2415,7 +2404,7 @@ export class Auth {
       _this.user = await models.Users.findById(authData.userId);
       return next();
     } else {
-      return err("Неверные авторизационные данные");
+      return err("Wrong token");
     }
   }
 }
@@ -2428,8 +2417,8 @@ class Root {
   // ...
 }
 // .. account.ts
-// все методы в маршрутном узле Account требуют авторизации
-// и на них распространяется схема безопасности BearerToken, соответствующая классу Auth
+// all methods in the route node `Account` require authorization
+// and they are used the BearerToken security scheme related to the `Auth` class
 @Use(Auth.Required)
 class Account {
   //...
@@ -2441,21 +2430,20 @@ class Account {
 }
 ```
 
-**Важно**: в настоящее время не реализована полноценная поддержка протокола `OAuth`, подразумевающая
-наличие специфических разрешений на чтение/запись/удаление.
+**Important**: Currently, there is no full support for the `OAuth` protocol, which implies
+the presence of specific read/write/delete permissions.
 
-## Развитие
+## Futher development
 
-`aom` находится в состоянии открытой беты, и будет расширяться новыми возможностями. Не исключены ошибки,
-а также замена и переименование ряда функций и декораторов. Все пожелания, вопросы и багрепорты в разделе
-[Issues](https://github.com/scarych/aom/issues)
+`aom` is in open beta and will be expanded with new features. Errors are not excluded, as well
+as replacement and renaming of a number of functions and decorators. All requests, questions and
+bug reports in the github [Issues](https://github.com/scarych/aom/issues)
 
-В планах:
+In the plans:
 
-- обогащение JSDoc документации
-- перевод документации на английский язык
-- реализация декораторов для создания api-сервисов на `express` (аналогично `koa`)
-- декораторы для расширения функциональности работы с базами данных (`mongoose`, `typeorm`)
-- разработка функционала для микросервисных взаимодействий (`kafkajs`)
-- разработка функционала для поддержки `GraphQL`
-- добавление возможности создания мультиязычной документации
+- JSDoc documentation
+- implementation of decorators for api-services in `express` (similar to` koa`)
+- decorators to extend the databases functionality (`mongoose`,` typeorm`)
+- development of functionality for microservices support (`kafkajs`)
+- development of functionality for support `GraphQL`
+- adding the ability to create multilingual OpenApi documentation
