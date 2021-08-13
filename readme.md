@@ -139,7 +139,7 @@ router.post("/account/logout", Auth.Required, Account.Logout);
 ```
 
 Other advantages of this approach consist in the ability to use additional decorators that allows you
-to compose autodocumentation in the format [`OpenApi`](#aom/openapi), and to have more
+to compose autodocumentation in the format [`OpenApi`](#aomopenapi), and to have more
 structured and understandable code, convenient for refactoring and data control.
 
 ### How does this works
