@@ -22,7 +22,7 @@ keep the existing code-stack, and comfortably extend it in the `aom` +` typescri
 At the present time realised the functionality based on http-framework
 [`koa@2`](https://www.npmjs.com/package/koa).
 
-The construction of a route map is making using a set of decorators that differ in types:
+The construction of a route map is using a set of decorators that differ in types:
 
 - `endpoints` - to indicate the endpoints of the route. Includes decorators:
   `Endpoint`,` Get`, `Post`,` Patch`, `Put`,` Options`, `Delete`,` All`
