@@ -1757,7 +1757,7 @@ class Users {
 
 ```ts
 interface OpenApiRequestBody {
-  description: string; // описание ответа
+  description: string; // описание
   contentType?: string; // тип данных, по умолчанию application/json
   schema: SchemaObject | Function | any; // схема данных, удовлетворяющая спецификации OAS
 }
@@ -2014,9 +2014,17 @@ interface TagObject {
 @Use(Files.Init)
 class Files {
   @Get()
-  @Summary("Files list")
+  @Summary("Список файлов")
   static Index() {
     return fs.readdirSync(__dirname);
+  }
+
+  @Post()
+  @Summary("Загрузка файла")
+  static Upload(@Files("file") file: File) {
+    const filename = path.join(__dirname, file.name);
+    fs.renameSync(file.path, filename);
+    return filename;
   }
 
   @Middleware()
@@ -2026,6 +2034,8 @@ class Files {
   }
 }
 ```
+
+Все методы в узле `Files` будут отмечены тегом `Работа с файлами`.
 
 #### Приоритеты тегов и правила замены: IgnoreNextTags, ReplaceNextTags, MergeNextTags
 
@@ -2234,7 +2244,7 @@ class User {
 "Работа с файлами" (`@UseTag(Files)`) и "Информация о файле" (`@UseTag(File)`) попадут также
 методы, которые входят в контекст работы с пользователем.
 
-То есть список методов в тегах будет следующим:
+То есть список методов в тегах станет следующим:
 
 ```
 > Основные методы
@@ -2271,8 +2281,27 @@ class User {
 - `@ReplaceNextTags()` - последующий тег, а также все дальнейшие заменяют последний активный тег
   (режим работы "по умолчанию")
 
-Таким образом, если к `bridge`-функции `User.files` применить декоратор `@IgnoreNextTags()`, то структура
-принадлежности маршрутов тегам будет следующей:
+Применим декоратор `@IgnoreNextTags()` к `bridge`-функции в `User.files`:
+
+```ts
+class File {
+  // ....
+  // create a bridge to the `Files` route node
+  @Bridge("/files", Files)
+  @IgnoreNextTags()
+  static files(@Next() next, @This() { user }: User, @StateMap() stateMap) {
+    // add an instance of the Files class to StateMap,
+    // which will have special search criteria set only for those files that belong to the context user
+    const userFiles = new Files();
+    files.where = { userId: user._id };
+    stateMap.set(Files, userFiles);
+    return next();
+  }
+  // ...
+}
+```
+
+Структура принадлежности маршрутов тегам станет следующей:
 
 ```
 > Основные методы
