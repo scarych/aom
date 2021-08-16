@@ -151,13 +151,13 @@ function Cursor() {
 }
 exports.Cursor = Cursor;
 // ---
-function Target() {
-  const handler = function ({ target }) {
-    return target;
+function Route() {
+  const handler = function ({ route }) {
+    return route;
   };
   return Args(handler);
 }
-exports.Target = Target;
+exports.Route = Route;
 
 // ---
 function StateMap(constructor = undefined) {

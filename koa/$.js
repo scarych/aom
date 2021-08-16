@@ -273,7 +273,7 @@ class $ {
   // подключить документацию
   docs(docsContainer) {
     if (docsContainer instanceof OpenApi) {
-      this.routes.forEach((target) => docsContainer.registerPath(target));
+      this.routes.forEach((route) => docsContainer.registerPath(route));
     } else {
       throw new Error(constants.OPENAPI_INSTANCE_ERROR);
     }

@@ -14,8 +14,8 @@ works in its own environment. Its important feature is the ability to combine wi
 on `koa`, which makes it useful when migrating functionality already existing projects.
 
 `aom` does not run code in an isolated environment, but generates structures that are compatible with
-popular libraries: `koa-router`,` koa-session` and others, which allows, if necessary,
-keep the existing code-stack, and comfortably extend it in the `aom` +` typescript` methodology.
+popular libraries: `koa-router`, `koa-session` and others, which allows, if necessary,
+keep the existing code-stack, and comfortably extend it in the `aom` +`typescript` methodology.
 
 ## aom/koa
 
@@ -25,13 +25,13 @@ At the present time realised the functionality based on http-framework
 The construction of a route map is using a set of decorators that differ in types:
 
 - `endpoints` - to indicate the endpoints of the route. Includes decorators:
-  `Endpoint`,` Get`, `Post`,` Patch`, `Put`,` Options`, `Delete`,` All`
+  `Endpoint`,`Get`, `Post`, `Patch`, `Put`, `Options`, `Delete`, `All`
 - `middlewares` - to indicate middleware-functions, "bridges" and expansion of the context.
-  The list includes to itself: `Middleware`,` Use`, `Bridge`,` Marker` and `Sticker`
+  The list includes to itself: `Middleware`, `Use`, `Bridge`, `Marker` and `Sticker`
 - `parameters` - for parameterization of incoming arguments, used to get typical or
   specialized values ​​into middlewares or endpoints functions. The list includes but
   not limited to these values: `Args`, `Ctx`, `Body`, `Query`, `Session`, `State`,
-  `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Target`, `Cursor`, `StateMap`, `This`.
+  `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Route`, `Cursor`, `StateMap`, `This`.
   It is also possible to create your own argument decorators to implement special logics.
 
 The code sample with `aom/koa` decorators:
@@ -153,7 +153,7 @@ After assembly, route nodes unfolds in a sequence of `middleware` functions, whi
 Route nodes are created so that their elements can be reused in other parts of the routes, including
 another api-services.
 
-All `endpoint`-,` middleware`- and `bridge`-functions are created above the static methods of the class,
+All `endpoint`-, `middleware`- and `bridge`-functions are created above the static methods of the class,
 while the methods and properties of instances can be applied as contextual data items, which accessed
 via decorators [`StateMap`](#statemap) and [`This`](#this).
 
@@ -254,7 +254,7 @@ class Index {
 }
 ```
 
-This will create a route node with methods: `GET /`, `POST / save` and `GET / choose /: variant`,
+This will create a route node with methods: `GET /`, `POST /save` and `GET /choose/:variant`,
 which, after connecting to the route map, will provide access to them using the declared prefixes.
 
 ### Arguments decorators
@@ -274,18 +274,18 @@ This structure has the interface:
 interface IArgs {
   ctx: Context;
   next: Next;
-  target: ITarget;
+  route: IRoute;
   cursor: ICursor;
 }
 ```
 
 Where:
 
-- `ctx` and` next` are typical values used by `koa`
-- `target` is a structure, pointing to the endpoint of the route
+- `ctx` and `next` are typical values used by `koa`
+- `route` is a structure, pointing to the endpoint of the route
 - `cursor` is a structure pointing to the current point of the route
 
-Let's dwell on `cursor` and` target`, as they play an important role in organizing routes structures.
+Let's dwell on `cursor` and `route`, as they play an important role in organizing routes structures.
 
 The `cursor` has the interface:
 
@@ -298,10 +298,10 @@ interface ICursor {
 }
 ```
 
-The `target` has the interface:
+The `route` has the interface:
 
 ```ts
-interface ITarget {
+interface IRoute {
   constructor: Function; // the class that contains the endpoint of the route
   property: string; // the name of the method to be called at the endpoint of the route
   handler: Function; // the function that will be called at the end point of the route (handler === constructor[property])
@@ -313,7 +313,7 @@ interface ITarget {
 ```
 
 Consider an example of the method `GET /users/user_:id`, which is composed of a chain static methods
-of three classes, decorated with `@Middleware`,` @Bridge` and `@Endpoint`:
+of three classes, decorated with `@Middleware`, `@Bridge` and `@Endpoint`:
 
 ```ts
 [Root.Init, Users.Init, Users.UserBridge, User.Init, User.Index];
@@ -322,7 +322,7 @@ of three classes, decorated with `@Middleware`,` @Bridge` and `@Endpoint`:
 When accessing this route, all functions of the chain will be sequentially called, and if each of them
 will correctly return a `next` value, will be called the final function in which is expected the result.
 
-On any part of the route in any middleware, the `target` value will look like:
+On any part of the route in any middleware, the `route` value will look like:
 
 ```ts
 {
@@ -398,12 +398,12 @@ Thus, at each step of the route, reflexive information about who is processing i
 can be obtained. It can be used for logging, controlling access to routes, as well as saving and
 applying contextual data in any of its sections.
 
-The presence of the `constructor` value in `target` and `cursor` makes it possible to use values from
+The presence of the `constructor` value in `route` and `cursor` makes it possible to use values from
 the structure `ctx.$StateMap = new WeakMap`, which are described in more detail in the description
 for decorators [`StateMap`](#statemap) and [`This`](#this).
 
-The values of the `target` object are the same for all points along the route. The values in the
-`target` structure can be extended with the [`@Marker`](#marker) decorator (described below)
+The values of the `route` object are the same for all points along the route. The values in the
+`route` structure can be extended with the [`@Marker`](#marker) decorator (described below)
 
 For a `cursor` object, the value `constructor` can be changed in a special case: if is applied
 the overload decorator [`Sticker`](#sticker) (described below)
@@ -450,7 +450,7 @@ extracted standard, or, if specific libraries were used, special values.
 
 #### Req, Res
 
-The decorators `@Req()` and `@Res()` return the standard `koa` objects` ctx.req` and `ctx.res`.
+The decorators `@Req()` and `@Res()` return the standard `koa` objects `ctx.req` and `ctx.res`.
 They do not accept any arguments, and allows to work with the context values at a low level.
 
 #### Next
@@ -461,7 +461,7 @@ In general, the `next`-function is used in the same way as the standard `koa` `n
 it indicates that is expected the result from the next function in the middlewares chain. Most often
 used as a return value in `middleware`.
 
-When using arguments, the `next`-function allows you to return the result from another` endpoint`
+When using arguments, the `next`-function allows you to return the result from another `endpoint`
 or `middleware`. Accepts a sequence of static methods as arguments, which are the endpoint or middleware.
 
 Example:
@@ -594,7 +594,7 @@ class Auth {
 
 #### Query
 
-The `@Query()` decorator allows you to get the `ctx.query` value typical of` koa`.
+The `@Query()` decorator allows you to get the `ctx.query` value typical of `koa`.
 
 ```ts
 import { Get, Query } from "aom/koa";
@@ -630,7 +630,7 @@ class Users {
 
 #### Body
 
-The `@Body()` decorator allows you to get the `ctx.request.body` value typical of` koa`.
+The `@Body()` decorator allows you to get the `ctx.request.body` value typical of `koa`.
 
 ```ts
 import { Get, Body } from "aom/koa";
@@ -648,7 +648,7 @@ The decorator can take a handler function as an argument, in which you can trans
 check the incoming values.
 
 ```ts
-// using the packages `class-transformer` и `class-validator`
+// using the packages `class-transformer` and `class-validator`
 // assuming that the data model applies the appropriate decorators
 import { plainToClass } from "class-transformer";
 import { validate } from "class-validator";
@@ -820,9 +820,9 @@ class Files {
 
 The `@Cursor()` decorator allows you to get the `cursor` value described above.
 
-#### Target
+#### Route
 
-The `@Target()` decorator allows you to get the `target` value described above.
+The `@Route()` decorator allows you to get the `route` value described above.
 
 #### StateMap
 
@@ -1096,7 +1096,7 @@ monitor the address space, which he or she uses.
 #### Marker
 
 The `@Marker()` decorator allows you to enrich the information about the destination in the route map,
-specifying that for the `target` element in the chain of `middleware` preceding it there are `cursor`
+specifying that for the `route` element in the chain of `middleware` preceding it there are `cursor`
 elements with certain `prefix` values, to which some special logic applied.
 
 The decorator is applied to the `middleware`-function, so that the moment this middleware is used
@@ -1104,7 +1104,7 @@ in any part of the route map, the marker is applied to the endpoint according to
 marking function.
 
 The `@Marker()` decorator accepts a mark function as an argument, which must take two arguments:
-`target` and` cursor`. The cursor will always be the middleware to which the `@Marker` decorator is applied
+`route` and `cursor`. The cursor will always be the middleware to which the `@Marker` decorator is applied
 
 Marking is set in the process of assembling a route map and does not operate with context. The
 presence of a marking in a route element can serve as a basis for additional contextual checks:
@@ -1124,13 +1124,13 @@ class Access {
   @Marker(Access.setMark)
   static Check(
     @StateMap(Auth) { user }: Auth, // user credentials
-    @Target() target, // endpoint from which it is important to know `path` and` method` values
+    @Route() route, // endpoint from which it is important to know `path` and `method` values
     @Cursor() cursor, // cursor from which it is important to know `prefix` value
     @Next() next,
     @Err() err
   ) {
     // if a check is performed for the user, then let him pass this layer leading to the specific endpoint
-    if (user.checkAccess(target, cursor)) {
+    if (user.checkAccess(route, cursor)) {
       return next();
     } else {
       // otherwise we will return a 403 error
@@ -1141,14 +1141,14 @@ class Access {
   // define the marker name
   static markerName = "check_access";
   // marking funciton
-  static setMark(target: ITarget, cursor: ICursor) {
+  static setMark(route: IRoute, cursor: ICursor) {
     const { markerName } = this;
-    // if there is no required marker for the `target` element, then create it
-    if (!target[markerName]) {
-      target[markerName] = [];
+    // if there is no required marker for the `route` element, then create it
+    if (!route[markerName]) {
+      route[markerName] = [];
     }
-    // add the current cursor to the list for target
-    target[markerName].push(cursor);
+    // add the current cursor to the list for route
+    route[markerName].push(cursor);
   }
 }
 // ... apply the created marker
@@ -1315,7 +1315,7 @@ will create an instance of the `Catalogs` class, and when calling the `FilterQue
 methods, errors will occur, since there are no data models defined in the context of the `Catalogs` class.
 
 In order for this code to work, you need to add the decorator `@Sticker()` for the `middleware` functions
-`Catalogs.SafeQuery` and `Catalogs.SafeBody`
+`Catalogs.SafeQuery` and `Catalogs.SafeBody`.
 
 ```ts
 class Catalogs {
@@ -1341,9 +1341,9 @@ class Catalogs {
 ```
 
 In this case, for the methods marked with this decorator, a check will be performed:
-whether `target.constructor` is a descendant of` cursor.constructor`, and if so, the
+whether `route.constructor` is a descendant of `cursor.constructor`, and if so, the
 value of `cursor.constructor` in this method will be replaced with the value of
-`target.constructor` (the value will be, as it were, "sticked", hence the name of the decorator).
+`route.constructor` (the value will be, as it were, "sticked", hence the name of the decorator).
 
 This technique works only for `middleware`, and is not yet suitable for `endpoint`. Thus, you
 cannot use a bridge to the parent class with type procedures. This opportunity may appear later.
@@ -1384,13 +1384,13 @@ the necessary code on demand.
 Decorators from `aom/openapi` are used exclusively for route nodes, but they accept data model
 references as their arguments. The documentation file is generated when the `toJSON` method
 is called, so you need to take care that such data structures have the ability to return a
-valid structure describing it with the` JSON-schema` standard using their own `toJSON` methods
+valid structure describing it with the `JSON-schema` standard using their own `toJSON` methods
 (for classes or objects)
 
 It is good practice to use decorators from the libraries [`class-validator`](https://www.npmjs.com/package/class-validator)
 and [`class-validator-jsonschema`](https://www.npmjs.com/package/class-validator-jsonschema).
 
-For example, in combination with the using the `typeorm` or` typegoose` methodology, this allows you
+For example, in combination with the using the `typeorm` or `typegoose` methodology, this allows you
 to create constructs like this:
 
 ```ts
@@ -1473,7 +1473,7 @@ export default class Files extends BaseModel {
 }
 ```
 
-Thus, when the `Files` class will be used for generating JSON, the inherited method` static toJSON()`
+Thus, when the `Files` class will be used for generating JSON, the inherited method `static toJSON()`
 will be called and will return a value correct of the `OAS3` specification with a description of
 the data structure.
 
@@ -1730,7 +1730,7 @@ class Users {
 ```
 
 Thus, for the methods of the route node `Users`, in addition to the responses declared for them, will
-also be added a variant with the error` 403`, since each of these methods requires authorization.
+also be added a variant with the error `403`, since each of these methods requires authorization.
 
 ### RequestBody
 
@@ -2255,7 +2255,7 @@ Obviously, this tagging is not entirely correct, and it is expected that the met
 of working with user files will be somehow tied to the context of the "Single user processing" tag.
 
 To modify the tag processing logic, there are three decorators applied to the
-`middleware`- or` bridge`-functions:
+`middleware`- or `bridge`-functions:
 
 - `@IgnoreNextTags()` - all tags following this decorator are ignored. The last active tag is
   used for marking.
@@ -2439,7 +2439,7 @@ In the plans:
 
 - JSDoc documentation
 - implementation of decorators for api-services in `express` (similar to` koa`)
-- decorators to extend the databases functionality (`mongoose`,` typeorm`)
+- decorators to extend the databases functionality (`mongoose`, `typeorm`)
 - development of functionality for microservices support (`kafkajs`)
 - development of functionality for support `GraphQL`
 - adding the ability to create multilingual OpenApi documentation
