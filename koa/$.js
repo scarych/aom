@@ -265,7 +265,7 @@ class $ {
   }
 
   eachRoute(handler) {
-    this.targets.forEach((route) => {
+    this.routes.forEach((route) => {
       Reflect.apply(handler, null, [route]);
     });
     return this;
@@ -273,7 +273,7 @@ class $ {
   // подключить документацию
   docs(docsContainer) {
     if (docsContainer instanceof OpenApi) {
-      this.targets.forEach((target) => docsContainer.registerPath(target));
+      this.routes.forEach((target) => docsContainer.registerPath(target));
     } else {
       throw new Error(constants.OPENAPI_INSTANCE_ERROR);
     }
