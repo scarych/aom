@@ -5,7 +5,7 @@ type routeElem = { method: string; path: string; callstack: Function[] };
 type routesHandler = (route: routeElem) => void;
 type routesList = routeElem[];
 export declare class $ {
-  targets: ITarget[];
+  routes: ITarget[];
   constructor(target: Function, prefix?: string);
   eachRoute(handler: routesHandler): $;
   docs(docs: OpenApi): $;
