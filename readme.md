@@ -191,14 +191,14 @@ export const $aom = new $(Index, "/");
 // collection of [{method: string, path: string, middlewares: Function []}]
 
 // apply the routes to the koa-router instance
-$aom.routes.forEach(({ method, path, calstack }) => {
-  router[method](path, ...calstack);
+$aom.routes.forEach(({ method, path, callstack }) => {
+  router[method](path, ...callstack);
 });
 
 // alternative way: pass to the handler method using the same values
 // and apply them to the used router
-$aom.eachRoute(({ method, path, calstack }) => {
-  router[method](path, ...calstack);
+$aom.eachRoute(({ method, path, callstack }) => {
+  router[method](path, ...callstack);
 });
 
 // transfer data from the router to the server
