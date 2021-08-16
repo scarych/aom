@@ -45,7 +45,7 @@ export declare function Files(fileName?: string): ParameterDecorator;
 
 export declare function Ctx(): ParameterDecorator;
 export declare function Next(): ParameterDecorator;
-export declare function Err<T extends typeof Error>(ErrorConstuctor?: T): ParameterDecorator;
+export declare function Err(ErrorConstuctor?: Function): ParameterDecorator;
 export declare function Req(): ParameterDecorator;
 export declare function Res(): ParameterDecorator;
 
