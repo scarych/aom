@@ -1,12 +1,13 @@
 import { OpenApi } from "../openapi";
+import { ITarget } from "./decorators";
 
 type routeElem = { method: string; path: string; middlewares: Function[] };
 type routesHandler = (route: routeElem) => void;
 type routesList = routeElem[];
 export declare class $ {
+  targets: ITarget[];
   constructor(target: Function, prefix?: string);
-  routes(handler: routesHandler): $;
-  routes(): routesList;
+  eachRoute(handler: routesHandler): $;
   docs(docs: OpenApi): $;
 }
 

@@ -158,14 +158,6 @@ function Target() {
   return Args(handler);
 }
 exports.Target = Target;
-// ---
-function Routes() {
-  const handler = function ({ routes }) {
-    return routes;
-  };
-  return Args(handler);
-}
-exports.Routes = Routes;
 
 // ---
 function StateMap(constructor = undefined) {

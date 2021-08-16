@@ -33,7 +33,7 @@
 - `parameters` - для параметризации входящих аргументов, применяются для получения типовых или
   специализированных значений в `middleware`- или `endpoint`-функциях. Список включает в себя, но
   не ограничивается этими значениями: `Args`, `Ctx`, `Body`, `Query`, `Session`, `State`,
-  `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Target`, `Cursor`, `Routes`, `StateMap`, `This`.
+  `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Target`, `Cursor`, `StateMap`, `This`.
   Также допускается возможность создания собственных декораторов аргументов для реализации специальных логик.
 
 Пример кода с декораторами `aom/koa`:
@@ -192,20 +192,17 @@ const router = new router();
 // в этом случае будут активированы только те связи, которые связаны непосредственно с ним
 // префикс позволяет установить общий префикс для всех адресов на маршруте,
 // например `/v1` для указания версионности API, по умолчанию `/`,
-const $aom = new $(Index, "/");
+export const $aom = new $(Index, "/");
 
-// получить список адресов, методов и функций обработчиков
-// [{method: string, path: string, middlewares: Function[]}]
-const routes = $aom.routes();
 // применим маршруты к используемому роутеру
-routes.forEach(({ method, path, middlewares }) => {
-  router[method](path, ...middlewares);
+// извлечем требуемые значения: method, path, callstack
+$aom.routes.forEach(({ method, path, callstack }) => {
+  router[method](path, ...callstack);
 });
 
-// альтернативный способ: передать в метод handler, использующий те же значения
-// и применить их к используемому роутеру
-$aom.routes(({ method, path, middlewares }) => {
-  router[method](path, ...middlewares);
+// альтернативный способ
+$aom.eachRoute(({ method, path, callstack }) => {
+  router[method](path, ...callstack);
 });
 
 // перенесем данные из роутера в сервер
@@ -284,7 +281,6 @@ interface IArgs {
   next: Next;
   target: ITarget;
   cursor: ICursor;
-  routes: ITarget[];
 }
 ```
 
@@ -293,7 +289,6 @@ interface IArgs {
 - `ctx` и `next` - типовые значения, которыми оперирует `koa`
 - `target` - структура, указывающая на конечную точку маршрута
 - `cursor` - структура, указывающая на текущую точку маршрута
-- `routes` - полный список всех маршрутов с возможными маркерными расширениями.
 
 Остановимся подробнее на `cursor` и `target`, так как они играют важную роль в организации структур
 маршрутов.
@@ -318,6 +313,7 @@ interface ITarget {
   method: string; // метод, который применяется для конечной точки
   path: string; // полный путь маршрута (в виде паттерна с параметрами `/files/:filename`)
   middlewares: Function[]; // список всех middleware, предшествующих финальному вызову (дескрипторы на статичные методы классов)
+  callstack: Function[]; // список скомплированных функций, запускающихся для данного endpoint в контексте `koa` (функции `(ctx, next)=> {...}`)
 }
 ```
 
@@ -412,13 +408,11 @@ interface ITarget {
 `ctx.$StateMap = new WeakMap`, которые более подробно рассматриваются в описании к декораторам
 [`StateMap`](#statemap) и [`This`](#this).
 
-Значения объекта `target` одинаково для всех точек на ветке маршруте. Для объекта `cursor` значение
-`constructor` может быть изменено в особом случае: если применяется декоратор перегрузки
-[`Sticker`](#sticker) (описан ниже)
-
-Структура `routes` содержит список всех возможных `target` в данной сборке, предоставляя таким образом
-полный перечень всех маршрутов, доступных для данной конфигурации. Значения в структуре `target`
+Значения объекта `target` одинаково для всех точек на ветке маршруте. Значения в структуре `target`
 могут быть расширены за счет декоратора [`@Marker`](#marker) (описан ниже)
+
+Для объекта `cursor` значение `constructor` может быть изменено в особом случае: если применяется
+декоратор перегрузки [`Sticker`](#sticker) (описан ниже)
 
 Декоратор `Args` позволяет принять на вход функцию, которой будет передана структура аргументов `IArgs`,
 из которых могут быть извлечены и возвращены специфические значения. Допускается применение асинхронных функций.
@@ -835,10 +829,6 @@ class Files {
 
 Декоратор `@Target()` позволяет получить значение `target`, описанное выше.
 
-#### Routes
-
-Декоратор `@Routes()` позволяет получить значение `routes`, описанное выше.
-
 #### StateMap
 
 `aom` расширяет контекстное значение `koa` специальной конструкцией `ctx.$StateMap = new WeakMap()`, которое
@@ -1166,11 +1156,14 @@ class Access {
   }
 }
 // ... применим созданный маркер
+// будем использовать список маршрутов из собранной маршрутной карты, созданной при запуске сервера
+import { $aom } from "./server";
+
 @Bridge("/users", Users)
 class Root {
   @Get()
-  static Index(@Routes() routes) {
-    return routes;
+  static Index() {
+    return $aom.routes;
   }
 
   @Get("/info")
@@ -1594,10 +1587,10 @@ import Root from "./root";
 const app = new koa();
 const router = new koaRouter();
 
-new $(Root)
+const $aom = new $(Root)
   // соберем маршруты
-  .routes(({ method, path, middlewares }) => {
-    router[method](path, ...middlewares);
+  .eachRoute(({ method, path, callstack }) => {
+    router[method](path, ...callstack);
   })
   // подключим документацию
   .docs(Docs);
@@ -2050,6 +2043,7 @@ class Files {
 
 ```ts
 // ... root.ts
+import { $aom } from "./server";
 
 @Bridge("/users", Users)
 @Bridge("/files", Files)
@@ -2063,8 +2057,8 @@ class Root {
 
   @Get("/routes")
   @Summary("Список маршрутов")
-  static Routes(@Routes() routes) {
-    return routes;
+  static Routes() {
+    return $aom.routes;
   }
 }
 

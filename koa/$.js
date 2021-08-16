@@ -171,7 +171,7 @@ seq -
 function safeJSON(data) {
   Object.assign(data, {
     toJSON() {
-      const skipKeys = ["constructor", "handler", "property", "middlewares"];
+      const skipKeys = ["constructor", "handler", "property", "middlewares", "callstack"];
       const safeEntries = Object.entries(data).filter(([key]) => skipKeys.indexOf(key) < 0);
       return Object.fromEntries(safeEntries);
     },
@@ -191,7 +191,7 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
-      // route - элемент маршрута, доступен через декораторы параметров `@Route`
+      // target - элемент маршрута, доступен через декораторы параметров `@Target`
       const target = safeJSON({
         method,
         path: routePath,
@@ -201,31 +201,27 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
       });
 
       // get middlewars for endpoint with correct prefix
-      const propertyMiddlewares = extractMiddlewares({
+      const endpointMiddlewares = extractMiddlewares({
         constructor,
         property,
         prefix: target.path,
       });
-      const fullMiddlewaresList = [].concat(middlewares, commonMiddlewares, propertyMiddlewares);
+      const fullMiddlewaresList = [].concat(middlewares, commonMiddlewares, endpointMiddlewares);
       const env = { target };
 
       Object.assign(target, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
         middlewares: fullMiddlewaresList,
-        // создадим функцию генерации вызовов для koa
-        generateCtx: (routes) =>
-          [$StateMap].concat(
-            fullMiddlewaresList
-              .map((middleware) =>
-                makeCtx(middleware, {
-                  ...env,
-                  routes,
-                })
-              )
-              .concat(
-                makeCtx({ constructor, property, handler, prefix: target.path }, { ...env, routes })
-              )
-          ),
+        // сгенерирем полный стек вызовов в контексте
+        callstack: [$StateMap].concat(
+          fullMiddlewaresList
+            .map((middleware) =>
+              makeCtx(middleware, {
+                ...env,
+              })
+            )
+            .concat(makeCtx({ constructor, property, handler, prefix: target.path }, { ...env }))
+        ),
       });
       routesList.push(target);
     });
@@ -263,32 +259,21 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
 }
 
 class $ {
-  routesData;
+  routes;
   constructor(root, prefix = "/") {
-    this.routesData = buildRoutesList(root, prefix);
+    this.routes = buildRoutesList(root, prefix);
   }
-  routes(handler = undefined) {
-    const result = [];
-    this.routesData.forEach((routeData) => {
-      const { method, path, generateCtx } = routeData;
-      const middlewares = generateCtx(this.routesData);
-      const routeElem = { method, path, middlewares };
-      if (handler) {
-        Reflect.apply(handler, null, [routeElem]);
-      } else {
-        result.push(routeElem);
-      }
+
+  eachRoute(handler) {
+    this.targets.forEach((route) => {
+      Reflect.apply(handler, null, [route]);
     });
-    if (handler) {
-      return this;
-    } else {
-      return result;
-    }
+    return this;
   }
   // подключить документацию
   docs(docsContainer) {
     if (docsContainer instanceof OpenApi) {
-      this.routesData.forEach((target) => docsContainer.registerPath(target));
+      this.targets.forEach((target) => docsContainer.registerPath(target));
     } else {
       throw new Error(constants.OPENAPI_INSTANCE_ERROR);
     }

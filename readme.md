@@ -30,8 +30,8 @@ The construction of a route map is using a set of decorators that differ in type
   The list includes to itself: `Middleware`,` Use`, `Bridge`,` Marker` and `Sticker`
 - `parameters` - for parameterization of incoming arguments, used to get typical or
   specialized values ​​into middlewares or endpoints functions. The list includes but
-  not limited to these values: `Args`,` Ctx`, `Body`,` Query`, `Session`,` State`,
-  `Headers`,` Param`, `Files`,` Next`, `Req`,` Res`, `Target`,` Cursor`, `Routes`,` StateMap`, `This`.
+  not limited to these values: `Args`, `Ctx`, `Body`, `Query`, `Session`, `State`,
+  `Headers`, `Param`, `Files`, `Next`, `Req`, `Res`, `Target`, `Cursor`, `StateMap`, `This`.
   It is also possible to create your own argument decorators to implement special logics.
 
 The code sample with `aom/koa` decorators:
@@ -185,21 +185,20 @@ const router = new router();
 // in this case, only those links will be activated that are connected directly with it
 // prefix allows you to set a common prefix for all addresses on the route,
 // for example `/ v1` to specify API versioning, by default` / `,
-const $aom = new $(Index, "/");
+export const $aom = new $(Index, "/");
 
 // get a list of addresses, methods and middlewares functions
 // collection of [{method: string, path: string, middlewares: Function []}]
 
-const routes = $aom.routes();
 // apply the routes to the koa-router instance
-routes.forEach(({ method, path, middlewares }) => {
-  router[method](path, ...middlewares);
+$aom.routes.forEach(({ method, path, calstack }) => {
+  router[method](path, ...calstack);
 });
 
 // alternative way: pass to the handler method using the same values
 // and apply them to the used router
-$aom.routes(({ method, path, middlewares }) => {
-  router[method](path, ...middlewares);
+$aom.eachRoute(({ method, path, calstack }) => {
+  router[method](path, ...calstack);
 });
 
 // transfer data from the router to the server
@@ -277,7 +276,6 @@ interface IArgs {
   next: Next;
   target: ITarget;
   cursor: ICursor;
-  routes: ITarget[];
 }
 ```
 
@@ -286,7 +284,6 @@ Where:
 - `ctx` and` next` are typical values used by `koa`
 - `target` is a structure, pointing to the endpoint of the route
 - `cursor` is a structure pointing to the current point of the route
-- `routes` - a complete list of all routes with possible marker extensions
 
 Let's dwell on `cursor` and` target`, as they play an important role in organizing routes structures.
 
@@ -311,6 +308,7 @@ interface ITarget {
   method: string; // the method that is applied to the endpoint
   path: string; // full path of the route (as a pattern with parameters `/ files /: filename`)
   middlewares: Function[]; // a list of all middlewares preceding the final call (descriptors to static class methods)
+  callstack: Function[]; // a list of compiled functions for execution in `koa` context (functions `(ctx, next)=> {...}`)
 }
 ```
 
@@ -404,13 +402,11 @@ The presence of the `constructor` value in `target` and `cursor` makes it possib
 the structure `ctx.$StateMap = new WeakMap`, which are described in more detail in the description
 for decorators [`StateMap`](#statemap) and [`This`](#this).
 
-The values of the `target` object are the same for all points along the route. For a `cursor` object,
-the value `constructor` can be changed in a special case: if is applied the overload decorator
-[`Sticker`](#sticker) (described below)
+The values of the `target` object are the same for all points along the route. The values in the
+`target` structure can be extended with the [`@Marker`](#marker) decorator (described below)
 
-The `routes` structure contains a list of all possible `target`-s in a given routes assembly, providing a
-complete list of all routes available for a given configuration. The values in the `target` structure
-can be extended with the [`@Marker`](#marker) decorator (described below)
+For a `cursor` object, the value `constructor` can be changed in a special case: if is applied
+the overload decorator [`Sticker`](#sticker) (described below)
 
 The `@Args` decorator allows you to accept a function as argument, which will be passed a structure
 of `IArgs` from which specific values can be retrieved and returned. Asynchronous functions
@@ -828,10 +824,6 @@ The `@Cursor()` decorator allows you to get the `cursor` value described above.
 
 The `@Target()` decorator allows you to get the `target` value described above.
 
-#### Routes
-
-The `@Routes()` decorator allows you to get the `routes` value described above.
-
 #### StateMap
 
 `aom` extends the context value of `koa` with the special construction `ctx.$StateMap = new WeakMap()`,
@@ -1161,11 +1153,14 @@ class Access {
 }
 // ... apply the created marker
 // ...
+
+import { $aom } from "./server";
+
 @Bridge("/users", Users)
 class Root {
   @Get()
-  static Index(@Routes() routes) {
-    return routes;
+  static Index() {
+    return $aom.routes;
   }
 
   @Get("/info")
@@ -2038,6 +2033,7 @@ Let's consider an example:
 
 ```ts
 // ... root.ts
+import { $aom } from "./server";
 
 @Bridge("/users", Users)
 @Bridge("/files", Files)
@@ -2051,8 +2047,8 @@ class Root {
 
   @Get("/routes")
   @Summary("Routes list")
-  static Routes(@Routes() routes) {
-    return routes;
+  static Routes() {
+    return $aom.routes;
   }
 }
 

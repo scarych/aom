@@ -3,7 +3,6 @@ export declare interface IArgs {
   cursor: ICursor;
   next: Function;
   ctx: $Ctx;
-  routes: ITarget[];
 }
 export declare interface $Ctx {
   req: any;
@@ -30,6 +29,8 @@ export declare interface ICursor {
 export declare interface ITarget extends Omit<ICursor, "prefix"> {
   method: string;
   path: string;
+  middlewares: Function[];
+  callstack: Function[];
   [key: string]: any;
 }
 
@@ -50,7 +51,6 @@ export declare function Res(): ParameterDecorator;
 
 export declare function Cursor(): ParameterDecorator;
 export declare function Target(): ParameterDecorator;
-export declare function Routes(): ParameterDecorator;
 
 export declare function StateMap(constructor?: Function): ParameterDecorator;
 export declare function This(constructor?: Function): ParameterDecorator;
