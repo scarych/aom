@@ -1,7 +1,16 @@
 {
   "name": "aom",
-  "version": "1.0.0-beta.7",
+  "version": "1.0.0-beta.8",
   "description": "API Over Models: typescript-decorators meta-framework",
+  "keywords": [
+    "koa",
+    "openapi",
+    "router",
+    "api",
+    "web",
+    "middleware",
+    "framework"
+  ],
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
