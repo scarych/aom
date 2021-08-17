@@ -191,14 +191,14 @@ export const $aom = new $(Index, "/");
 // collection of [{method: string, path: string, middlewares: Function []}]
 
 // apply the routes to the koa-router instance
-$aom.routes.forEach(({ method, path, callstack }) => {
-  router[method](path, ...callstack);
+$aom.routes.forEach(({ method, path, middlewares }) => {
+  router[method](path, ...middlewares);
 });
 
 // alternative way: pass to the handler method using the same values
 // and apply them to the used router
-$aom.eachRoute(({ method, path, callstack }) => {
-  router[method](path, ...callstack);
+$aom.eachRoute(({ method, path, middlewares }) => {
+  router[method](path, ...middlewares);
 });
 
 // transfer data from the router to the server
@@ -307,8 +307,8 @@ interface IRoute {
   handler: Function; // the function that will be called at the end point of the route (handler === constructor[property])
   method: string; // the method that is applied to the endpoint
   path: string; // full path of the route (as a pattern with parameters `/ files /: filename`)
-  middlewares: Function[]; // a list of all middlewares preceding the final call (descriptors to static class methods)
-  callstack: Function[]; // a list of compiled functions for execution in `koa` context (functions `(ctx, next)=> {...}`)
+  cursors: Function[]; // a list of all cursors including this route
+  middlewares: Function[]; // a list of compiled functions for execution in `koa` context (functions `(ctx, next)=> {...}`)
 }
 ```
 
@@ -329,10 +329,17 @@ On any part of the route in any middleware, the `route` value will look like:
   constructor: User,
   property: `Index`,
   handler: User.Index,
-  method: 'get',
-  path: '/users/user_:id',
-  middlewares: [Root.Init, Users.Init, Users.UserBridge, User.Init]
-}
+  method: "get",
+  path: "/users/user_:id",
+  cursors: [
+    { constructor: Root, property: "Init", handler: Root.Init, prefix: "/" },
+    { constructor: Users, property: "Init", handler: Users.Init, prefix: "/users" },
+    { constructor: Users, property: "UserBridge", handler: Users.UserBridge, prefix: "/users/user_:id", },
+    { constructor: User, property: "Init", handler: User.Init, prefix: "/users/user_:id" },
+    { constructor: User, property: "Index", handler: User.Index, prefix: "/users/user_:id" },
+  ],
+  middlewares: [async (ctx, next)=> {...}, ....]
+};
 ```
 
 Thus, at any point on the route, you can get information about the destination, and if necessary
@@ -1578,7 +1585,7 @@ const router = new koaRouter();
 
 new $(Root)
   // assemble the routes
-  .routes(({ method, path, middlewares }) => {
+  .eachRoute(({ method, path, middlewares }) => {
     router[method](path, ...middlewares);
   })
   // attach documentation

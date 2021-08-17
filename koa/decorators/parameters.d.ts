@@ -29,7 +29,7 @@ export declare interface ICursor {
 export declare interface IRoute extends Omit<ICursor, "prefix"> {
   method: string;
   path: string;
-  middlewares: Function[];
+  cursors: ICursor[];
   callstack: Function[];
   [key: string]: any;
 }

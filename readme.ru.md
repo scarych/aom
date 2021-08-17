@@ -194,15 +194,15 @@ const router = new router();
 // например `/v1` для указания версионности API, по умолчанию `/`,
 export const $aom = new $(Index, "/");
 
-// применим маршруты к используемому роутеру
-// извлечем требуемые значения: method, path, callstack
-$aom.routes.forEach(({ method, path, callstack }) => {
-  router[method](path, ...callstack);
+// применим маршруты к используемому роутеру  
+// извлечем требуемые значения: method, path, middlewares 
+$aom.routes.forEach(({ method, path, middlewares }) => {
+  router[method](path, ...middlewares);
 });
 
 // альтернативный способ
-$aom.eachRoute(({ method, path, callstack }) => {
-  router[method](path, ...callstack);
+$aom.eachRoute(({ method, path, middlewares }) => {
+  router[method](path, ...middlewares);
 });
 
 // перенесем данные из роутера в сервер
@@ -312,8 +312,8 @@ interface IRoute {
   handler: Function; // собственно функция, которая будет вызвана в конечной точке маршрута (handler === constructor[property])
   method: string; // метод, который применяется для конечной точки
   path: string; // полный путь маршрута (в виде паттерна с параметрами `/files/:filename`)
-  middlewares: Function[]; // список всех middleware, предшествующих финальному вызову (дескрипторы на статичные методы классов)
-  callstack: Function[]; // список скомплированных функций, запускающихся для данного endpoint в контексте `koa` (функции `(ctx, next)=> {...}`)
+  cursors: ICursor[]; // список всех курсоров, составляющих данный маршрут
+  middlewares: Function[]; // список скомплированных функций, запускающихся для данного endpoint в контексте `koa` (функции `(ctx, next)=> {...}`)
 }
 ```
 
@@ -335,10 +335,17 @@ interface IRoute {
   constructor: User,
   property: `Index`,
   handler: User.Index,
-  method: 'get',
-  path: '/users/user_:id',
-  middlewares: [Root.Init, Users.Init, Users.UserBridge, User.Init]
-}
+  method: "get",
+  path: "/users/user_:id",
+  cursors: [
+    { constructor: Root, property: "Init", handler: Root.Init, prefix: "/" },
+    { constructor: Users, property: "Init", handler: Users.Init, prefix: "/users" },
+    { constructor: Users, property: "UserBridge", handler: Users.UserBridge, prefix: "/users/user_:id", },
+    { constructor: User, property: "Init", handler: User.Init, prefix: "/users/user_:id" },
+    { constructor: User, property: "Index", handler: User.Index, prefix: "/users/user_:id" },
+  ],
+  middlewares: [async (ctx, next)=> {...}, ....]
+};
 ```
 
 Таким образом в любом месте маршрута можно получить информацию о точке назначения, и при необходимости
@@ -1589,8 +1596,8 @@ const router = new koaRouter();
 
 const $aom = new $(Root)
   // соберем маршруты
-  .eachRoute(({ method, path, callstack }) => {
-    router[method](path, ...callstack);
+  .eachRoute(({ method, path, middlewares }) => {
+    router[method](path, ...middlewares);
   })
   // подключим документацию
   .docs(Docs);

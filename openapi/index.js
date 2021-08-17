@@ -24,7 +24,7 @@ class OpenApi {
 
   paths = {};
   registerPath(route) {
-    let { constructor, property, path, method, middlewares } = route;
+    let { constructor, property, path, method, cursors } = route;
     const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     if (!handlerOpenApiData) return;
     // console.log(handlerOpenApiData);
@@ -53,38 +53,41 @@ class OpenApi {
     // let lastTag; // последний найденный тег, который будет, если нет собственного
     let branchTags = []; // теги для слияния в потоке
     let nextTagRule = constants.NEXT_TAGS_REPLACE; // правило сборки тегов, по умолчанию - замена
-    middlewares.forEach((middleware) => {
-      const { constructor, property, handler } = middleware;
-      const middlewareOpenApiData = checkOpenAPIMetadata(constructor, property);
-      if (middlewareOpenApiData) {
+    cursors.forEach((cursor) => {
+      // пропустим тот курсор, который совпадает с собственным роутером
+      if (cursor.handler === route.handler && route.path === cursor.prefix) return;
+      // из остальных извлечем полезные данные
+      const { constructor, property } = cursor;
+      const cursorOpenApiData = checkOpenAPIMetadata(constructor, property);
+      if (cursorOpenApiData) {
         // если в потоке стоит правило замены тегов, то
-        if (middlewareOpenApiData.nextTagRule) {
-          nextTagRule = middlewareOpenApiData.nextTagRule;
+        if (cursorOpenApiData.nextTagRule) {
+          nextTagRule = cursorOpenApiData.nextTagRule;
         }
         // дальнейшие действия выполняются, если нет инструкции игнорировать следующие теги
-        if (middlewareOpenApiData.tag && nextTagRule !== constants.NEXT_TAGS_IGNORE) {
+        if (cursorOpenApiData.tag && nextTagRule !== constants.NEXT_TAGS_IGNORE) {
           // если стоит инструкция замены тегов
           if (nextTagRule === constants.NEXT_TAGS_REPLACE) {
-            branchTags = [middlewareOpenApiData.tag];
+            branchTags = [cursorOpenApiData.tag];
             // tags.push(...middlewareOpenApiData.tags);
           } else if (nextTagRule === constants.NEXT_TAGS_MERGE) {
-            branchTags.push(middlewareOpenApiData.tag);
+            branchTags.push(cursorOpenApiData.tag);
           }
         }
 
         // if middleware has security rule
-        if (middlewareOpenApiData.security instanceof Array) {
-          security.push(...middlewareOpenApiData.security);
+        if (cursorOpenApiData.security instanceof Array) {
+          security.push(...cursorOpenApiData.security);
         }
 
         // build responses in branch
-        if (middlewareOpenApiData.responses instanceof Array) {
-          responses.push(...middlewareOpenApiData.responses);
+        if (cursorOpenApiData.responses instanceof Array) {
+          responses.push(...cursorOpenApiData.responses);
         }
 
         // build path parameters in branch
-        if (middlewareOpenApiData.pathParameters) {
-          const { pathParameters } = middlewareOpenApiData;
+        if (cursorOpenApiData.pathParameters) {
+          const { pathParameters } = cursorOpenApiData;
 
           const currentParameters = currentMethod.parameters;
           Object.keys(pathParameters).forEach((parameterKey) => {

@@ -206,22 +206,17 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
         property,
         prefix: target.path,
       });
-      const fullMiddlewaresList = [].concat(middlewares, commonMiddlewares, endpointMiddlewares);
+      // создадим курсоры, включив в них информацию и о последнем вызове в стеке
+      const cursors = []
+        .concat(middlewares, commonMiddlewares, endpointMiddlewares)
+        .concat([{ constructor, property, handler, prefix: target.path }]);
       const env = { target };
 
       Object.assign(target, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
-        middlewares: fullMiddlewaresList,
+        cursors,
         // сгенерирем полный стек вызовов в контексте
-        callstack: [$StateMap].concat(
-          fullMiddlewaresList
-            .map((middleware) =>
-              makeCtx(middleware, {
-                ...env,
-              })
-            )
-            .concat(makeCtx({ constructor, property, handler, prefix: target.path }, { ...env }))
-        ),
+        middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, { ...env }))),
       });
       routesList.push(target);
     });
