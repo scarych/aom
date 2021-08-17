@@ -1,7 +1,7 @@
 import { OpenApi } from "../openapi";
 import { IRoute } from "./decorators";
 
-type routeElem = { method: string; path: string; callstack: Function[] };
+type routeElem = { method: string; path: string; middlewares: Function[] };
 type routesHandler = (route: routeElem) => void;
 type routesList = routeElem[];
 export declare class $ {
