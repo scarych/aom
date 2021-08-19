@@ -5,6 +5,20 @@
 `aom` - it is meta-framework made of typescript-decorators, which allows to fast and comfortable
 create safe api-services, using the principle of accumulation data layers, enriched with abstractions.
 
+## Installation
+
+```
+npm i -s aom
+```
+
+or
+
+```
+yarn add aom
+```
+
+### Concept
+
 The main idea sounds like: "don't duplicate the code, link the code". `aom` allows to use data
 proccessing, made to cover most cases you need. At the same time `aom` do not limit the developer
 in frames of the only framework, but gives the ability to use third-party libraries and packages.
