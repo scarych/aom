@@ -53,6 +53,28 @@ function schemasSet2json(schemasSet) {
   }
   */
 
+// справочник определений
+const definitionsSet = new Set();
+// вернуть список определений
+function getDefinitions() {
+  const result = {};
+  definitionsSet.forEach((constructor) => {
+    const { name } = constructor;
+    Object.assign(result, { [name]: constructor });
+  });
+  return result;
+}
+
+exports.getDefinitions = getDefinitions;
+
+function AddDefinition() {
+  return (constructor) => {
+    checkConstructorProperty(constructor);
+    definitionsSet.add(constructor);
+  };
+}
+exports.AddDefinition = AddDefinition;
+
 function AddTag(tagSchema) {
   return (constructor) => {
     checkConstructorProperty(constructor);
@@ -94,13 +116,6 @@ function Parameters(...parameters) {
   return standartDecorator({ parameters });
 }
 exports.Parameters = Parameters;
-/*
-function QueryString(...queryParams) {
-  // ...
-  return standartDecorator({ queryString: queryParams });
-}
-exports.QueryString = QueryString;
-*/
 
 function Responses(...responses) {
   // ...
