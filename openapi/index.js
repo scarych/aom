@@ -4,7 +4,7 @@ const tslib = require("tslib");
 tslib.__exportStar(require("./decorators"), exports);
 
 const constants = require("../common/constants");
-const { getDefitinions } = require("./decorators");
+const { getDefinitions } = require("./decorators");
 const { checkOpenAPIMetadata } = require("../common/functions");
 
 class OpenApi {
@@ -256,7 +256,7 @@ class OpenApi {
       {},
       {
         ...this.data,
-        definitions: getDefitinions(),
+        definitions: getDefinitions(),
         components: {
           // schemas: schemasSet2json(this.schemasSet),
           tags,
