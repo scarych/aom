@@ -171,7 +171,7 @@ seq -
 function safeJSON(data) {
   Object.assign(data, {
     toJSON() {
-      const skipKeys = ["constructor", "handler", "property", "middlewares", "callstack"];
+      const skipKeys = ["constructor", "handler", "property", "middlewares", "cursors"];
       const safeEntries = Object.entries(data).filter(([key]) => skipKeys.indexOf(key) < 0);
       return Object.fromEntries(safeEntries);
     },
