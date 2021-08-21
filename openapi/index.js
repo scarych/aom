@@ -258,18 +258,12 @@ class OpenApi {
         ...this.data,
         definitions: getDefinitions(),
         components: {
-          // schemas: schemasSet2json(this.schemasSet),
           tags,
           securitySchemes,
         },
         paths: this.paths,
       }
     );
-  }
-
-  // yaml generator of complete documentation
-  toString() {
-    // ...
   }
 }
 // export module

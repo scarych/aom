@@ -39,7 +39,7 @@ export declare type OpenApiPathParameters = {
   [parameter: string]: OpenApiPathParameterObject;
 };
 
-export declare function AddDefinition(): ClassDecorator;
+export declare function IsDefinition(): ClassDecorator;
 export declare function AddTag(tagSchema: TagObject): ClassDecorator;
 export declare function UseTag(tagContainer: Function): MethodDecorator;
 export declare function ReplaceNextTags(): MethodDecorator;

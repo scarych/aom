@@ -67,13 +67,13 @@ function getDefinitions() {
 
 exports.getDefinitions = getDefinitions;
 
-function AddDefinition() {
+function IsDefinition() {
   return (constructor) => {
     checkConstructorProperty(constructor);
     definitionsSet.add(constructor);
   };
 }
-exports.AddDefinition = AddDefinition;
+exports.IsDefinition = IsDefinition;
 
 function AddTag(tagSchema) {
   return (constructor) => {
