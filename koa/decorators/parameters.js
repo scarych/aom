@@ -176,7 +176,7 @@ function This(constructor = undefined) {
     constructor = constructor || cursor.constructor;
     let _this = ctx.$StateMap.get(constructor);
     if (!_this) {
-      _this = Reflect.construct(constructor);
+      _this = Reflect.construct(constructor, []);
       ctx.$StateMap.set(constructor, _this);
     }
     return _this;
