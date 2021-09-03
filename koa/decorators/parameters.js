@@ -5,7 +5,6 @@ const { nextSequences } = require("../$");
 const constants = require("../../common/constants");
 const { checkConstructorProperty } = require("../../common/functions");
 const { FwdContainer } = require("../forwards");
-const { FwdContainer } = require("../forwards");
 // default args handler: extract all values
 function _default(args) {
   return args;
