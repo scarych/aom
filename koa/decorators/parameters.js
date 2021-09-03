@@ -3,8 +3,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const { nextSequences } = require("../$");
 // exports.AddParameterDecorator = void 0;
 const constants = require("../../common/constants");
-const { checkConstructorProperty, reverseMetadata } = require("../../common/functions");
-
+const { checkConstructorProperty } = require("../../common/functions");
+const { FwdContainer } = require("../forwards");
 // default args handler: extract all values
 function _default(args) {
   return args;
@@ -162,6 +162,10 @@ exports.Route = Route;
 // ---
 function StateMap(constructor = undefined) {
   const handler = ({ ctx }) => {
+    // если используется `FwdRef`, то в качестве целевого значения используем результат функции
+    if (constructor instanceof FwdContainer) {
+      constructor = constructor.exec();
+    }
     return constructor ? ctx.$StateMap.get(constructor) : ctx.$StateMap;
   };
   return Args(handler);
@@ -173,6 +177,10 @@ function This(constructor = undefined) {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
   const handler = ({ ctx, cursor }) => {
+    // если используется `FwdRef`, то в качестве целевого значения используем результат функции
+    if (constructor instanceof FwdContainer) {
+      constructor = constructor.exec();
+    }
     constructor = constructor || cursor.constructor;
     let _this = ctx.$StateMap.get(constructor);
     if (!_this) {

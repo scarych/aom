@@ -6,6 +6,8 @@ const constants = require("../common/constants");
 const { OpenApi } = require("../openapi");
 const { join } = require("path");
 const { restoreReverseMetadata } = require("../common/functions");
+const { FwdContainer } = require("./forwards");
+const { FwdContainer } = require("./forwards");
 
 const $StateMap = (ctx, next) => {
   ctx.$StateMap = new WeakMap();
@@ -78,6 +80,10 @@ function extractMiddlewares({ constructor, property = undefined, prefix }) {
   const propertyMiddlewares = Reflect.getOwnMetadata(metadataKey, constructor, property) || [];
 
   propertyMiddlewares.forEach((handler) => {
+    // если используется FwdRef, то извлечем handler, выполнив функцию
+    if (handler instanceof FwdContainer) {
+      handler = handler.exec();
+    }
     if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, handler)) {
       //
       const middlewareMapData = restoreReverseMetadata(handler);
@@ -226,6 +232,10 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
 
   if (bridges) {
     bridges.forEach((bridgeData) => {
+      // если мост является FwdContainer, то извлечем значение из выполнения функции
+      if (bridgeData instanceof FwdContainer) {
+        bridgeData = bridgeData.exec();
+      }
       const { prefix: nextPrefix, nextRoute, property, descriptor } = bridgeData;
       const newPrefix = join(prefix, nextPrefix);
       const bridgeMiddlewares = property
