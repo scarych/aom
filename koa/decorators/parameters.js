@@ -5,6 +5,7 @@ const { nextSequences } = require("../$");
 const constants = require("../../common/constants");
 const { checkConstructorProperty } = require("../../common/functions");
 const { FwdContainer } = require("../forwards");
+const { FwdContainer } = require("../forwards");
 // default args handler: extract all values
 function _default(args) {
   return args;
@@ -173,7 +174,7 @@ function StateMap(constructor = undefined) {
 exports.StateMap = StateMap;
 // ---
 function This(constructor = undefined) {
-  if (constructor && !(constructor instanceof Function)) {
+  if (constructor && !(constructor instanceof Function || constructor instanceof FwdContainer)) {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
   const handler = ({ ctx, cursor }) => {
@@ -184,7 +185,7 @@ function This(constructor = undefined) {
     constructor = constructor || cursor.constructor;
     let _this = ctx.$StateMap.get(constructor);
     if (!_this) {
-      _this = Reflect.construct(constructor);
+      _this = Reflect.construct(constructor, []);
       ctx.$StateMap.set(constructor, _this);
     }
     return _this;

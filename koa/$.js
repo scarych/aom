@@ -7,7 +7,6 @@ const { OpenApi } = require("../openapi");
 const { join } = require("path");
 const { restoreReverseMetadata } = require("../common/functions");
 const { FwdContainer } = require("./forwards");
-const { FwdContainer } = require("./forwards");
 
 const $StateMap = (ctx, next) => {
   ctx.$StateMap = new WeakMap();

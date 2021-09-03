@@ -9,7 +9,7 @@ class FwdContainer {
   }
 
   exec() {
-    return Reflect.apply(this.fn, null, []);
+    return Reflect.apply(this.fn, undefined, []);
   }
 }
 
