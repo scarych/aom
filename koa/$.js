@@ -232,11 +232,13 @@ function buildRoutesList(constructor, prefix = "/", middlewares = []) {
 
   if (bridges) {
     bridges.forEach((bridgeData) => {
+      let { prefix: nextPrefix, nextRoute, property, descriptor } = bridgeData;
+
       // если мост является FwdContainer, то извлечем значение из выполнения функции
-      if (bridgeData instanceof FwdContainer) {
-        bridgeData = bridgeData.exec();
+      if (nextRoute instanceof FwdContainer) {
+        nextRoute = nextRoute.exec();
       }
-      const { prefix: nextPrefix, nextRoute, property, descriptor } = bridgeData;
+
       const newPrefix = join(prefix, nextPrefix);
       const bridgeMiddlewares = property
         ? extractMiddlewares({ constructor, property, prefix: newPrefix })
