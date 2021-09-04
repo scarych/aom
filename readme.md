@@ -1372,6 +1372,59 @@ cannot use a bridge to the parent class with type procedures. This opportunity m
 **Important**: The `@Sticker` decorator is an experimental feature and could be significantly
 redesigned and modified.
 
+### Cyclic dependencies
+
+`aom` implies the reuse of some classes in the context of others, which can create cyclic module dependencies.
+This is critical when using the `StateMap` and `This` decorators, as well as the `Bridge` and `Use` decorators.
+
+To solve this problem, use the function `FwdRef`.
+
+Example:
+
+```ts
+// ... users.ts
+import { Query, This, Bridge, Get } from "aom/koa";
+import { User } from "./user";
+
+@Bridge(`/user_${User.id}`, User)
+class Users {
+  model = getModelForClass(classes.Users); // for the context instance, create a typegoose model around the class `classes.Users`
+
+  @Get()
+  static Index(@Query() query, @This() { model }: Users) {
+    return model.find({ ...query });
+  }
+}
+
+// ... user.ts
+import { Query, This, Bridge, Get, FwdRef } from "aom/koa";
+
+// for eslint, turn off the processing of the cyclic dependency error
+// eslint-disable-next-line import/no-cycle
+import { Users } from "./users";
+
+@Use(User.Init)
+class User {
+  // instead of declaring its own data model value for the node, we use it from the `Users` class
+  @Get()
+  static Index(@Query() query, @This(FwdRef(() => Users)) { model }: Users) {
+    return model.find({ ...query });
+  }
+}
+```
+
+If you just use `@This (Users)`, then the value `undefined` will be passed to the decorator in the arguments,
+which will result in an instance of the `User` class, and the value of `model` will be unavailable.
+
+For other decorators function `FwdRef` applied as follows:
+
+- `@Use(FwdRef(()=>Node.Middleware))`
+- `@Bridge('/path', FwdRef(()=>NextNode))`
+- `@StateMap(FwdRef(()=>AnotherNode)`
+
+**Important**: It is strongly recommended to use `eslint` with the **active** rule `import/no-cycle` in order
+to detect situations with circular references and correctly apply `FwdRef`.
+
 ## aom/openapi
 
 Decorators of the `aom/openapi` collection allow to enrich route nodes with information that,
@@ -2520,3 +2573,11 @@ In the plans:
 - development of functionality for microservices support (`kafkajs`)
 - development of functionality for support `GraphQL`
 - adding the ability to create multilingual OpenApi documentation
+
+## Changelog
+
+#### 1.0.0-beta.11
+
+- Add `FwdRef` function
+- Add `changelog` to `readme.md`
+
