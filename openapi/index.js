@@ -4,7 +4,7 @@ const tslib = require("tslib");
 tslib.__exportStar(require("./decorators"), exports);
 
 const constants = require("../common/constants");
-const { getDefinitions } = require("./decorators");
+const { getDefinitions, IsDefinition } = require("./decorators");
 const { checkOpenAPIMetadata } = require("../common/functions");
 
 class OpenApi {
@@ -268,3 +268,17 @@ class OpenApi {
 }
 // export module
 exports.OpenApi = OpenApi;
+
+function CombineSchemas(source, extensions) {
+  const result = source.toJSON();
+  Object.keys(extensions).map((key) => {
+    const constructor = extensions[key];
+    Reflect.apply(IsDefinition(), null, [constructor]);
+    const { name } = constructor;
+    Object.assign(result.properties, { [key]: { $ref: `#/definitions/${name}` } });
+  });
+
+  return result;
+}
+
+exports.CombineSchemas = CombineSchemas;
