@@ -269,8 +269,8 @@ class OpenApi {
 // export module
 exports.OpenApi = OpenApi;
 
-function CombineSchemas(source, extensions) {
-  const result = source.toJSON();
+function CombineSchemas(origin, extensions) {
+  const result = { type: "object", properties: {}, ...origin.toJSON() };
   Object.keys(extensions).map((key) => {
     const constructor = extensions[key];
     Reflect.apply(IsDefinition(), null, [constructor]);
