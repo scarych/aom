@@ -272,10 +272,25 @@ exports.OpenApi = OpenApi;
 function CombineSchemas(origin, extensions) {
   const result = { type: "object", properties: {}, ...origin.toJSON() };
   Object.keys(extensions).map((key) => {
-    const constructor = extensions[key];
+    let constructor;
+    let isArray;
+    if (extensions[key] instanceof Array) {
+      constructor = extensions[key][0];
+      isArray = true;
+    } else {
+      constructor = extensions[key];
+    }
     Reflect.apply(IsDefinition(), null, [constructor]);
     const { name } = constructor;
-    Object.assign(result.properties, { [key]: { $ref: `#/definitions/${name}` } });
+    if (isArray) {
+      Object.assign(result.properties, {
+        [key]: { type: "array", items: { $ref: `#/definitions/${name}` } },
+      });
+    } else {
+      Object.assign(result.properties, {
+        [key]: { $ref: `#/definitions/${name}` },
+      });
+    }
   });
 
   return result;

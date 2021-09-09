@@ -7,5 +7,5 @@ export declare class OpenApi {
 
 export declare function CombineSchemas(
   origin: Function,
-  extensions: Record<string, Function>
+  extensions: Record<string, Function | Function[]>
 ): SchemaObject;
