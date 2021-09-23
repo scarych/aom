@@ -9,18 +9,20 @@
     "api",
     "web",
     "middleware",
-    "framework"
+    "framework",
+    "backend"
   ],
   "main": "index.js",
   "scripts": {
+    "build": "tsc --project tsconfig.build.json",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Grigory Kholstinnikov",
   "license": "ISC",
   "dependencies": {
     "bluebird": "^3.7.2",
+    "fecha": "^4.2.1",
     "lodash": "^4.17.21",
-    "moment": "^2.29.1",
     "openapi3-ts": "^2.0.1",
     "reflect-metadata": "^0.1.13",
     "rxjs": "^7.2.0",
@@ -29,10 +31,16 @@
   "bugs": {
     "url": "https://github.com/scarych/aom/issues"
   },
-  "devDependencies": {},
+  "devDependencies": {
+    "@types/node": "^16.9.6",
+    "typescript": "^4.4.3"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/scarych/aom.git"
   },
-  "homepage": "https://aom.js.org"
+  "homepage": "https://aom.js.org",
+  "files": [
+    "build/**/*"
+  ]
 }
