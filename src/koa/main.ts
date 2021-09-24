@@ -12,6 +12,7 @@ import {
   IRouteElem,
   MiddlewareHandler,
 } from "../common/declares";
+import { OpenApi } from "../openapi";
 
 /**
  * типовая middleware-функция, создаются WeakMap в контексте вызовов
@@ -176,15 +177,15 @@ export class $ {
     });
     return this;
   }
+
   // подключить документацию
-  docs(docsContainer) {
-    /*
+  docs(docsContainer: OpenApi) {
     if (docsContainer instanceof OpenApi) {
       this.routes.forEach((route) => docsContainer.registerPath(route));
     } else {
       throw new Error(constants.OPENAPI_INSTANCE_ERROR);
     }
-    */
+
     return this;
   }
 }
