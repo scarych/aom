@@ -64,7 +64,7 @@ export function Endpoint(method?: HTTPMethods, path?: string): MethodDecorator {
 }
 
 // ************************************************ //
-export function Get(path: string): MethodDecorator;
+export function Get(path?: string): MethodDecorator;
 export function Get(path: string, handler: HandlerFunction): ClassDecorator;
 
 /**
@@ -82,7 +82,7 @@ export function Get(
 }
 
 // ************************************************ //
-export function Post(path: string): MethodDecorator;
+export function Post(path?: string): MethodDecorator;
 export function Post(path: string, handler: HandlerFunction): ClassDecorator;
 
 /**
@@ -100,7 +100,7 @@ export function Post(
 }
 
 // ************************************************ //
-export function Patch(path: string): MethodDecorator;
+export function Patch(path?: string): MethodDecorator;
 export function Patch(path: string, handler: HandlerFunction): ClassDecorator;
 
 /**
@@ -118,7 +118,7 @@ export function Patch(
 }
 
 // ************************************************ //
-export function Put(path: string): MethodDecorator;
+export function Put(path?: string): MethodDecorator;
 export function Put(path: string, handler: HandlerFunction): ClassDecorator;
 /**
  * определить endpoint с указанным адресом по методу `PUT`
@@ -135,7 +135,7 @@ export function Put(
 }
 
 // ************************************************ //
-export function Options(path: string): MethodDecorator;
+export function Options(path?: string): MethodDecorator;
 export function Options(path: string, handler: HandlerFunction): ClassDecorator;
 
 /**
@@ -153,7 +153,7 @@ export function Options(
 }
 
 // ************************************************ //
-export function Delete(path: string): MethodDecorator;
+export function Delete(path?: string): MethodDecorator;
 export function Delete(path: string, handler: HandlerFunction): ClassDecorator;
 /**
  * определить endpoint с указанным адресом по методу `DELETE`
@@ -170,7 +170,7 @@ export function Delete(
 }
 
 // ************************************************ //
-export function All(path: string): MethodDecorator;
+export function All(path?: string): MethodDecorator;
 export function All(path: string, handler: HandlerFunction): ClassDecorator;
 /**
  * определить endpoint с указанным адресом по методу `ALL`
