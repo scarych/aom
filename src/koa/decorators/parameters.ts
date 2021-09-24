@@ -1,6 +1,6 @@
-import * as constants from "common/constants";
+import * as constants from "../../common/constants";
 import { FwdContainer } from "../forwards";
-import { checkConstructorProperty } from "common/functions";
+import { checkConstructorProperty } from "../../common/functions";
 import { nextSequences } from "../functions";
 import { ArgsFunction, HandlerFunction, IArgs } from "../../common/declares";
 

@@ -1,7 +1,7 @@
 // import { OpenApi } from "openapi";
 import { join } from "path";
 import { FwdContainer } from "./forwards";
-import * as constants from "common/constants";
+import * as constants from "../common/constants";
 import { Promise } from "bluebird";
 import { extractMiddlewares, extractParameterDecorators, safeJSON } from "./functions";
 import {

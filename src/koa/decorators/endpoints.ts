@@ -1,6 +1,6 @@
-import * as constants from "common/constants";
+import * as constants from "../../common/constants";
 import { restoreReverseMetadata, saveReverseMetadata } from "../functions";
-import { checkConstructorProperty } from "common/functions";
+import { checkConstructorProperty } from "../../common/functions";
 import { Constructor, HandlerFunction, HTTPMethods, IEndpoint, Property } from "../../common/declares";
 
 function bindEndpoint(constructor, { path, method, property, descriptor }: IEndpoint): void {

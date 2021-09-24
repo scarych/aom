@@ -1,5 +1,5 @@
-import * as constants from "common/constants";
-import { checkConstructorProperty } from "common/functions";
+import * as constants from "../../common/constants";
+import { checkConstructorProperty } from "../../common/functions";
 import { saveReverseMetadata } from "../functions";
 import {
   CombinedDecorator,
