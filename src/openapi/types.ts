@@ -26,7 +26,7 @@ export declare interface OpenApiResponse {
 }
 
 export declare interface OpenApiRequestBody {
-  description: string;
+  description?: string;
   contentType?: string;
   schema: OpenApiSchemaObject | Function | any;
 }
