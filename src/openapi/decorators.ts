@@ -1,6 +1,6 @@
 import { TagObject } from "openapi3-ts";
 import * as constants from "../common/constants";
-import { Constructor, StaticMethodDecorator } from "../common/declares";
+import { Constructor } from "../common/declares";
 
 import { checkConstructorProperty } from "../common/functions";
 import {
@@ -54,9 +54,9 @@ export function AddTag(tag: string | TagObject): ClassDecorator {
 /**
  * использовать конструкт с тегом
  * @param tag
- * @returns {StaticMethodDecorator}
+ * @returns {MethodDecorator}
  */
-export function UseTag(tag: Constructor): StaticMethodDecorator {
+export function UseTag(tag: Constructor): MethodDecorator {
   // ...
   return standartDecorator({ tag });
 }
@@ -68,53 +68,53 @@ export function AddSecurity(securitySchema: OpenApiSecuritySchema): ClassDecorat
   };
 }
 
-export function UseSecurity(...security: Constructor[]) {
+export function UseSecurity(...security: Constructor[]): MethodDecorator {
   // ...
   return standartDecorator({ security });
 }
 
 // значение добавляется только целенаправленно один раз
-export function Summary(summary: string): StaticMethodDecorator {
+export function Summary(summary: string): MethodDecorator {
   // ...
   return standartDecorator({ summary });
 }
 
 // значение добавляется только целенаправленно один раз
-export function Description(description: string) {
+export function Description(description: string): MethodDecorator {
   // ...
   return standartDecorator({ description });
 }
 
-export function PathParameters(pathParameters: OpenApiPathParameters) {
+export function PathParameters(pathParameters: OpenApiPathParameters): MethodDecorator {
   // ...
   return standartDecorator({ pathParameters });
 }
 
-export function Parameters(...parameters: OpenApiParameterObject[]) {
+export function Parameters(...parameters: OpenApiParameterObject[]): MethodDecorator {
   // ...
   return standartDecorator({ parameters });
 }
 
-export function Responses(...responses: OpenApiResponse[]): StaticMethodDecorator {
+export function Responses(...responses: OpenApiResponse[]): MethodDecorator {
   // ...
   return standartDecorator({ responses });
 }
 
-export function RequestBody(requestBody: OpenApiRequestBody): StaticMethodDecorator {
+export function RequestBody(requestBody: OpenApiRequestBody): MethodDecorator {
   // ...
   return standartDecorator({ requestBody });
 }
 
-export function ReplaceNextTags(): StaticMethodDecorator {
+export function ReplaceNextTags(): MethodDecorator {
   return standartDecorator({
     nextTagRule: constants.NEXT_TAGS_REPLACE,
   });
 }
 
-export function IgnoreNextTags(): StaticMethodDecorator {
+export function IgnoreNextTags(): MethodDecorator {
   return standartDecorator({ nextTagRule: constants.NEXT_TAGS_IGNORE });
 }
 
-export function MergeNextTags(): StaticMethodDecorator {
+export function MergeNextTags(): MethodDecorator {
   return standartDecorator({ nextTagRule: constants.NEXT_TAGS_MERGE });
 }

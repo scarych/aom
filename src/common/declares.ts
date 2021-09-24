@@ -80,10 +80,12 @@ export declare type CombinedDecorator = <T>(
 ) => void;
 
 /** декоратор для статичного метода */
+/*
 export declare type StaticMethodDecorator = <T>(
   target: Constructor,
   propertyKey: string | symbol,
   descriptor: TypedPropertyDescriptor<T>
 ) => void;
+*/
 
 export declare type MarkerHandler = (target: IRoute, cursor: ICursor) => void | unknown;

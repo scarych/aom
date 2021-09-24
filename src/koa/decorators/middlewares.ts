@@ -7,7 +7,6 @@ import {
   MarkerHandler,
   MiddlewareHandler,
   Property,
-  StaticMethodDecorator,
 } from "../../common/declares";
 
 // ...
@@ -25,7 +24,7 @@ export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
 }
 
 // ...
-export function Middleware(): StaticMethodDecorator {
+export function Middleware(): MethodDecorator {
   return function (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) {
     checkConstructorProperty(constructor, property);
     saveReverseMetadata(constructor, property);
@@ -43,7 +42,7 @@ export function Middleware(): StaticMethodDecorator {
 
 // ...
 export function Bridge(prefix, nextRoute): CombinedDecorator {
-  return function (constructor, property = undefined, descriptor = undefined) {
+  return function (constructor: Constructor, property = undefined, descriptor = undefined) {
     checkConstructorProperty(constructor, property);
 
     const metakey = constants.BRIDGE_METADATA;
@@ -55,8 +54,12 @@ export function Bridge(prefix, nextRoute): CombinedDecorator {
 }
 
 // ...
-export function Marker(handler: MarkerHandler): StaticMethodDecorator {
-  return function (constructor, property, descriptor) {
+export function Marker(handler: MarkerHandler): MethodDecorator {
+  return function (
+    constructor: Constructor,
+    property: Property,
+    descriptor: TypedPropertyDescriptor<any>
+  ) {
     checkConstructorProperty(constructor, property);
 
     const metakey = constants.MARKERS_METADATA;
@@ -69,8 +72,12 @@ export function Marker(handler: MarkerHandler): StaticMethodDecorator {
 }
 
 // ...
-export function Sticker(): StaticMethodDecorator {
-  return function (constructor, property, descriptor) {
+export function Sticker(): MethodDecorator {
+  return function (
+    constructor: Constructor,
+    property: Property,
+    descriptor: TypedPropertyDescriptor<any>
+  ) {
     if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
     const metakey = constants.IS_STICKER_METADATA;
     const stickerName = `${constructor.name}:${<string>property}`;
