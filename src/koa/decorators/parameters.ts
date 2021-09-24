@@ -60,7 +60,7 @@ export function Session(sessionName: string = undefined): ReturnType<typeof Args
 }
 
 // ---
-function Body(bodyHandler: ArgsFunction = _default): ReturnType<typeof Args> {
+export function Body(bodyHandler: ArgsFunction = _default): ReturnType<typeof Args> {
   const handler = function ({ ctx }) {
     return Reflect.apply(bodyHandler, null, [ctx.request.body]);
   };
