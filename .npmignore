@@ -9,8 +9,10 @@ CNAME
 _config.yml
 
 .gitignore
+.npmignore
+yarn.lock
 
 tsconfig.json
-tsconfig.esm.json
-tsconfig.cjs.json
+tsconfig.build.json
+
 
