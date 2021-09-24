@@ -73,17 +73,17 @@ export declare interface IRouteElem extends IRoute {
 export declare type HTTPMethods = "get" | "post" | "put" | "patch" | "delete" | "options" | "all";
 
 /** комбинированый декоратор: для статичного метода или для класса */
-export declare type CombinedDecorator = <T extends Constructor, D>(
-  target: T,
+export declare type CombinedDecorator = <T>(
+  target: Constructor,
   propertyKey?: string | symbol,
-  descriptor?: TypedPropertyDescriptor<D>
-) => TypedPropertyDescriptor<D> | void;
+  descriptor?: TypedPropertyDescriptor<T>
+) => void;
 
 /** декоратор для статичного метода */
-export declare type StaticMethodDecorator = <T extends Constructor, D>(
-  target: T,
+export declare type StaticMethodDecorator = <T>(
+  target: Constructor,
   propertyKey: string | symbol,
-  descriptor: TypedPropertyDescriptor<D>
-) => TypedPropertyDescriptor<D> | void;
+  descriptor: TypedPropertyDescriptor<T>
+) => void;
 
 export declare type MarkerHandler = (target: IRoute, cursor: ICursor) => void | unknown;
