@@ -100,7 +100,7 @@ export function Ctx() {
 }
 
 // ---
-export function Err(ErrorConstructor = Error): ReturnType<typeof Args> {
+export function Err<T extends typeof Error>(ErrorConstructor: T = <T>Error): ReturnType<typeof Args> {
   if (!(ErrorConstructor === Error || ErrorConstructor.prototype instanceof Error))
     throw new Error(constants.ERROR_CONSTRUCTOR_ERROR);
   const handler = function () {
