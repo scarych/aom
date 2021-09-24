@@ -195,7 +195,7 @@ router[method](url, ...[Route1.Middleware1, Route2.Middleware2, Route3.Bridge, R
 ```ts
 import koa from "koa";
 import koaRouter from "koa-router";
-import { $ } from "aom/koa"; // сборщик маршрутной карты
+import { $ } from "aom"; // сборщик маршрутной карты
 import Index from "./routes"; // корневой маршрутный узел
 
 const app = new koa();
@@ -253,7 +253,7 @@ app.listen(3000);
 
 ```ts
 // ... index.ts
-import { Get, Post, Body } from "aom/koa";
+import { Get, Post, Body } from "aom";
 
 class Index {
   @Get()
@@ -440,7 +440,7 @@ interface IRoute {
 Пример:
 
 ```ts
-import { Args, Get } from "aom/koa";
+import { Args, Get } from "aom";
 const getUrl = (args) => args.ctx.url;
 class Index {
   @Get()
@@ -453,7 +453,7 @@ class Index {
 Допускается создание собственных декораторов аргументов, используя вызов `Args`
 
 ```ts
-import { Args, Get } from "aom/koa";
+import { Args, Get } from "aom";
 const Url = () => {
   const handler = (args) => args.ctx.url;
   return Args(handler);
@@ -542,7 +542,7 @@ class User {
 Пример:
 
 ```ts
-import { Params, Err, Next, Middleware } from "aom/koa";
+import { Params, Err, Next, Middleware } from "aom";
 
 class ErrorResponse extends Error {
   status: number;
@@ -621,7 +621,7 @@ class Auth {
 Декоратор `@Query()` позволяет получить значение `ctx.query`, типичное для `koa`.
 
 ```ts
-import { Get, Query } from "aom/koa";
+import { Get, Query } from "aom";
 import fs from "fs";
 
 class Files {
@@ -657,7 +657,7 @@ class Users {
 Декоратор `@Body()` позволяет получить значение `ctx.request.body`, типичное для `koa`.
 
 ```ts
-import { Get, Body } from "aom/koa";
+import { Get, Body } from "aom";
 import fs from "fs";
 
 class Users {
@@ -702,7 +702,7 @@ class Users {
 в качестве аргумента имя параметра, возвращая его значение.
 
 ```ts
-import { Get, Middleware, Params, Next } from "aom/koa";
+import { Get, Middleware, Params, Next } from "aom";
 
 class User {
   @Middleware()
@@ -725,7 +725,7 @@ class User {
 в качестве аргумента имя заголовка, возвращая его значение.
 
 ```ts
-import { Get, Headers, Middleware, Next } from "aom/koa";
+import { Get, Headers, Middleware, Next } from "aom";
 
 class Auth {
   @Middleware()
@@ -748,7 +748,7 @@ class Auth {
 в качестве аргумента имя аттрибута, возвращая его значение.
 
 ```ts
-import { Get, State, Params, Middleware, Next } from "aom/koa";
+import { Get, State, Params, Middleware, Next } from "aom";
 
 @Use(User.Init)
 class User {
@@ -778,7 +778,7 @@ class User {
 Пример:
 
 ```ts
-import { Middleware, Post, Delete, Session, Body } from "aom/koa";
+import { Middleware, Post, Delete, Session, Body } from "aom";
 
 @Use(Basket.Init)
 class Basket {
@@ -815,7 +815,7 @@ class Basket {
 (например: [`koa-body`](https://www.npmjs.com/package/koa-body))
 
 ```ts
-import { Post, Files } from "aom/koa";
+import { Post, Files } from "aom";
 import fs from "fs";
 import path from "path";
 
@@ -1023,7 +1023,7 @@ class User {
 
 ```ts
 // ... index.ts
-import { Get, Bridge, Use, Middleware } from "aom/koa";
+import { Get, Bridge, Use, Middleware } from "aom";
 import logger from "logger";
 import Files from "./files";
 
@@ -1045,7 +1045,7 @@ class Index {
 // Files.ts
 import fs from "fs";
 import path from "path";
-import { Get, Bridge, Params, StateMap, Next, Err } from "aom/koa";
+import { Get, Bridge, Params, StateMap, Next, Err } from "aom";
 import FileInfo from "./fileinfo";
 
 class Files {
@@ -1397,7 +1397,7 @@ class Catalogs {
 
 ```ts
 // ... users.ts
-import { Query, This, Bridge, Get } from "aom/koa";
+import { Query, This, Bridge, Get } from "aom";
 import { User } from "./user";
 
 @Bridge(`/user_${User.id}`, User)
@@ -1411,7 +1411,7 @@ class Users {
 }
 
 // ... user.ts
-import { Query, This, Bridge, Get, FwdRef } from "aom/koa";
+import { Query, This, Bridge, Get, FwdRef } from "aom";
 
 // для eslint-а отключим обработку ошибки циклической зависимости
 // eslint-disable-next-line import/no-cycle
@@ -1613,7 +1613,7 @@ class AuthForm extends JSONSchema {
 
 ```ts
 // ... openapi.ts
-import { OpenApi } from "aom/openapi";
+import { OpenApi } from "aom";
 // создадим экземпляр класса документацией, с базовой информацией, контекстной данному api-сервису
 export default new OpenApi({
   info: {
@@ -1656,7 +1656,7 @@ class Root {
 // ... server.ts
 import koa from "koa";
 import koaRouter from "koa-router";
-import { $ } from "aom/koa";
+import { $ } from "aom";
 import Docs from "./openapi";
 import Root from "./root";
 
@@ -1738,8 +1738,8 @@ class HistoryAction extends JSONSchema {
 принимает в качестве аргумента строковое значение.
 
 ```ts
-import { Summary, Description } from "aom/openapi";
-import { Get, Post } from "aom/koa";
+import { Summary, Description } from "aom";
+import { Get, Post } from "aom";
 
 class Users {
   @Summary("Список пользователей")

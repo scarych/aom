@@ -4,3 +4,5 @@ lib/
 old/
 
 _config.yml
+
+**/*.tgz

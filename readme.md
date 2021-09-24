@@ -188,7 +188,7 @@ Connecting route nodes to the server on `koa` is as follows:
 ```ts
 import koa from "koa";
 import koaRouter from "koa-router";
-import { $ } from "aom/koa"; // assembler of routes map
+import { $ } from "aom"; // assembler of routes map
 import Index from "./routes"; // root route node
 
 const app = new koa();
@@ -248,7 +248,7 @@ The specified decorators are applied as follows:
 
 ```ts
 // ... index.ts
-import { Get, Post, Body } from "aom/koa";
+import { Get, Post, Body } from "aom";
 
 class Index {
   @Get()
@@ -436,7 +436,7 @@ are allowed.
 Example:
 
 ```ts
-import { Args, Get } from "aom/koa";
+import { Args, Get } from "aom";
 const getUrl = (args) => args.ctx.url;
 class Index {
   @Get()
@@ -449,7 +449,7 @@ class Index {
 You can create your own argument decorators using the `Args` call:
 
 ```ts
-import { Args, Get } from "aom/koa";
+import { Args, Get } from "aom";
 const Url = () => {
   const handler = (args) => args.ctx.url;
   return Args(handler);
@@ -537,7 +537,7 @@ The function result can be returned via `return` or `throw`.
 Example:
 
 ```ts
-import { Params, Err, Next, Middleware } from "aom/koa";
+import { Params, Err, Next, Middleware } from "aom";
 
 // define specific ErrorResponse class extends on standart Error
 class ErrorResponse extends Error {
@@ -618,7 +618,7 @@ class Auth {
 The `@Query()` decorator allows you to get the `ctx.query` value typical of `koa`.
 
 ```ts
-import { Get, Query } from "aom/koa";
+import { Get, Query } from "aom";
 import fs from "fs";
 
 class Files {
@@ -654,7 +654,7 @@ class Users {
 The `@Body()` decorator allows you to get the `ctx.request.body` value typical of `koa`.
 
 ```ts
-import { Get, Body } from "aom/koa";
+import { Get, Body } from "aom";
 import fs from "fs";
 
 class Users {
@@ -699,7 +699,7 @@ The `@Params()` decorator allows you to get `ctx.params` values typical of `koa`
 name as an argument, returning its value.
 
 ```ts
-import { Get, Middleware, Params, Next } from "aom/koa";
+import { Get, Middleware, Params, Next } from "aom";
 
 class User {
   @Middleware()
@@ -722,7 +722,7 @@ The `@Headers()` decorator allows you to get `ctx.headers` values typical of `ko
 name as an argument, returning its value.
 
 ```ts
-import { Get, Headers, Middleware, Next } from "aom/koa";
+import { Get, Headers, Middleware, Next } from "aom";
 
 class Auth {
   @Middleware()
@@ -745,7 +745,7 @@ The `@State()` decorator allows you to get `ctx.state` values typical of `koa`. 
 name as an argument, returning its value.
 
 ```ts
-import { Get, State, Params, Middleware, Next } from "aom/koa";
+import { Get, State, Params, Middleware, Next } from "aom";
 
 @Use(User.Init)
 class User {
@@ -773,7 +773,7 @@ name as an argument, returning its value.
 (for example: [`koa-session`](https://www.npmjs.com/package/koa-session))
 
 ```ts
-import { Middleware, Post, Delete, Session, Body } from "aom/koa";
+import { Middleware, Post, Delete, Session, Body } from "aom";
 
 @Use(Basket.Init)
 class Basket {
@@ -810,7 +810,7 @@ The `@Files()` decorator allows you to get data from `ctx.request.files`, which 
 (for example: [`koa-body`](https://www.npmjs.com/package/koa-body))
 
 ```ts
-import { Post, Files } from "aom/koa";
+import { Post, Files } from "aom";
 import fs from "fs";
 import path from "path";
 
@@ -1019,7 +1019,7 @@ Example:
 
 ```ts
 // ... index.ts
-import { Get, Bridge, Use, Middleware } from "aom/koa";
+import { Get, Bridge, Use, Middleware } from "aom";
 import logger from "logger";
 import Files from "./files";
 
@@ -1041,7 +1041,7 @@ class Index {
 // Files.ts
 import fs from "fs";
 import path from "path";
-import { Get, Bridge, Params, StateMap, Next, Err } from "aom/koa";
+import { Get, Bridge, Params, StateMap, Next, Err } from "aom";
 import FileInfo from "./fileinfo";
 
 class Files {
@@ -1383,7 +1383,7 @@ Example:
 
 ```ts
 // ... users.ts
-import { Query, This, Bridge, Get } from "aom/koa";
+import { Query, This, Bridge, Get } from "aom";
 import { User } from "./user";
 
 @Bridge(`/user_${User.id}`, User)
@@ -1397,7 +1397,7 @@ class Users {
 }
 
 // ... user.ts
-import { Query, This, Bridge, Get, FwdRef } from "aom/koa";
+import { Query, This, Bridge, Get, FwdRef } from "aom";
 
 // for eslint, turn off the processing of the cyclic dependency error
 // eslint-disable-next-line import/no-cycle
@@ -1600,7 +1600,7 @@ Example:
 
 ```ts
 // ... openapi.ts
-import { OpenApi } from "aom/openapi";
+import { OpenApi } from "aom";
 // create an instance of the class with the documentation, with basic information contextual to this api-service
 export default new OpenApi({
   info: {
@@ -1643,7 +1643,7 @@ in the assembler, passing in it an initiated instance of the class with document
 // ... server.ts
 import koa from "koa";
 import koaRouter from "koa-router";
-import { $ } from "aom/koa";
+import { $ } from "aom";
 import Docs from "./openapi";
 import Root from "./root";
 
@@ -1724,8 +1724,8 @@ The decorators `@Summary()` and `@Description()` are used to describe the endpoi
 Each of them takes a string value as an argument.
 
 ```ts
-import { Summary, Description } from "aom/openapi";
-import { Get, Post } from "aom/koa";
+import { Summary, Description } from "aom";
+import { Get, Post } from "aom";
 
 class Users {
   @Summary("Users list")

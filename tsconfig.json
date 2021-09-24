@@ -3,14 +3,16 @@
     "module": "commonjs",
     "moduleResolution": "node",
     "declaration": true,
-    // "removeComments": true,
+    "removeComments": false,
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es2019",
-    "sourceMap": true,
+    // "sourceMap": true,
     "baseUrl": "./src",
     "incremental": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "inlineSourceMap": true,
+
   },
   "include": ["src"],
   "exclude": ["build", "node_modules", "sample", "**/*.spec.ts", "test/**"]
