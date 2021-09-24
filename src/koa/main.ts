@@ -65,7 +65,7 @@ function makeCtx(cursor: ICursor, env: any = {}) {
       } else if (result instanceof Error) {
         const status = Reflect.get(result, "status") || 500;
         ctx.status = status;
-        ctx.body = { status, ...result };
+        ctx.body = Object.assign(result, { status });
       } else {
         ctx.body = result;
       }
