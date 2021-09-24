@@ -4,7 +4,7 @@ import { checkConstructorProperty } from "../../common/functions";
 import { nextSequences } from "../functions";
 import { ArgsFunction, HandlerFunction, IArgs } from "../../common/declares";
 
-function _default(args: IArgs) {
+function _default(args: IArgs | any) {
   return args;
 }
 
@@ -28,7 +28,7 @@ export function Args(handler: ArgsFunction = _default): ParameterDecorator {
 }
 
 // ---
-export function Query(queryHandler: ArgsFunction = _default): ReturnType<typeof Args> {
+export function Query(queryHandler: Function = _default): ReturnType<typeof Args> {
   const handler = function ({ ctx }) {
     return Reflect.apply(queryHandler, null, [ctx.query]);
   };
@@ -60,7 +60,7 @@ export function Session(sessionName: string = undefined): ReturnType<typeof Args
 }
 
 // ---
-export function Body(bodyHandler: ArgsFunction = _default): ReturnType<typeof Args> {
+export function Body(bodyHandler: Function = _default): ReturnType<typeof Args> {
   const handler = function ({ ctx }) {
     return Reflect.apply(bodyHandler, null, [ctx.request.body]);
   };
