@@ -1,0 +1,16 @@
+*.DS_Store
+
+src/
+old/
+node_modules/
+website/
+
+CNAME
+_config.yml
+
+.gitignore
+
+tsconfig.json
+tsconfig.esm.json
+tsconfig.cjs.json
+
