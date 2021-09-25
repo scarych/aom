@@ -1,6 +1,6 @@
 node_modules/
 
-lib/
+# lib/
 old/
 
 _config.yml

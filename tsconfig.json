@@ -9,7 +9,7 @@
     "target": "es2019",
     // "sourceMap": true,
     "baseUrl": "./src",
-    "incremental": true,
+    "incremental": false,
     "esModuleInterop": true,
     "inlineSourceMap": true,
 
