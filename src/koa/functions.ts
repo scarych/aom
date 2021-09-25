@@ -62,7 +62,7 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
     if (constructor && property) {
       const decoratedArgs = extractParameterDecorators(constructor, property);
 
-      /* временно отключим стикеры как таковые
+      // /* временно отключим стикеры как таковые
       // check sticker metadata
       const stickerData = Reflect.getOwnMetadata(
         constants.IS_STICKER_METADATA,
@@ -80,8 +80,8 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
         });
       } else {
         // restore cursor constructor and property
-      } */
-      Object.assign(contextArgs.cursor, { constructor, property });
+        Object.assign(contextArgs.cursor, { constructor, property });
+      } // */
 
       const args = await Promise.map(
         decoratedArgs,

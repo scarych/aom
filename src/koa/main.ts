@@ -46,6 +46,7 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     cursor.constructor = route.constructor;
   }
 
+
   const decoratedArgs = extractParameterDecorators(constructor, property);
   return async (ctx, next) => {
     try {

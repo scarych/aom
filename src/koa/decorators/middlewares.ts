@@ -71,6 +71,7 @@ export function Marker(handler: MarkerHandler): MethodDecorator {
   };
 }
 
+
 // ...
 export function Sticker(): MethodDecorator {
   return function (
