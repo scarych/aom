@@ -1,13 +1,19 @@
 import * as constants from "../../common/constants";
 import { restoreReverseMetadata, saveReverseMetadata } from "../functions";
 import { checkConstructorProperty } from "../../common/functions";
-import { Constructor, HandlerFunction, HTTPMethods, IEndpoint, Property } from "../../common/declares";
+import {
+  Constructor,
+  HandlerFunction,
+  HTTPMethods,
+  IEndpoint,
+  Property,
+} from "../../common/declares";
 
-function bindEndpoint(constructor, { path, method, property, descriptor }: IEndpoint): void {
+function bindEndpoint(constructor, endpoint: IEndpoint): void {
   const metakey = constants.ENDPOINTS_METADATA;
   // ...
   const endpoints = Reflect.getOwnMetadata(metakey, constructor) || [];
-  endpoints.push({ path, method, property, descriptor });
+  endpoints.push(endpoint);
   Reflect.defineMetadata(metakey, endpoints, constructor);
 }
 
@@ -28,12 +34,12 @@ function defineEndpoint(
     // проверим, что данный handler - это lazy endpoint
     const metakey = constants.LAZY_ENDPOINT;
     const descriptor = Reflect.getOwnMetadata(metakey, handler);
-    // если 
+    // если
     if (descriptor) {
       const { constructor, property } = restoreReverseMetadata(handler);
       bindEndpoint(target, { constructor, property, path, method, descriptor });
     } else {
-      throw new Error(constants.LAZY_ENDPOINT)
+      throw new Error(constants.LAZY_ENDPOINT);
     }
   };
 }
