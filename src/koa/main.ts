@@ -7,9 +7,10 @@ import { extractMiddlewares, extractParameterDecorators, safeJSON } from "./func
 import {
   Constructor,
   HandlerFunction,
+  IArgs,
   ICursor,
   IEndpoint,
-  IRouteElem,
+  IRoute,
   MiddlewareHandler,
 } from "../common/declares";
 import { OpenApi } from "../openapi";
@@ -25,24 +26,24 @@ const $StateMap = (ctx, next) => {
 /**
  * создание контекстной функции
  */
-function makeCtx(cursor: ICursor, env: any = {}) {
+function makeCtx(cursor: ICursor, route: IRoute) {
   cursor = safeJSON(cursor);
   const { constructor, property, handler } = cursor;
   // в момент генерации контекстного вызова извлечем маршрут, который есть всегда, и применим к нему маркеры
-  const { target } = env;
+  // const { target } = env;
   const markersData = Reflect.getOwnMetadata(constants.MARKERS_METADATA, constructor, property);
   if (markersData) {
     markersData.forEach((marker) =>
-      Reflect.apply(marker.handler, marker.constructor, [target, cursor])
+      Reflect.apply(marker.handler, marker.constructor, [route, cursor])
     );
   }
 
   // в момент генерации вызова проверим, является ли данное свойство стикером
   const stickerData = Reflect.getOwnMetadata(constants.IS_STICKER_METADATA, constructor, property);
   // и если является, и целевой конструктор является наследником курсора
-  if (stickerData && target.constructor.prototype instanceof cursor.constructor) {
+  if (stickerData && route.constructor.prototype instanceof cursor.constructor) {
     // то в курсоре заменим конструктор на целевой
-    cursor.constructor = target.constructor;
+    cursor.constructor = route.constructor;
   }
 
   const decoratedArgs = extractParameterDecorators(constructor, property);
@@ -52,7 +53,7 @@ function makeCtx(cursor: ICursor, env: any = {}) {
       // из контекста необходимые данные, либо обернуть контекст в унифицированный
       // извлекатель данных по декораторам аргументов
       // последними аргументами всегда будут ctx, next
-      const defaultArguments = { ...env, cursor, ctx, next };
+      const defaultArguments = <IArgs>{ route, cursor, ctx, next };
       const args = await Promise.map(
         decoratedArgs,
         async (arg) => arg && (await Reflect.apply(arg, constructor, [defaultArguments]))
@@ -81,21 +82,25 @@ function buildRoutesList(
   constructor: Constructor,
   prefix: string = "/",
   middlewares: MiddlewareHandler[] = []
-): IRouteElem[] {
+): IRoute[] {
   const routesList = [];
   // список общих миддлварей, присущих маршрутному узлу
   const commonMiddlewares = extractMiddlewares({ constructor, property: undefined }, prefix);
 
-  const routes: IEndpoint[] = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, constructor);
+  const endpoints: IEndpoint[] = Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, constructor);
 
-  if (routes) {
-    routes.forEach((routeElem: IEndpoint) => {
-      const { method, descriptor, path, property } = routeElem;
+  if (endpoints) {
+    endpoints.forEach((endpoint: IEndpoint) => {
+      // тут важный момент - заменяется значение constructor, и извлекается из
+      // метаданных endpoint-а
+      // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
+      // он будет равен конструктору самого endpoint-а
+      const { constructor, method, descriptor, path, property } = endpoint;
       const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
       // target - элемент маршрута, доступен через декораторы параметров `@Target`
-      const target = safeJSON({
+      const route = <IRoute>safeJSON({
         method,
         path: routePath,
         constructor,
@@ -109,21 +114,20 @@ function buildRoutesList(
           constructor,
           property,
         },
-        target.path
+        routePath
       );
       // создадим курсоры, включив в них информацию и о последнем вызове в стеке
       const cursors = []
         .concat(middlewares, commonMiddlewares, endpointMiddlewares)
-        .concat([{ constructor, property, handler, prefix: target.path }]);
-      const env = { target };
+        .concat([{ constructor, property, handler, prefix: routePath }]);
 
-      Object.assign(target, {
+      Object.assign(route, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
         cursors,
         // сгенерирем полный стек вызовов в контексте
-        middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, { ...env }))),
+        middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, route))),
       });
-      routesList.push(target);
+      routesList.push(route);
     });
   }
 
@@ -165,14 +169,14 @@ function buildRoutesList(
 }
 
 export class $ {
-  routes: IRouteElem[];
+  routes: IRoute[];
 
   constructor(root, prefix = "/") {
     this.routes = buildRoutesList(root, prefix);
   }
 
   eachRoute(handler: HandlerFunction) {
-    this.routes.forEach((route: IRouteElem) => {
+    this.routes.forEach((route: IRoute) => {
       Reflect.apply(handler, null, [route]);
     });
     return this;

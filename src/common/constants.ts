@@ -11,6 +11,7 @@ export const REVERSE_METADATA = "aom:reverse_link";
 export const ERROR_METADATA = "aom:error_result";
 export const OPEN_API_METADATA = "aom:open_api_meta";
 export const OPEN_API_CONTAINER_METADATA = "aom:open_api_container";
+export const LAZY_ENDPOINT_ERROR = "Wrong endpoint! The handler hasn't marked with `@Endpoint()` decorator";
 export const CONSTRUCTOR_TYPE_ERROR = "Wrong target type! The decorator allowed for class only";
 export const CONSTRUCTOR_PROPERTY_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods only";

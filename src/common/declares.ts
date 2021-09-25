@@ -59,15 +59,10 @@ export declare interface IEndpoint extends ConstructorProperty {
 export declare interface IRoute extends Omit<ICursor, "prefix"> {
   method: string;
   path: string;
-  cursors: ICursor[];
-  callstack: HandlerFunction[];
-  [key: string]: any;
-}
-
-export declare interface IRouteElem extends IRoute {
   middlewares: MiddlewareHandler[];
   cursors: ICursor[];
 }
+
 
 /** доступные HTTP методы */
 export declare type HTTPMethods = "get" | "post" | "put" | "patch" | "delete" | "options" | "all";

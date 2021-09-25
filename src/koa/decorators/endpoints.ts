@@ -12,7 +12,8 @@ function bindEndpoint(constructor, { path, method, property, descriptor }: IEndp
 }
 
 /**
- * определить endpoint: вернуть типичный
+ * определить endpoint: вернуть типичный Endpoint по методу, или подключить
+ * отложенный endpoint
  */
 function defineEndpoint(
   method: HTTPMethods,
@@ -24,12 +25,15 @@ function defineEndpoint(
   }
 
   return function (target: Constructor) {
-    // ...
+    // проверим, что данный handler - это lazy endpoint
     const metakey = constants.LAZY_ENDPOINT;
     const descriptor = Reflect.getOwnMetadata(metakey, handler);
+    // если 
     if (descriptor) {
       const { constructor, property } = restoreReverseMetadata(handler);
       bindEndpoint(target, { constructor, property, path, method, descriptor });
+    } else {
+      throw new Error(constants.LAZY_ENDPOINT)
     }
   };
 }

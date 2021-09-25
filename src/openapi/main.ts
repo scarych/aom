@@ -22,7 +22,7 @@ export class OpenApi {
 
   paths = {};
   registerPath(route: IRoute): void {
-    let { constructor, property, path, method, cursors } = route;
+    let { path, method, cursors } = route;
     // const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
     // if (!handlerOpenApiData) return;
 
