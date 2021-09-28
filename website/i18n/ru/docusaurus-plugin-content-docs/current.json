@@ -1,0 +1,14 @@
+{
+  "version.label": {
+    "message": "Next",
+    "description": "The label for version current"
+  },
+  "sidebar.api.category.aom/koa": {
+    "message": "aom/koa",
+    "description": "The label for category aom/koa in sidebar api"
+  },
+  "sidebar.api.category.aom/openapi": {
+    "message": "aom/openapi",
+    "description": "The label for category aom/openapi in sidebar api"
+  }
+}
