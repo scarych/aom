@@ -6,7 +6,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
 (
   module.exports = {
     title: "aom",
-    tagline: "AOM: API Over Models",
+    tagline: "API Over Models",
     url: "https://scarych.github.io",
     baseUrl: "/",
     onBrokenLinks: "throw",
