@@ -2,7 +2,13 @@ import * as constants from "../../common/constants";
 import { FwdContainer } from "../forwards";
 import { checkConstructorProperty } from "../../common/functions";
 import { nextSequences } from "../functions";
-import { ArgsFunction, Constructor, HandlerFunction, IArgs } from "../../common/declares";
+import {
+  ArgsFunction,
+  ClassConstructor,
+  Constructor,
+  HandlerFunction,
+  IArgs,
+} from "../../common/declares";
 
 function _default(args: IArgs | any) {
   return args;
@@ -100,7 +106,7 @@ export function Ctx() {
 }
 
 // ---
-export function Err(ErrorConstructor: Constructor = Error): ReturnType<typeof Args> {
+export function Err(ErrorConstructor: ClassConstructor = Error): ReturnType<typeof Args> {
   if (!(ErrorConstructor === Error || ErrorConstructor.prototype instanceof Error))
     throw new Error(constants.ERROR_CONSTRUCTOR_ERROR);
   const handler = function () {

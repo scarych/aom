@@ -4,6 +4,7 @@ import { saveReverseMetadata } from "../functions";
 import {
   CombinedDecorator,
   Constructor,
+  IBridge,
   MarkerHandler,
   MiddlewareHandler,
   Property,
@@ -47,7 +48,7 @@ export function Bridge(prefix, nextRoute): CombinedDecorator {
 
     const metakey = constants.BRIDGE_METADATA;
     // ...
-    const bridges = Reflect.getOwnMetadata(metakey, constructor) || [];
+    const bridges: IBridge[] = Reflect.getOwnMetadata(metakey, constructor) || [];
     bridges.push({ prefix, nextRoute, constructor, property, descriptor });
     Reflect.defineMetadata(metakey, bridges, constructor);
   };
@@ -70,7 +71,6 @@ export function Marker(handler: MarkerHandler): MethodDecorator {
     Reflect.defineMetadata(metakey, markers, constructor, property);
   };
 }
-
 
 // ...
 export function Sticker(): MethodDecorator {

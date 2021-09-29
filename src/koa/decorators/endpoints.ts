@@ -34,12 +34,12 @@ function defineEndpoint(
     // проверим, что данный handler - это lazy endpoint
     const metakey = constants.LAZY_ENDPOINT;
     const descriptor = Reflect.getOwnMetadata(metakey, handler);
-    // если
+    // если это ленивый ендпоинт
     if (descriptor) {
       const { constructor, property } = restoreReverseMetadata(handler);
       bindEndpoint(target, { constructor, property, path, method, descriptor });
     } else {
-      throw new Error(constants.LAZY_ENDPOINT);
+      throw new Error(constants.LAZY_ENDPOINT_ERROR);
     }
   };
 }

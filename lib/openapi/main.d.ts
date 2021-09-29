@@ -16,7 +16,7 @@ export declare class OpenApi {
     buildResponses(responses: any): {};
     buildRequestBody(requestBody: any): {};
     toJSON(): {
-        definitions: Record<string, Constructor<{}>>;
+        definitions: Record<string, Constructor>;
         components: {
             tags: any[];
             securitySchemes: {};

@@ -4,7 +4,8 @@ export declare interface IFwdContainer<T = any> {
 export declare type FwdFunction = (arg: () => any) => any;
 export declare type HandlerFunction = (...args: any[]) => any;
 export declare type MiddlewareHandler = IFwdContainer | HandlerFunction;
-export declare type Constructor<T extends {} = {}> = new (...args: any[]) => T;
+export declare type ClassConstructor<T extends {} = {}> = new (...args: any[]) => T;
+export declare type Constructor = ClassConstructor | Function;
 export declare type Property = string | symbol;
 export declare interface IArgs {
     next: Function;
@@ -37,6 +38,13 @@ export declare interface IEndpoint extends ConstructorProperty {
     path: string;
     method: HTTPMethods;
     descriptor: PropertyDescriptor;
+}
+export declare interface IBridge {
+    prefix: string;
+    nextRoute: Constructor;
+    constructor: Constructor;
+    property?: Property;
+    descriptor?: PropertyDescriptor;
 }
 export declare interface IRoute extends Omit<ICursor, "prefix"> {
     method: string;

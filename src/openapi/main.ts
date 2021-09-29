@@ -1,6 +1,6 @@
 import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
-import { checkOpenAPIMetadata } from "../common/functions";
+import { getOpenAPIMetadata } from "../common/functions";
 import { getDefinitions } from "./definitions";
 import { OpenApiSchemaObject } from "./types";
 
@@ -23,8 +23,6 @@ export class OpenApi {
   paths = {};
   registerPath(route: IRoute): void {
     let { path, method, cursors } = route;
-    // const handlerOpenApiData = checkOpenAPIMetadata(constructor, property);
-    // if (!handlerOpenApiData) return;
 
     // создадим заглушку для текущего метода
     const currentMethod = {};
@@ -61,7 +59,7 @@ export class OpenApi {
     cursors.forEach((cursor: ICursor) => {
       // из остальных извлечем полезные данные
       const { constructor, property } = cursor;
-      const cursorOpenApiData = checkOpenAPIMetadata(constructor, property);
+      const cursorOpenApiData = getOpenAPIMetadata(constructor, property);
       if (cursorOpenApiData) {
         // возьмем описание и название из текущего курсора и заменим значения итеративно
         const { description, summary } = cursorOpenApiData;
