@@ -4,29 +4,28 @@ import { IEndpoint, Constructor, IBridge } from "../../common/declares";
 // принудительно склонировать метаданные по ключу
 function cloneMetadataPlain(
   metadataKey: string,
-  endpoint: IEndpoint | IBridge,
+  origin: IEndpoint | IBridge,
   constructor: Constructor
 ) {
   Reflect.defineMetadata(
     metadataKey,
-    Reflect.getOwnMetadata(metadataKey, endpoint.constructor, endpoint.property),
+    Reflect.getOwnMetadata(metadataKey, origin.constructor, origin.property),
     constructor,
-    endpoint.property
+    origin.property
   );
 }
 // склонировать метаданные, заменив конструктор в соответствующих местах данных
 function cloneMetadataList(
   metadataKey: string,
-  endpoint: IEndpoint | IBridge,
+  origin: IEndpoint | IBridge,
   constructor: Constructor
 ) {
+  const originData = Reflect.getOwnMetadata(metadataKey, origin.constructor, origin.property) || [];
   Reflect.defineMetadata(
     metadataKey,
-    Reflect.getOwnMetadata(metadataKey, endpoint.constructor, endpoint.property).map((values) => {
-      return { ...values, constructor };
-    }),
+    originData.map((values) => ({ ...values, constructor })),
     constructor,
-    endpoint.property
+    origin.property
   );
 }
 
