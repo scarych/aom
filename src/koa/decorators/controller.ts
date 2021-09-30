@@ -6,6 +6,7 @@ import {
   IBridge,
   ConstructorProperty,
 } from "../../common/declares";
+import { saveReverseMetadata } from "../functions";
 
 // принудительно склонировать метаданные по ключу
 function cloneMetadataPlain<T extends ConstructorProperty>(
@@ -145,7 +146,11 @@ export function Controller(): ClassDecorator {
       const { property, descriptor } = middleware;
       // проверим, что такого свойства в существующем классе нет
       if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
+        // создадим непосредственно данное свойство
         Reflect.defineProperty(constructor, property, descriptor);
+        saveReverseMetadata(constructor, property);
+        // объявим данный дескриптор миддлварей
+        Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
         // перенесем декораторы аргументов
         cloneMetadataPlain(constants.PARAMETERS_METADATA, middleware, constructor);
         // перенесем декораторы опенапи
