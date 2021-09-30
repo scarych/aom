@@ -56,7 +56,7 @@ export function Controller(): ClassDecorator {
         });
         saveReverseMetadata(constructor, property);
         // объявим данный дескриптор миддлварей
-        Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
+        Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor, property);
         // перенесем декораторы аргументов
         cloneMetadataPlain(constants.PARAMETERS_METADATA, middleware, constructor);
         // перенесем декораторы опенапи
@@ -85,7 +85,7 @@ export function Controller(): ClassDecorator {
         // сохраним реверсивную мету
         saveReverseMetadata(constructor, property);
         // объявим данный дескриптор общим ендпоинтом
-        Reflect.defineMetadata(constants.COMMON_ENDPOINT, descriptor, constructor[property]);
+        Reflect.defineMetadata(constants.COMMON_ENDPOINT, descriptor, constructor, property);
         // перенесем декораторы аргументов
         cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
         // перенесем декораторы опенапи

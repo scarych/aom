@@ -32,11 +32,11 @@ function defineEndpoint(
 
   return function (target: Constructor) {
     // проверим, что данный handler - это lazy endpoint
+    const { constructor, property } = restoreReverseMetadata(handler);
     const metakey = constants.COMMON_ENDPOINT;
-    const descriptor = Reflect.getOwnMetadata(metakey, handler);
+    const descriptor = Reflect.getOwnMetadata(metakey, constructor, property);
     // если это ленивый ендпоинт
     if (descriptor) {
-      const { constructor, property } = restoreReverseMetadata(handler);
       bindEndpoint(target, { constructor, property, descriptor, path, method });
     } else {
       throw new Error(constants.COMMON_ENDPOINT_ERROR);
@@ -81,7 +81,7 @@ export function Endpoint(method?: HTTPMethods, path?: string): MethodDecorator {
       Reflect.defineMetadata(constants.COMMON_ENDPOINTS_LIST, commonEndpointsList, constructor);
 
       const metakey = constants.COMMON_ENDPOINT;
-      Reflect.defineMetadata(metakey, descriptor, constructor[property]);
+      Reflect.defineMetadata(metakey, descriptor, constructor, property);
     }
   };
 }

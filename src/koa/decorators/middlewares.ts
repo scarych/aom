@@ -49,7 +49,7 @@ export function Middleware(): MethodDecorator {
     Reflect.defineMetadata(listMetakey, middlewaresList, constructor);
 
     const metakey = constants.IS_MIDDLEWARE_METADATA;
-    Reflect.defineMetadata(metakey, true, constructor[property]);
+    // Reflect.defineMetadata(metakey, true, constructor[property]);
     // дополнительное сохранение
     Reflect.defineMetadata(metakey, true, constructor, property);
   };
