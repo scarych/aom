@@ -152,11 +152,12 @@ export function Route(): ReturnType<typeof Args> {
 // ---
 export function StateMap(constructor = undefined): ReturnType<typeof Args> {
   const handler = ({ ctx }) => {
+    let _constructor = constructor;
     // если используется `FwdRef`, то в качестве целевого значения используем результат функции
     if (constructor instanceof FwdContainer) {
-      constructor = constructor.exec();
+      _constructor = constructor.exec();
     }
-    return constructor ? ctx.$StateMap.get(constructor) : ctx.$StateMap;
+    return _constructor ? ctx.$StateMap.get(_constructor) : ctx.$StateMap;
   };
   return Args(handler);
 }
@@ -167,15 +168,18 @@ export function This(constructor = undefined): ReturnType<typeof Args> {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
   const handler = ({ ctx, cursor }) => {
+    // локальное значение конструктора, которое при каждом вызове должно быть подсчитано заново
+    // иначе при наследовании начинаются глюки с кешированием
+    let _constructor;
     // если используется `FwdRef`, то в качестве целевого значения используем результат функции
     if (constructor instanceof FwdContainer) {
-      constructor = constructor.exec();
+      _constructor = constructor.exec();
     }
-    constructor = constructor || cursor.constructor;
-    let _this = ctx.$StateMap.get(constructor);
+    _constructor = constructor || cursor.constructor;
+    let _this = ctx.$StateMap.get(_constructor);
     if (!_this) {
-      _this = Reflect.construct(constructor, []);
-      ctx.$StateMap.set(constructor, _this);
+      _this = Reflect.construct(_constructor, []);
+      ctx.$StateMap.set(_constructor, _this);
     }
     return _this;
   };
