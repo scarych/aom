@@ -25,7 +25,14 @@ export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
       if (middleware instanceof FwdContainer) {
         rawMiddlewares.push(middleware);
       } else {
-        rawMiddlewares.push(restoreReverseMetadata(<HandlerFunction>middleware));
+        const middlewareData = restoreReverseMetadata(<HandlerFunction>middleware);
+        // тут хитрый маневр: если используемая миддлварь является родительской для текущего конструктора
+        // то заменим в ней конструктор, чтобы заменить контекст 
+        // (может баговать, когда надо реально использовать миддлварь из родителя, но я пока не вижу, когда такое может возникнуть)
+        if (constructor.prototype instanceof middlewareData.constructor ) {
+          Object.assign(middlewareData, { constructor });
+        }
+        rawMiddlewares.push(middlewareData);
       }
     });
     // ...

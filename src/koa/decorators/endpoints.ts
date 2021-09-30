@@ -32,12 +32,19 @@ function defineEndpoint(
 
   return function (target: Constructor) {
     // проверим, что данный handler - это lazy endpoint
-    const { constructor, property } = restoreReverseMetadata(handler);
+    const endpointOrigin = restoreReverseMetadata(handler);
+    const { constructor, property } = endpointOrigin;
     const metakey = constants.COMMON_ENDPOINT;
     const descriptor = Reflect.getOwnMetadata(metakey, constructor, property);
     // если это ленивый ендпоинт
     if (descriptor) {
-      bindEndpoint(target, { constructor, property, descriptor, path, method });
+      // схожая проверка как в миддлварях: если у нас в момент вызова
+      // ендпоинт берется из родительского класса относительно текущего контекста
+      // то заменим в нем значение конструктора на текущее, чтобы быстро пробросить новый контекст
+      if (target.prototype instanceof constructor) {
+        Object.assign(endpointOrigin, { constructor: target });
+      }
+      bindEndpoint(target, { ...endpointOrigin, descriptor, path, method });
     } else {
       throw new Error(constants.COMMON_ENDPOINT_ERROR);
     }
