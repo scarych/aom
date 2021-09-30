@@ -64,7 +64,30 @@ export function Controller(): ClassDecorator {
         // скопируем с преобразованием списка декораторы маркеров
         cloneMetadataList(constants.MARKERS_METADATA, middleware, constructor);
       } else {
-        console.warn("property", { middleware }, "exists into", { constructor });
+        console.warn("property for middleware", { middleware }, "exists into", { constructor });
+      }
+    });
+
+    // перенесем общие ендпоинты
+    const parentCommonEndpoints: ConstructorPropertyDescriptor[] =
+      Reflect.getOwnMetadata(constants.COMMON_ENDPOINTS_LIST, parentConstructor) || [];
+    // цикл применяется всегда, потому что проверяем только наличие такого же свойства
+    parentCommonEndpoints.forEach((endpoint) => {
+      const { property, descriptor } = endpoint;
+      // проверим, что такого свойства в существующем классе нет
+      if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
+        // создадим непосредственно данное свойство
+        Reflect.defineProperty(constructor, property, descriptor);
+        // объявим данный дескриптор общим ендпоинтом
+        Reflect.defineMetadata(constants.COMMON_ENDPOINT, descriptor, constructor[property]);
+        // перенесем декораторы аргументов
+        cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
+        // перенесем декораторы опенапи
+        cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
+        // перенесем декораторы миддлвари
+        cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
+      } else {
+        console.warn("property for common endpoint", { endpoint }, "exists into", { constructor });
       }
     });
 
@@ -182,14 +205,14 @@ export function Controller(): ClassDecorator {
       Reflect.defineMetadata(constants.BRIDGE_METADATA, bridges, constructor);
     }
 
-    // перенесем информацию о теге, если она есть
+    // перенесем информацию о теге, если она есть в родителе и нет у дочернего класса
     const openApiTag = Reflect.getOwnMetadata(constants.OPENAPI_TAG, parentConstructor);
-    if (openApiTag) {
+    if (openApiTag && !Reflect.getOwnMetadata(constants.OPENAPI_TAG, constructor)) {
       Reflect.defineMetadata(constants.OPENAPI_TAG, openApiTag, constructor);
     }
-    // перенесем информацию о схеме безопасности, если она есть
+    // перенесем информацию о схеме безопасности, если она есть в родителе и нет у дочернего класса
     const openApiSecurity = Reflect.getOwnMetadata(constants.OPENAPI_SECURITY, parentConstructor);
-    if (openApiSecurity) {
+    if (openApiSecurity && !Reflect.getOwnMetadata(constants.OPENAPI_SECURITY, constructor)) {
       Reflect.defineMetadata(constants.OPENAPI_SECURITY, openApiSecurity, constructor);
     }
   };
