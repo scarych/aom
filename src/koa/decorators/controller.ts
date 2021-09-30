@@ -181,5 +181,16 @@ export function Controller(): ClassDecorator {
       });
       Reflect.defineMetadata(constants.BRIDGE_METADATA, bridges, constructor);
     }
+
+    // перенесем информацию о теге, если она есть
+    const openApiTag = Reflect.getOwnMetadata(constants.OPENAPI_TAG, parentConstructor);
+    if (openApiTag) {
+      Reflect.defineMetadata(constants.OPENAPI_TAG, openApiTag, constructor);
+    }
+    // перенесем информацию о схеме безопасности, если она есть
+    const openApiSecurity = Reflect.getOwnMetadata(constants.OPENAPI_SECURITY, parentConstructor);
+    if (openApiSecurity) {
+      Reflect.defineMetadata(constants.OPENAPI_SECURITY, openApiSecurity, constructor);
+    }
   };
 }
