@@ -74,7 +74,11 @@ export class OpenApi {
 
         // если курсор совпадает с собственным роутером
         // то установим правило замены следующего тега, если он вдруг встретится
-        if (cursor.handler === route.handler && route.path === cursor.prefix) {
+        if (
+          cursor.constructor === route.constructor &&
+          cursor.property == route.property &&
+          route.path === cursor.prefix
+        ) {
           nextTagRule = constants.NEXT_TAGS_REPLACE;
         } else if (cursorOpenApiData.nextTagRule) {
           // иначе используем значение, если оно стоит для курсора

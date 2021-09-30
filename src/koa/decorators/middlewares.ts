@@ -1,14 +1,16 @@
 import * as constants from "../../common/constants";
 import { checkConstructorProperty } from "../../common/functions";
-import { saveReverseMetadata } from "../functions";
+import { restoreReverseMetadata, saveReverseMetadata } from "../functions";
 import {
   CombinedDecorator,
   Constructor,
+  HandlerFunction,
   IBridge,
   MarkerHandler,
   MiddlewareHandler,
   Property,
 } from "../../common/declares";
+import { FwdContainer } from "../forwards";
 
 // ...
 export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
@@ -16,10 +18,20 @@ export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
     checkConstructorProperty(constructor, property);
 
     const metakey = constants.MIDDLEWARE_METADATA;
+    // преобразуем handler-ы миддлварей в последовательность
+    // `ConstructorProperty` и `FwdContainer` элементов
+    const rawMiddlewares = [];
+    middlewares.forEach((middleware: MiddlewareHandler) => {
+      if (middleware instanceof FwdContainer) {
+        rawMiddlewares.push(middleware);
+      } else {
+        rawMiddlewares.push(restoreReverseMetadata(<HandlerFunction>middleware));
+      }
+    });
     // ...
     const middlewaresList = []
       .concat(Reflect.getOwnMetadata(metakey, constructor, property) || [])
-      .concat(middlewares);
+      .concat(rawMiddlewares);
     Reflect.defineMetadata(metakey, middlewaresList, constructor, property);
   };
 }
@@ -38,6 +50,8 @@ export function Middleware(): MethodDecorator {
 
     const metakey = constants.IS_MIDDLEWARE_METADATA;
     Reflect.defineMetadata(metakey, true, constructor[property]);
+    // дополнительное сохранение
+    Reflect.defineMetadata(metakey, true, constructor, property);
   };
 }
 

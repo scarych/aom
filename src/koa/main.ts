@@ -33,7 +33,7 @@ const $StateMap = (ctx, next) => {
  */
 function makeCtx(cursor: ICursor, route: IRoute) {
   cursor = safeJSON(cursor);
-  const { constructor, property, handler } = cursor;
+  const { constructor, property /*handler */ } = cursor;
   // в момент генерации контекстного вызова извлечем маршрут, который есть всегда, и применим к нему маркеры
   // const { target } = env;
   const markersData = Reflect.getOwnMetadata(constants.MARKERS_METADATA, constructor, property);
@@ -67,7 +67,8 @@ function makeCtx(cursor: ICursor, route: IRoute) {
       );
       args.push(defaultArguments);
       //
-      const result = await Reflect.apply(handler, constructor, args);
+      // const result = await Reflect.apply(handler, constructor, args);
+      const result = await Reflect.apply(constructor[property], constructor, args);
       if (result === next) {
         return next();
       } else if (result instanceof Error) {
@@ -102,8 +103,8 @@ function buildRoutesList(
       // метаданных endpoint-а
       // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
       // он будет равен конструктору самого endpoint-а
-      const { method, path, handler } = endpoint;
-      const { constructor, property } = restoreReverseMetadata(handler);
+      const { method, path, constructor, property } = endpoint;
+      // const { constructor, property } = restoreReverseMetadata(handler);
       // const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
@@ -113,7 +114,7 @@ function buildRoutesList(
         path: routePath,
         constructor,
         property,
-        handler,
+        // handler,
       });
 
       // get middlewars for endpoint with correct prefix
@@ -127,7 +128,7 @@ function buildRoutesList(
       // создадим курсоры, включив в них информацию и о последнем вызове в стеке
       const cursors = []
         .concat(middlewares, commonMiddlewares, endpointMiddlewares)
-        .concat([{ constructor, property, handler, prefix: routePath }]);
+        .concat([{ constructor, property, /*handler,*/ prefix: routePath }]);
 
       Object.assign(route, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
@@ -159,7 +160,7 @@ function buildRoutesList(
         bridgeMiddlewares.push({
           constructor,
           property,
-          handler: descriptor.value,
+          // handler: descriptor.value,
           prefix: newPrefix,
         });
       }

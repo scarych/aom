@@ -110,50 +110,39 @@ export function Controller(): ClassDecorator {
         byProperty: {},
         byPathMethod: {},
         add(endpoint) {
-          const { handler, path, method } = endpoint;
-          const { property } = restoreReverseMetadata(handler);
+          const { property, path, method } = endpoint;
           this.byProperty[property] = true;
           this.byPathMethod[`${path}:${method}`] = true;
         },
         // создадим функции сверки отсутствия повторений
         checkExists(endpoint) {
-          const { handler, path, method } = endpoint;
-          const { property } = restoreReverseMetadata(handler);
+          const { path, method, property } = endpoint;
           return this.byProperty[property] || this.byPathMethod[`${path}:${method}`];
         },
       };
       // перенесем собственные ендпоинты в структуру
       endpoints.forEach((endpoint) => endpointsStruct.add(endpoint));
       parentEndpoints.forEach((endpoint: IEndpoint) => {
-        const { descriptor, handler } = endpoint;
-        const handlerConstructorProperty: ConstructorProperty = restoreReverseMetadata(handler);
-        const { property } = handlerConstructorProperty;
+        const { descriptor, property } = endpoint;
         // проверим, что родительского ендпоинта нет ни в каком виде в дочернем элементе
         if (
           !endpointsStruct.checkExists(endpoint) &&
           !Reflect.getOwnPropertyDescriptor(constructor, property)
         ) {
           // создадим собственный метод с аналогичным дескриптором
-          Reflect.defineProperty(constructor, property, {
+          const newDescriptor = {
             value: (...args) => Reflect.apply(descriptor.value, constructor, args),
-          });
+          };
+          Reflect.defineProperty(constructor, property, { ...newDescriptor });
           saveReverseMetadata(constructor, property);
           // в список ендпоинтов внесем родительский, сохранив конструктор дочернего
-          endpoints.push({ ...endpoint, handler: constructor[property] });
+          endpoints.push({ ...endpoint, constructor, descriptor: newDescriptor });
           // перенесем декораторы аргументов
-          cloneMetadataPlain(
-            constants.PARAMETERS_METADATA,
-            handlerConstructorProperty,
-            constructor
-          );
+          cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
           // перенесем декораторы OpenApi
-          cloneMetadataPlain(constants.OPEN_API_METADATA, handlerConstructorProperty, constructor);
+          cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
           // перенесем миддлвари
-          cloneMetadataPlain(
-            constants.MIDDLEWARE_METADATA,
-            handlerConstructorProperty,
-            constructor
-          );
+          cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
         } else {
           console.warn("property or endpoint", { endpoint }, "exists into", { constructor });
         }

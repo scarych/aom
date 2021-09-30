@@ -89,7 +89,8 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
       );
       args.push(contextArgs);
       // .concat([defaultArguments]);
-      const result = await Reflect.apply(handler, constructor, args);
+
+      const result = await Reflect.apply(constructor[property], constructor, args);
 
       if (result === contextArgs.next) {
         continue;
@@ -125,20 +126,26 @@ export function extractMiddlewares(
   const metadataKey = constants.MIDDLEWARE_METADATA;
   const propertyMiddlewares = Reflect.getOwnMetadata(metadataKey, constructor, property) || [];
 
-  propertyMiddlewares.forEach((handler) => {
+  propertyMiddlewares.forEach((middleware: ConstructorProperty | FwdContainer) => {
     // если используется FwdRef, то извлечем handler, выполнив функцию
-    if (handler instanceof FwdContainer) {
-      handler = handler.exec();
+    if (middleware instanceof FwdContainer) {
+      middleware = restoreReverseMetadata(middleware.exec());
     }
-    if (Reflect.getOwnMetadata(constants.IS_MIDDLEWARE_METADATA, handler)) {
+    if (
+      Reflect.getOwnMetadata(
+        constants.IS_MIDDLEWARE_METADATA,
+        middleware.constructor,
+        middleware.property
+      )
+    ) {
       //
-      const middlewareMapData = restoreReverseMetadata(handler);
+      // const middlewareMapData = restoreReverseMetadata(handler);
       // try to found middlewares for current middlewares and set them before current
       // cyclic links checking onboard
-      resultMiddlewares.push(...extractMiddlewares({ ...middlewareMapData }, prefix));
+      resultMiddlewares.push(...extractMiddlewares({ ...middleware }, prefix));
       resultMiddlewares.push({
-        ...middlewareMapData,
-        handler,
+        ...middleware,
+        // handler,
         prefix,
       });
     } else {
