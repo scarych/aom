@@ -137,6 +137,7 @@ export function Controller(): ClassDecorator {
           Reflect.defineProperty(constructor, property, {
             value: (...args) => Reflect.apply(descriptor.value, constructor, args),
           });
+          saveReverseMetadata(constructor, property);
           // в список ендпоинтов внесем родительский, сохранив конструктор дочернего
           endpoints.push({ ...endpoint, handler: constructor[property] });
           // перенесем декораторы аргументов
