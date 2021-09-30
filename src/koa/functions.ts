@@ -62,7 +62,7 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
     if (constructor && property) {
       const decoratedArgs = extractParameterDecorators(constructor, property);
 
-      // /* временно отключим стикеры как таковые
+      /* временно отключим стикеры как таковые
       // check sticker metadata
       const stickerData = Reflect.getOwnMetadata(
         constants.IS_STICKER_METADATA,

@@ -38,6 +38,7 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     );
   }
 
+  /*
   // в момент генерации вызова проверим, является ли данное свойство стикером
   const stickerData = Reflect.getOwnMetadata(constants.IS_STICKER_METADATA, constructor, property);
   // и если является, и целевой конструктор является наследником курсора
@@ -45,6 +46,7 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     // то в курсоре заменим конструктор на целевой
     cursor.constructor = route.constructor;
   }
+  */
 
 
   const decoratedArgs = extractParameterDecorators(constructor, property);

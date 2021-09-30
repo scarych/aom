@@ -41,9 +41,37 @@ export function Controller(): ClassDecorator {
     // можно брать только первого родителя, потому что за счет аналогичной работы декоратора, на него
     // будут перенесены все валидные значения из более раннего родителя
     const parentConstructor = Object.getPrototypeOf(constructor);
-    // возьмем ендпоинты родителя
+
+    // перенесем миддлвари
+    const parentMiddlewares: ConstructorPropertyDescriptor[] =
+      Reflect.getOwnMetadata(constants.MIDDLEWARES_LIST_METADATA, parentConstructor) || [];
+    // цикл применяется всегда, потому что проверяем только наличие такого же свойства
+    parentMiddlewares.forEach((middleware) => {
+      const { property, descriptor } = middleware;
+      // проверим, что такого свойства в существующем классе нет
+      if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
+        // создадим непосредственно данное свойство
+        Reflect.defineProperty(constructor, property, descriptor);
+        saveReverseMetadata(constructor, property);
+        // объявим данный дескриптор миддлварей
+        Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
+        // перенесем декораторы аргументов
+        cloneMetadataPlain(constants.PARAMETERS_METADATA, middleware, constructor);
+        // перенесем декораторы опенапи
+        cloneMetadataPlain(constants.OPEN_API_METADATA, middleware, constructor);
+        // перенесем декораторы миддлвари
+        cloneMetadataPlain(constants.MIDDLEWARE_METADATA, middleware, constructor);
+        // скопируем с преобразованием списка декораторы маркеров
+        cloneMetadataList(constants.MARKERS_METADATA, middleware, constructor);
+      } else {
+        console.warn("property", { middleware }, "exists into", { constructor });
+      }
+    });
+
+    // перенесем ендпоинты родителя
     const parentEndpoints: IEndpoint[] =
       Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, parentConstructor) || [];
+    // если они есть, то выполним остальные процедуры
     if (parentEndpoints.length > 0) {
       // возьмем собственные ендпоинты конструктора
       const endpoints: IEndpoint[] =
@@ -80,7 +108,8 @@ export function Controller(): ClassDecorator {
           cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
           // перенесем декораторы OpenApi
           cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
-          // здесь еще потребуется перенести миддлвари для ендпоинтов и next-ы
+          // перенесем миддлвари
+          cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
         } else {
           console.warn("property or endpoint", { endpoint }, "exists into", { constructor });
         }
@@ -89,6 +118,7 @@ export function Controller(): ClassDecorator {
       Reflect.defineMetadata(constants.ENDPOINTS_METADATA, endpoints, constructor);
     }
 
+    // перенесем бриджи родителя
     const parentBridges: IBridge[] =
       Reflect.getOwnMetadata(constants.BRIDGE_METADATA, parentConstructor) || [];
     if (parentBridges.length > 0) {
@@ -130,37 +160,26 @@ export function Controller(): ClassDecorator {
           );
           // перенесем декораторы OpenApi
           cloneMetadataPlain(constants.OPEN_API_METADATA, <ConstructorProperty>bridge, constructor);
+          // перенесем мидлвари
+          cloneMetadataPlain(
+            constants.MIDDLEWARE_METADATA,
+            <ConstructorProperty>bridge,
+            constructor
+          );
         } else if (!bridge.property && !bridgesStruct.checkExists(bridge)) {
           // если это мост без дескриптора, то просто создадим новую запись
           bridges.push({ ...bridge, constructor });
+          // перенесем миддлвари
+          cloneMetadataPlain(
+            constants.MIDDLEWARE_METADATA,
+            <ConstructorProperty>{ ...bridge, property: undefined },
+            constructor
+          );
         } else {
           console.warn("bridge or property", { bridge }, "exists into", { constructor });
         }
       });
       Reflect.defineMetadata(constants.BRIDGE_METADATA, bridges, constructor);
     }
-    // перенесем миддлвари
-    const parentMiddlewares: ConstructorPropertyDescriptor[] =
-      Reflect.getOwnMetadata(constants.MIDDLEWARES_LIST_METADATA, parentConstructor) || [];
-    parentMiddlewares.forEach((middleware) => {
-      const { property, descriptor } = middleware;
-      // проверим, что такого свойства в существующем классе нет
-      if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
-        // создадим непосредственно данное свойство
-        Reflect.defineProperty(constructor, property, descriptor);
-        saveReverseMetadata(constructor, property);
-        // объявим данный дескриптор миддлварей
-        Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
-        // перенесем декораторы аргументов
-        cloneMetadataPlain(constants.PARAMETERS_METADATA, middleware, constructor);
-        // перенесем декораторы опенапи
-        cloneMetadataPlain(constants.OPEN_API_METADATA, middleware, constructor);
-        // скопируем с преобразованием списка декораторы маркеров
-        cloneMetadataList(constants.MARKERS_METADATA, middleware, constructor);
-      } else {
-        console.warn("property", { middleware }, "exists into", { constructor });
-      }
-    });
-    // здесь еще следует перенести миддлвари и, возможно, оставить место для каких-то будущих процедур
   };
 }

@@ -17,10 +17,10 @@ export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
 
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
-    const bridges = []
+    const middlewaresList = []
       .concat(Reflect.getOwnMetadata(metakey, constructor, property) || [])
       .concat(middlewares);
-    Reflect.defineMetadata(metakey, bridges, constructor, property);
+    Reflect.defineMetadata(metakey, middlewaresList, constructor, property);
   };
 }
 
@@ -72,6 +72,7 @@ export function Marker(handler: MarkerHandler): MethodDecorator {
   };
 }
 
+/*
 // ...
 export function Sticker(): MethodDecorator {
   return function (
@@ -86,3 +87,4 @@ export function Sticker(): MethodDecorator {
     Reflect.defineMetadata(metakey, stickerName, constructor, property);
   };
 }
+*/
