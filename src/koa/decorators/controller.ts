@@ -78,6 +78,8 @@ export function Controller(): ClassDecorator {
       if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
         // создадим непосредственно данное свойство
         Reflect.defineProperty(constructor, property, descriptor);
+        // сохраним реверсивную мету
+        saveReverseMetadata(constructor, property);
         // объявим данный дескриптор общим ендпоинтом
         Reflect.defineMetadata(constants.COMMON_ENDPOINT, descriptor, constructor[property]);
         // перенесем декораторы аргументов
