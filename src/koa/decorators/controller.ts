@@ -51,7 +51,9 @@ export function Controller(): ClassDecorator {
       // проверим, что такого свойства в существующем классе нет
       if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
         // создадим непосредственно данное свойство
-        Reflect.defineProperty(constructor, property, descriptor);
+        Reflect.defineProperty(constructor, property, {
+          value: (...args) => Reflect.apply(descriptor.value, constructor, args),
+        });
         saveReverseMetadata(constructor, property);
         // объявим данный дескриптор миддлварей
         Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
@@ -77,7 +79,9 @@ export function Controller(): ClassDecorator {
       // проверим, что такого свойства в существующем классе нет
       if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
         // создадим непосредственно данное свойство
-        Reflect.defineProperty(constructor, property, descriptor);
+        Reflect.defineProperty(constructor, property, {
+          value: (...args) => Reflect.apply(descriptor.value, constructor, args),
+        });
         // сохраним реверсивную мету
         saveReverseMetadata(constructor, property);
         // объявим данный дескриптор общим ендпоинтом
@@ -130,7 +134,9 @@ export function Controller(): ClassDecorator {
           !Reflect.getOwnPropertyDescriptor(constructor, property)
         ) {
           // создадим собственный метод с аналогичным дескриптором
-          Reflect.defineProperty(constructor, property, descriptor);
+          Reflect.defineProperty(constructor, property, {
+            value: (...args) => Reflect.apply(descriptor.value, constructor, args),
+          });
           // в список ендпоинтов внесем родительский, сохранив конструктор дочернего
           endpoints.push({ ...endpoint, handler: constructor[property] });
           // перенесем декораторы аргументов
@@ -187,7 +193,9 @@ export function Controller(): ClassDecorator {
           !bridgesStruct.checkExists(bridge) &&
           !Reflect.getOwnPropertyDescriptor(constructor, property)
         ) {
-          Reflect.defineProperty(constructor, property, descriptor);
+          Reflect.defineProperty(constructor, property, {
+            value: (...args) => Reflect.apply(descriptor.value, constructor, args),
+          });
           bridges.push({ ...bridge, constructor });
           // перенесем декораторы аргументов
           cloneMetadataPlain(
