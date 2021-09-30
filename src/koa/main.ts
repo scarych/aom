@@ -3,7 +3,12 @@ import { join } from "path";
 import { FwdContainer } from "./forwards";
 import * as constants from "../common/constants";
 import { Promise } from "bluebird";
-import { extractMiddlewares, extractParameterDecorators, safeJSON } from "./functions";
+import {
+  extractMiddlewares,
+  extractParameterDecorators,
+  restoreReverseMetadata,
+  safeJSON,
+} from "./functions";
 import {
   Constructor,
   HandlerFunction,
@@ -47,7 +52,6 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     cursor.constructor = route.constructor;
   }
   */
-
 
   const decoratedArgs = extractParameterDecorators(constructor, property);
   return async (ctx, next) => {
@@ -98,8 +102,9 @@ function buildRoutesList(
       // метаданных endpoint-а
       // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
       // он будет равен конструктору самого endpoint-а
-      const { constructor, method, descriptor, path, property } = endpoint;
-      const handler = descriptor.value;
+      const { method, path, handler } = endpoint;
+      const { constructor, property } = restoreReverseMetadata(handler);
+      // const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
       // target - элемент маршрута, доступен через декораторы параметров `@Target`

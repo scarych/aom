@@ -40,6 +40,7 @@ export declare interface ConstructorPropertyDescriptor extends ConstructorProper
 export declare interface IEndpoint extends ConstructorPropertyDescriptor {
     path: string;
     method: HTTPMethods;
+    handler: HandlerFunction;
 }
 export declare interface IBridge {
     prefix: string;
