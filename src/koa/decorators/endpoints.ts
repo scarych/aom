@@ -36,8 +36,8 @@ function defineEndpoint(
     const descriptor = Reflect.getOwnMetadata(metakey, handler);
     // если это ленивый ендпоинт
     if (descriptor) {
-      const { constructor, property } = restoreReverseMetadata(handler);
-      bindEndpoint(target, { constructor, property, path, method, descriptor, handler });
+      // const { constructor, property } = restoreReverseMetadata(handler);
+      bindEndpoint(target, { /* constructor, property, */ descriptor, path, method, handler });
     } else {
       throw new Error(constants.COMMON_ENDPOINT_ERROR);
     }
@@ -66,11 +66,13 @@ export function Endpoint(method?: HTTPMethods, path?: string): MethodDecorator {
     // если установлены метод и путь, значит используем значение как стандартный endpoint
     if (method && path) {
       bindEndpoint(constructor, {
+        /*
         constructor,
+        property,
+        */
+        descriptor,
         path,
         method,
-        property,
-        descriptor,
         handler: constructor[property],
       });
     } else {

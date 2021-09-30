@@ -6,7 +6,7 @@ import {
   IBridge,
   ConstructorProperty,
 } from "../../common/declares";
-import { saveReverseMetadata } from "../functions";
+import { restoreReverseMetadata, saveReverseMetadata } from "../functions";
 
 // принудительно склонировать метаданные по ключу
 function cloneMetadataPlain<T extends ConstructorProperty>(
@@ -106,20 +106,24 @@ export function Controller(): ClassDecorator {
         byProperty: {},
         byPathMethod: {},
         add(endpoint) {
-          const { property, path, method } = endpoint;
+          const { handler, path, method } = endpoint;
+          const { property } = restoreReverseMetadata(handler);
           this.byProperty[property] = true;
           this.byPathMethod[`${path}:${method}`] = true;
         },
         // создадим функции сверки отсутствия повторений
         checkExists(endpoint) {
-          const { property, path, method } = endpoint;
+          const { handler, path, method } = endpoint;
+          const { property } = restoreReverseMetadata(handler);
           return this.byProperty[property] || this.byPathMethod[`${path}:${method}`];
         },
       };
       // перенесем собственные ендпоинты в структуру
       endpoints.forEach((endpoint) => endpointsStruct.add(endpoint));
       parentEndpoints.forEach((endpoint: IEndpoint) => {
-        const { property, path, method, descriptor } = endpoint;
+        const { descriptor, handler } = endpoint;
+        const handlerConstructorProperty: ConstructorProperty = restoreReverseMetadata(handler);
+        const { property } = handlerConstructorProperty;
         // проверим, что родительского ендпоинта нет ни в каком виде в дочернем элементе
         if (
           !endpointsStruct.checkExists(endpoint) &&
@@ -128,13 +132,21 @@ export function Controller(): ClassDecorator {
           // создадим собственный метод с аналогичным дескриптором
           Reflect.defineProperty(constructor, property, descriptor);
           // в список ендпоинтов внесем родительский, сохранив конструктор дочернего
-          endpoints.push({ ...endpoint, constructor });
+          endpoints.push({ ...endpoint, handler: constructor[property] });
           // перенесем декораторы аргументов
-          cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
+          cloneMetadataPlain(
+            constants.PARAMETERS_METADATA,
+            handlerConstructorProperty,
+            constructor
+          );
           // перенесем декораторы OpenApi
-          cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
+          cloneMetadataPlain(constants.OPEN_API_METADATA, handlerConstructorProperty, constructor);
           // перенесем миддлвари
-          cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
+          cloneMetadataPlain(
+            constants.MIDDLEWARE_METADATA,
+            handlerConstructorProperty,
+            constructor
+          );
         } else {
           console.warn("property or endpoint", { endpoint }, "exists into", { constructor });
         }

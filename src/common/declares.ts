@@ -55,10 +55,11 @@ export declare interface ConstructorPropertyDescriptor extends ConstructorProper
   descriptor: PropertyDescriptor;
 }
 
-export declare interface IEndpoint extends ConstructorPropertyDescriptor {
+export declare interface IEndpoint /* extends ConstructorPropertyDescriptor */ {
   path: string;
   method: HTTPMethods;
   handler: HandlerFunction;
+  descriptor: PropertyDescriptor;
 }
 
 export declare interface IBridge {

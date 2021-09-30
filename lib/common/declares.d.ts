@@ -37,10 +37,11 @@ export declare interface ICursor extends ConstructorProperty {
 export declare interface ConstructorPropertyDescriptor extends ConstructorProperty {
     descriptor: PropertyDescriptor;
 }
-export declare interface IEndpoint extends ConstructorPropertyDescriptor {
+export declare interface IEndpoint {
     path: string;
     method: HTTPMethods;
     handler: HandlerFunction;
+    descriptor: PropertyDescriptor;
 }
 export declare interface IBridge {
     prefix: string;
