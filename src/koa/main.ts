@@ -103,7 +103,13 @@ function buildRoutesList(
       // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
       // он будет равен конструктору самого endpoint-а
       const { method, path, handler } = endpoint;
-      const { constructor, property } = restoreReverseMetadata(handler);
+      const handlerConstructorProperty = restoreReverseMetadata(handler);
+      // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
+      // является родительским для текущего конструкта
+      if (constructor.prototype instanceof handlerConstructorProperty.constructor) {
+        Object.assign(handlerConstructorProperty, { constructor });
+      }
+      // const { constructor, property } =
       // const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
@@ -111,23 +117,29 @@ function buildRoutesList(
       const route = <IRoute>safeJSON({
         method,
         path: routePath,
-        constructor,
-        property,
+        ...handlerConstructorProperty,
         handler,
       });
 
       // get middlewars for endpoint with correct prefix
       const endpointMiddlewares = extractMiddlewares(
         {
-          constructor,
-          property,
+          ...handlerConstructorProperty,
         },
         routePath
       );
       // создадим курсоры, включив в них информацию и о последнем вызове в стеке
       const cursors = []
         .concat(middlewares, commonMiddlewares, endpointMiddlewares)
-        .concat([{ constructor, property, handler, prefix: routePath }]);
+        .concat([{ ...handlerConstructorProperty, handler, prefix: routePath }])
+        .map((cursor) => {
+          // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
+          // является родительским для текущего конструкта
+          if (constructor.prototype instanceof cursor.constructor) {
+            Object.assign(cursor, { constructor });
+          }
+          return cursor;
+        });
 
       Object.assign(route, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
