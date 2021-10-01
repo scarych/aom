@@ -137,10 +137,6 @@ export function extractMiddlewares(
       // cyclic links checking onboard
       resultMiddlewares.push(...extractMiddlewares({ ...middlewareMapData }, prefix));
 
-      if (constructor.prototype instanceof middlewareMapData.constructor) {
-        Object.assign(middlewareMapData, { constructor });
-      }
-
       resultMiddlewares.push({
         ...middlewareMapData,
         handler,

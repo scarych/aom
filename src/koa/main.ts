@@ -118,10 +118,6 @@ function buildRoutesList(
         routePath
       );
 
-      if (constructor.prototype instanceof handlerConstructorProperty.constructor) {
-        Object.assign(handlerConstructorProperty, { constructor });
-      }
-
       const route = <IRoute>safeJSON({
         method,
         path: routePath,
@@ -136,7 +132,7 @@ function buildRoutesList(
           // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
           // является родительским для текущего конструкта
           if (constructor.prototype instanceof cursor.constructor) {
-            // Object.assign(cursor, { constructor });
+            Object.assign(cursor, { constructor });
           }
           return cursor;
         });
