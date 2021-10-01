@@ -109,12 +109,6 @@ function buildRoutesList(
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
       // target - элемент маршрута, доступен через декораторы параметров `@Target`
-      const route = <IRoute>safeJSON({
-        method,
-        path: routePath,
-        ...handlerConstructorProperty,
-        handler,
-      });
 
       // get middlewars for endpoint with correct prefix
       const endpointMiddlewares = extractMiddlewares(
@@ -123,6 +117,17 @@ function buildRoutesList(
         },
         routePath
       );
+
+      if (constructor.prototype instanceof handlerConstructorProperty.constructor) {
+        Object.assign(handlerConstructorProperty, { constructor });
+      }
+
+      const route = <IRoute>safeJSON({
+        method,
+        path: routePath,
+        ...handlerConstructorProperty,
+        handler,
+      });
       // создадим курсоры, включив в них информацию и о последнем вызове в стеке
       const cursors = []
         .concat(middlewares, commonMiddlewares, endpointMiddlewares)
@@ -131,7 +136,7 @@ function buildRoutesList(
           // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
           // является родительским для текущего конструкта
           if (constructor.prototype instanceof cursor.constructor) {
-            Object.assign(cursor, { constructor });
+            // Object.assign(cursor, { constructor });
           }
           return cursor;
         });

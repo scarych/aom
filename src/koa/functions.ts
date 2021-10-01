@@ -136,6 +136,11 @@ export function extractMiddlewares(
       // try to found middlewares for current middlewares and set them before current
       // cyclic links checking onboard
       resultMiddlewares.push(...extractMiddlewares({ ...middlewareMapData }, prefix));
+
+      if (constructor.prototype instanceof middlewareMapData.constructor) {
+        Object.assign(middlewareMapData, { constructor });
+      }
+
       resultMiddlewares.push({
         ...middlewareMapData,
         handler,
