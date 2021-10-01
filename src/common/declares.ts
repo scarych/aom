@@ -3,6 +3,7 @@ export declare interface IFwdContainer<T = any> {
 }
 
 export declare type FwdFunction = (arg: () => any) => any;
+export declare type ThisRefFunction = (arg) => any;
 
 export declare type HandlerFunction = (...args: any[]) => any;
 

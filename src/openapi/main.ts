@@ -2,6 +2,7 @@ import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
 import { getDefinitions } from "./definitions";
+import { ThisRefContainer } from "./thisref";
 import { OpenApiSchemaObject } from "./types";
 
 export class OpenApi {
@@ -68,7 +69,7 @@ export class OpenApi {
         // build request body data
         if (cursorOpenApiData.requestBody) {
           Object.assign(currentMethod, {
-            requestBody: this.buildRequestBody(cursorOpenApiData.requestBody),
+            requestBody: this.buildRequestBody(cursorOpenApiData.requestBody, constructor),
           });
         }
 
@@ -97,7 +98,7 @@ export class OpenApi {
 
         // build responses in branch
         if (cursorOpenApiData.responses instanceof Array) {
-          responses.push(...cursorOpenApiData.responses);
+          responses.push(...cursorOpenApiData.responses.map((response) => [response, constructor]));
         }
 
         // build path parameters in branch
@@ -216,9 +217,16 @@ export class OpenApi {
   buildResponses(responses) {
     const result = {};
     responses.forEach((responseData) => {
-      const { status, schema, description, isArray = false } = responseData;
-      const { contentType = "application/json" } = responseData;
+      const [response, constructor] = responseData;
+      const { status, description, isArray = false } = response;
+      const { contentType = "application/json" } = response;
       const contentSchema = {};
+      let schema;
+      if (response.schema instanceof ThisRefContainer) {
+        schema = response.schema.exec(constructor);
+      } else {
+        schema = response.schema;
+      }
       if (isArray) {
         Object.assign(contentSchema, {
           schema: { type: "array", items: schema },
@@ -234,10 +242,17 @@ export class OpenApi {
     // return undefined;
   }
 
-  buildRequestBody(requestBody) {
+  buildRequestBody(requestBody, constructor) {
     const result = {};
 
-    const { contentType = "application/json", schema, description } = requestBody;
+    const { contentType = "application/json", description } = requestBody;
+
+    let schema;
+    if (requestBody.schema instanceof ThisRefContainer) {
+      schema = requestBody.schema.exec(constructor);
+    } else {
+      schema = requestBody.schema;
+    }
 
     const contentSchema = {};
     Object.assign(contentSchema, { schema });

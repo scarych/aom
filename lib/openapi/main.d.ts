@@ -14,7 +14,7 @@ export declare class OpenApi {
     Data(data: any): this;
     mergeAndExtractTags(tagsKeys?: any[]): any[];
     buildResponses(responses: any): {};
-    buildRequestBody(requestBody: any): {};
+    buildRequestBody(requestBody: any, constructor: any): {};
     toJSON(): {
         definitions: Record<string, Constructor>;
         components: {

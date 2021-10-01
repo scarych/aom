@@ -2,6 +2,7 @@ export declare interface IFwdContainer<T = any> {
     fwdFn: T;
 }
 export declare type FwdFunction = (arg: () => any) => any;
+export declare type ThisRefFunction = (arg: any) => any;
 export declare type HandlerFunction = (...args: any[]) => any;
 export declare type MiddlewareHandler = IFwdContainer | HandlerFunction;
 export declare type ClassConstructor<T extends {} = {}> = new (...args: any[]) => T;
