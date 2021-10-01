@@ -167,15 +167,16 @@ export function This(constructor = undefined): ReturnType<typeof Args> {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
   const handler = ({ ctx, cursor }) => {
+    let _constuctor;
     // если используется `FwdRef`, то в качестве целевого значения используем результат функции
     if (constructor instanceof FwdContainer) {
       constructor = constructor.exec();
     }
-    constructor = constructor || cursor.constructor;
-    let _this = ctx.$StateMap.get(constructor);
+    _constuctor = constructor || cursor.constructor;
+    let _this = ctx.$StateMap.get(_constuctor);
     if (!_this) {
-      _this = Reflect.construct(constructor, []);
-      ctx.$StateMap.set(constructor, _this);
+      _this = Reflect.construct(_constuctor, []);
+      ctx.$StateMap.set(_constuctor, _this);
     }
     return _this;
   };
