@@ -104,11 +104,6 @@ function buildRoutesList(
       // он будет равен конструктору самого endpoint-а
       const { method, path, handler } = endpoint;
       const handlerConstructorProperty = restoreReverseMetadata(handler);
-      // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
-      // является родительским для текущего конструкта
-      if (constructor.prototype instanceof handlerConstructorProperty.constructor) {
-        Object.assign(handlerConstructorProperty, { constructor });
-      }
       // const { constructor, property } =
       // const handler = descriptor.value;
       // remove trailing slash and set root if empty
