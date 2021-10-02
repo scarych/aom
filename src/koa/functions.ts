@@ -20,7 +20,7 @@ import {
 export function safeJSON<T = IRoute | ICursor>(data: T): T {
   Object.assign(data, {
     toJSON() {
-      const skipKeys = ["constructor", "handler", "property", "middlewares", "cursors"];
+      const skipKeys = ["constructor", "handler", "property", "middlewares", "cursors", "origin"];
       const safeEntries = Object.entries(data).filter(([key]) => skipKeys.indexOf(key) < 0);
       return Object.fromEntries(safeEntries);
     },
@@ -116,10 +116,8 @@ export function extractParameterDecorators(constructor: Constructor, property: P
  * @returns
  */
 // export function extractMiddlewares({ constructor, property = undefined, prefix }) {
-export function extractMiddlewares(
-  { constructor, property = undefined }: ConstructorProperty,
-  prefix: string
-): ICursor[] {
+export function extractMiddlewares(origin: ConstructorProperty, prefix: string): ICursor[] {
+  const { constructor, property = undefined } = origin;
   const resultMiddlewares = [];
   // ...
   const metadataKey = constants.MIDDLEWARE_METADATA;
@@ -141,6 +139,7 @@ export function extractMiddlewares(
         ...middlewareMapData,
         handler,
         prefix,
+        origin,
       });
     } else {
       throw new Error(constants.IS_MIDDLEWARE_ERROR);

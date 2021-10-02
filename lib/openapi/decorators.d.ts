@@ -1,17 +1,7 @@
 import { TagObject } from "openapi3-ts";
 import { Constructor } from "../common/declares";
 import { OpenApiParameterObject, OpenApiPathParameters, OpenApiRequestBody, OpenApiResponse, OpenApiSecuritySchema } from "./types";
-/**
- * Объявить текущую конструкцию тегом
- * @param tag { string | TagObject } имя тега или схема в спецификации OAS
- * @returns {ClassDecorator}
- */
 export declare function AddTag(tag: string | TagObject): ClassDecorator;
-/**
- * использовать конструкт с тегом
- * @param tag
- * @returns {MethodDecorator}
- */
 export declare function UseTag(tag: Constructor): MethodDecorator;
 export declare function AddSecurity(securitySchema: OpenApiSecuritySchema): ClassDecorator;
 export declare function UseSecurity(...security: Constructor[]): MethodDecorator;

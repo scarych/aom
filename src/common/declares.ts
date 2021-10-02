@@ -50,6 +50,7 @@ export declare interface ConstructorProperty {
 export declare interface ICursor extends ConstructorProperty {
   handler: HandlerFunction;
   prefix: string;
+  origin: ConstructorProperty;
 }
 
 export declare interface ConstructorPropertyDescriptor extends ConstructorProperty {
@@ -61,6 +62,7 @@ export declare interface IEndpoint /* extends ConstructorPropertyDescriptor */ {
   method: HTTPMethods;
   handler: HandlerFunction;
   descriptor: PropertyDescriptor;
+  origin: ConstructorProperty;
 }
 
 export declare interface IBridge {

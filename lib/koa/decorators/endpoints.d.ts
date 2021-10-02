@@ -1,10 +1,4 @@
 import { HandlerFunction, HTTPMethods } from "../../common/declares";
-/**
- *
- * @param method {HTTPMethods} метод endpoint-а
- * @param path {string} путь endpoint-а
- * @returns {MethodDecorator}
- */
 export declare function Endpoint(method?: HTTPMethods, path?: string): MethodDecorator;
 export declare function Get(path?: string): MethodDecorator;
 export declare function Get(path: string, handler: HandlerFunction): ClassDecorator;

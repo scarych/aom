@@ -34,6 +34,7 @@ export declare interface ConstructorProperty {
 export declare interface ICursor extends ConstructorProperty {
     handler: HandlerFunction;
     prefix: string;
+    origin: ConstructorProperty;
 }
 export declare interface ConstructorPropertyDescriptor extends ConstructorProperty {
     descriptor: PropertyDescriptor;
@@ -43,6 +44,7 @@ export declare interface IEndpoint {
     method: HTTPMethods;
     handler: HandlerFunction;
     descriptor: PropertyDescriptor;
+    origin: ConstructorProperty;
 }
 export declare interface IBridge {
     prefix: string;
@@ -57,9 +59,6 @@ export declare interface IRoute extends Omit<ICursor, "prefix"> {
     middlewares: MiddlewareHandler[];
     cursors: ICursor[];
 }
-/** доступные HTTP методы */
 export declare type HTTPMethods = "get" | "post" | "put" | "patch" | "delete" | "options" | "all";
-/** комбинированый декоратор: для статичного метода или для класса */
 export declare type CombinedDecorator = <T>(target: Constructor, propertyKey?: string | symbol, descriptor?: TypedPropertyDescriptor<T>) => void;
-/** декоратор для статичного метода */
 export declare type MarkerHandler = (target: IRoute, cursor: ICursor) => void | unknown;
