@@ -38,6 +38,7 @@ function cloneMetadataList<T extends ConstructorProperty>(
 
 export function Controller(): ClassDecorator {
   return (constructor): void => {
+    // console.log(constructor, Reflect.getOwnPropertyDescriptor);
     // можно брать только первого родителя, потому что за счет аналогичной работы декоратора, на него
     // будут перенесены все валидные значения из более раннего родителя
     const parentConstructor = Object.getPrototypeOf(constructor);
@@ -57,6 +58,13 @@ export function Controller(): ClassDecorator {
         saveReverseMetadata(constructor, property);
         // объявим данный дескриптор миддлварей
         Reflect.defineMetadata(constants.IS_MIDDLEWARE_METADATA, true, constructor[property]);
+
+        // сохраним для текущего конструктора список миддлварей
+        const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
+        const middlewaresList = Reflect.getOwnMetadata(listMetakey, constructor) || [];
+        middlewaresList.push({ constructor, property, descriptor });
+        Reflect.defineMetadata(listMetakey, middlewaresList, constructor);
+
         // перенесем декораторы аргументов
         cloneMetadataPlain(constants.PARAMETERS_METADATA, middleware, constructor);
         // перенесем декораторы опенапи
@@ -70,96 +78,101 @@ export function Controller(): ClassDecorator {
       }
     });
 
-    // перенесем общие ендпоинты
-    const parentCommonEndpoints: ConstructorPropertyDescriptor[] =
-      Reflect.getOwnMetadata(constants.COMMON_ENDPOINTS_LIST, parentConstructor) || [];
+    const { IS_ENDPOINTS_LIST } = constants;
+    // перенесем определения ендпоинтов
+    const parentIsEndpoints: ConstructorPropertyDescriptor[] =
+      Reflect.getOwnMetadata(IS_ENDPOINTS_LIST, parentConstructor) || [];
     // цикл применяется всегда, потому что проверяем только наличие такого же свойства
-    parentCommonEndpoints.forEach((endpoint) => {
-      const { property, descriptor } = endpoint;
-      // проверим, что такого свойства в существующем классе нет
-      if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
-        // создадим непосредственно данное свойство
-        Reflect.defineProperty(constructor, property, {
-          value: (...args) => Reflect.apply(descriptor.value, constructor, args),
-        });
-        // сохраним реверсивную мету
-        saveReverseMetadata(constructor, property);
-        // объявим данный дескриптор общим ендпоинтом
-        Reflect.defineMetadata(constants.COMMON_ENDPOINT, descriptor, constructor[property]);
-        // перенесем декораторы аргументов
-        cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
-        // перенесем декораторы опенапи
-        cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
-        // перенесем декораторы миддлвари
-        cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
-      } else {
-        console.warn("property for common endpoint", { endpoint }, "exists into", { constructor });
-      }
-    });
+    if (parentIsEndpoints.length > 0) {
+      const isEndpointsList = Reflect.getOwnMetadata(IS_ENDPOINTS_LIST, constructor) || [];
 
+      parentIsEndpoints.forEach((endpoint) => {
+        const { property, descriptor } = endpoint;
+        // проверим, что такого свойства в существующем классе нет
+        if (!Reflect.getOwnPropertyDescriptor(constructor, property)) {
+          Reflect.defineProperty(constructor, property, {
+            value: (...args) => Reflect.apply(descriptor.value, constructor, args),
+          });
+          // сохраним реверсивную мету
+          saveReverseMetadata(constructor, property);
+          // объявим данный дескриптор ендпоинтом
+          Reflect.defineMetadata(constants.IS_ENDPOINT, descriptor, constructor[property]);
+
+          // сохраним для текущего конструктора список общих ендпоинтов
+          isEndpointsList.push({ constructor, property, descriptor });
+
+          // перенесем признак "общий ендпоинт", если он характерен исходному значению
+          const { COMMON_ENDPOINT } = constants;
+          if (Reflect.getOwnMetadata(COMMON_ENDPOINT, endpoint.constructor[property])) {
+            Reflect.defineMetadata(COMMON_ENDPOINT, true, constructor[property]);
+          }
+
+          // перенесем декораторы аргументов
+          cloneMetadataPlain(constants.PARAMETERS_METADATA, endpoint, constructor);
+          // перенесем декораторы опенапи
+          cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
+          // перенесем декораторы миддлвари
+          cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
+        } else {
+          console.warn(
+            "property for endpoint", //
+            { endpoint },
+            "exists into", //
+            { constructor }
+          );
+        }
+      });
+      Reflect.defineMetadata(IS_ENDPOINTS_LIST, isEndpointsList, constructor);
+    }
+
+    const { ENDPOINTS_METADATA } = constants;
     // перенесем ендпоинты родителя
     const parentEndpoints: IEndpoint[] =
-      Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, parentConstructor) || [];
+      Reflect.getOwnMetadata(ENDPOINTS_METADATA, parentConstructor) || [];
     // если они есть, то выполним остальные процедуры
     if (parentEndpoints.length > 0) {
       // возьмем собственные ендпоинты конструктора
-      const endpoints: IEndpoint[] =
-        Reflect.getOwnMetadata(constants.ENDPOINTS_METADATA, constructor) || [];
+      const endpoints: IEndpoint[] = Reflect.getOwnMetadata(ENDPOINTS_METADATA, constructor) || [];
       // создадим структуру, которая хранит собственные маршруты класса
       const endpointsStruct = {
         byProperty: {},
         byPathMethod: {},
         add(endpoint) {
-          const { handler, path, method } = endpoint;
-          const { property } = restoreReverseMetadata(handler);
-          this.byProperty[property] = true;
+          const { path, method } = endpoint;
           this.byPathMethod[`${path}:${method}`] = true;
         },
         // создадим функции сверки отсутствия повторений
         checkExists(endpoint) {
-          const { handler, path, method } = endpoint;
-          const { property } = restoreReverseMetadata(handler);
-          return this.byProperty[property] || this.byPathMethod[`${path}:${method}`];
+          const { path, method } = endpoint;
+          return this.byPathMethod[`${path}:${method}`];
         },
       };
       // перенесем собственные ендпоинты в структуру
       endpoints.forEach((endpoint) => endpointsStruct.add(endpoint));
       parentEndpoints.forEach((endpoint: IEndpoint) => {
-        const { descriptor, handler } = endpoint;
-        const handlerConstructorProperty: ConstructorProperty = restoreReverseMetadata(handler);
-        const { property } = handlerConstructorProperty;
-        // проверим, что родительского ендпоинта нет ни в каком виде в дочернем элементе
-        if (
-          !endpointsStruct.checkExists(endpoint) &&
-          !Reflect.getOwnPropertyDescriptor(constructor, property)
-        ) {
-          // создадим собственный метод с аналогичным дескриптором
-          Reflect.defineProperty(constructor, property, {
-            value: (...args) => Reflect.apply(descriptor.value, constructor, args),
-          });
-          saveReverseMetadata(constructor, property);
+        const { handler } = endpoint;
+        const handlerConstructorProperty = restoreReverseMetadata(handler);
+        if (!endpointsStruct.checkExists(endpoint)) {
+          let newHandler;
+          // тут проверим, что у нас метаданные хендлера ссылаются на родителя, и поэтому
+          // могут и должны быть унаследованы
+          if (
+            constructor.prototype instanceof handlerConstructorProperty.constructor &&
+            Reflect.getOwnPropertyDescriptor(constructor, handlerConstructorProperty.property)
+          ) {
+            newHandler = constructor[handlerConstructorProperty.property];
+          } else {
+            // иначе перенесем ендпоинт в чистом виде
+            newHandler = handler;
+          }
           // в список ендпоинтов внесем родительский, сохранив конструктор дочернего
-          endpoints.push({ ...endpoint, handler: constructor[property] });
-          // перенесем декораторы аргументов
-          cloneMetadataPlain(
-            constants.PARAMETERS_METADATA,
-            handlerConstructorProperty,
-            constructor
-          );
-          // перенесем декораторы OpenApi
-          cloneMetadataPlain(constants.OPEN_API_METADATA, handlerConstructorProperty, constructor);
-          // перенесем миддлвари
-          cloneMetadataPlain(
-            constants.MIDDLEWARE_METADATA,
-            handlerConstructorProperty,
-            constructor
-          );
+          endpoints.push({ ...endpoint, handler: newHandler });
         } else {
-          console.warn("property or endpoint", { endpoint }, "exists into", { constructor });
+          console.warn("endpoint", { endpoint }, "exists into", { constructor });
         }
       });
       // зафиксируем изменения по ендпоинтам
-      Reflect.defineMetadata(constants.ENDPOINTS_METADATA, endpoints, constructor);
+      Reflect.defineMetadata(ENDPOINTS_METADATA, endpoints, constructor);
     }
 
     // перенесем бриджи родителя
@@ -189,11 +202,9 @@ export function Controller(): ClassDecorator {
       parentBridges.forEach((bridge: IBridge) => {
         // если мост завязан на свойство
         const { property, descriptor } = bridge;
-        if (
-          bridge.property &&
-          !bridgesStruct.checkExists(bridge) &&
-          !Reflect.getOwnPropertyDescriptor(constructor, property)
-        ) {
+        if (property && Reflect.getOwnPropertyDescriptor(constructor, property)) {
+          console.warn("property for brigde", { bridge }, "exists into", { constructor });
+        } else if (property && !bridgesStruct.checkExists(bridge)) {
           Reflect.defineProperty(constructor, property, {
             value: (...args) => Reflect.apply(descriptor.value, constructor, args),
           });
@@ -222,7 +233,7 @@ export function Controller(): ClassDecorator {
             constructor
           );
         } else {
-          console.warn("bridge or property", { bridge }, "exists into", { constructor });
+          console.warn("bridge", { bridge }, "exists into", { constructor });
         }
       });
       Reflect.defineMetadata(constants.BRIDGE_METADATA, bridges, constructor);
