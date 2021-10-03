@@ -4,12 +4,13 @@ import { saveReverseMetadata } from "../functions";
 import {
   CombinedDecorator,
   Constructor,
+  HandlerFunction,
   IBridge,
   MarkerHandler,
   MiddlewareHandler,
   Property,
 } from "../../common/declares";
-
+// ************************************************ //
 // ...
 export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
   return function (constructor, property?) {
@@ -23,7 +24,7 @@ export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
     Reflect.defineMetadata(metakey, middlewaresList, constructor, property);
   };
 }
-
+// ************************************************ //
 // ...
 export function Middleware(): MethodDecorator {
   return function (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) {
@@ -40,7 +41,7 @@ export function Middleware(): MethodDecorator {
     Reflect.defineMetadata(metakey, true, constructor[property]);
   };
 }
-
+// ************************************************ //
 // ...
 export function Bridge(prefix, nextRoute): CombinedDecorator {
   return function (constructor: Constructor, property = undefined, descriptor = undefined) {
@@ -53,7 +54,7 @@ export function Bridge(prefix, nextRoute): CombinedDecorator {
     Reflect.defineMetadata(metakey, bridges, constructor);
   };
 }
-
+// ************************************************ //
 // ...
 export function Marker(handler: MarkerHandler): MethodDecorator {
   return function (
@@ -88,3 +89,16 @@ export function Sticker(): MethodDecorator {
   };
 }
 */
+
+// ************************************************ //
+export function UseNext(handler: HandlerFunction): MethodDecorator {
+  return (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) => {
+    checkConstructorProperty(constructor, property);
+    const { USE_NEXT_METADATA } = constants;
+    if (!Reflect.getOwnMetadata(USE_NEXT_METADATA, constructor, property)) {
+      Reflect.defineMetadata(USE_NEXT_METADATA, handler, constructor, property);
+    } else {
+      throw new Error(constants.USE_NEXT_DEFINE_ERROR);
+    }
+  };
+}

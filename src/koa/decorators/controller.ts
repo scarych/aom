@@ -113,6 +113,8 @@ export function Controller(): ClassDecorator {
           cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
           // перенесем декораторы миддлвари
           cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
+          // перенесем декораторы use next 
+          cloneMetadataPlain(constants.USE_NEXT_METADATA, endpoint, constructor);
         } else {
           console.warn(
             "property for endpoint", //

@@ -11,6 +11,7 @@ import {
 } from "./functions";
 import {
   Constructor,
+  ConstructorProperty,
   HandlerFunction,
   IArgs,
   ICursor,
@@ -85,6 +86,28 @@ function makeCtx(cursor: ICursor, route: IRoute) {
   };
 }
 
+// извлечение next-функций для ендпоинтов
+function extractNextFunctions(origin: ConstructorProperty, prefix: string): ICursor[] {
+  const result = [];
+  const { constructor, property } = origin;
+  const handler = Reflect.getOwnMetadata(constants.USE_NEXT_METADATA, constructor, property);
+  if (handler) {
+    if (Reflect.getOwnMetadata(constants.IS_ENDPOINT, handler)) {
+      const handlerConstructorProperty = restoreReverseMetadata(handler);
+      result.push({
+        handler,
+        ...handlerConstructorProperty,
+        prefix,
+        origin,
+      });
+      result.push(...extractNextFunctions(handlerConstructorProperty, prefix));
+    } else {
+      throw new Error(constants.USE_NEXT_ERROR);
+    }
+  }
+  return result;
+}
+
 function buildRoutesList(
   constructor: Constructor,
   prefix: string = "/",
@@ -117,6 +140,7 @@ function buildRoutesList(
         },
         routePath
       );
+      const nextFunctions = extractNextFunctions(handlerConstructorProperty, routePath);
 
       const route = <IRoute>safeJSON({
         method,
@@ -135,6 +159,7 @@ function buildRoutesList(
             origin: { ...handlerConstructorProperty, constructor },
           },
         ])
+        .concat(nextFunctions)
         .map((cursor) => {
           // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
           // является родительским для текущего конструкта
