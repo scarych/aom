@@ -32,14 +32,21 @@ function defineEndpoint(
 
   return function (target: Constructor) {
     // проверим, что данный handler - это lazy endpoint
-    const metakey = constants.LAZY_ENDPOINT;
-    const descriptor = Reflect.getOwnMetadata(metakey, handler);
-    // если
-    if (descriptor) {
-      const { constructor, property } = restoreReverseMetadata(handler);
-      bindEndpoint(target, { constructor, property, path, method, descriptor });
+
+    const { COMMON_ENDPOINT } = constants;
+    // если это общий ендпоинт
+    if (Reflect.getOwnMetadata(COMMON_ENDPOINT, handler)) {
+      const { IS_ENDPOINT } = constants;
+      const { descriptor, constructor, property } = Reflect.getOwnMetadata(IS_ENDPOINT, handler);
+      bindEndpoint(target, {
+        descriptor,
+        path,
+        method,
+        handler,
+        origin: { constructor, property },
+      });
     } else {
-      throw new Error(constants.LAZY_ENDPOINT);
+      throw new Error(constants.COMMON_ENDPOINT_ERROR);
     }
   };
 }
@@ -62,13 +69,28 @@ export function Endpoint(method?: HTTPMethods, path?: string): MethodDecorator {
     // if use static method of class, then will store metadata for it with info about
     // origin class and propertyName, for futher usage
     saveReverseMetadata(constructor, property);
+    const { IS_ENDPOINT, IS_ENDPOINTS_LIST } = constants;
+
+    Reflect.defineMetadata(IS_ENDPOINT, descriptor, constructor[property]);
+
+    // сохраним элемент в списке общих ендпоинтов
+    const endpointsList = Reflect.getOwnMetadata(IS_ENDPOINTS_LIST, constructor) || [];
+    endpointsList.push({ constructor, property, descriptor });
+    Reflect.defineMetadata(IS_ENDPOINTS_LIST, endpointsList, constructor);
 
     // если установлены метод и путь, значит используем значение как стандартный endpoint
-    if (method && path) {
-      bindEndpoint(constructor, { constructor, path, method, property, descriptor });
+    if (method) {
+      if (!path) path = "/"; // путь по умолчанию, если определен метод
+      bindEndpoint(constructor, {
+        descriptor,
+        path,
+        method,
+        handler: constructor[property],
+        origin: { constructor, property },
+      });
     } else {
-      const metakey = constants.LAZY_ENDPOINT;
-      Reflect.defineMetadata(metakey, descriptor, constructor[property]);
+      const { COMMON_ENDPOINT } = constants;
+      Reflect.defineMetadata(COMMON_ENDPOINT, true, constructor[property]);
     }
   };
 }

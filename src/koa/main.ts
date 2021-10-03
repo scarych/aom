@@ -3,9 +3,15 @@ import { join } from "path";
 import { FwdContainer } from "./forwards";
 import * as constants from "../common/constants";
 import { Promise } from "bluebird";
-import { extractMiddlewares, extractParameterDecorators, safeJSON } from "./functions";
+import {
+  extractMiddlewares,
+  extractParameterDecorators,
+  restoreReverseMetadata,
+  safeJSON,
+} from "./functions";
 import {
   Constructor,
+  ConstructorProperty,
   HandlerFunction,
   IArgs,
   ICursor,
@@ -38,6 +44,7 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     );
   }
 
+  /*
   // в момент генерации вызова проверим, является ли данное свойство стикером
   const stickerData = Reflect.getOwnMetadata(constants.IS_STICKER_METADATA, constructor, property);
   // и если является, и целевой конструктор является наследником курсора
@@ -45,7 +52,7 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     // то в курсоре заменим конструктор на целевой
     cursor.constructor = route.constructor;
   }
-
+  */
 
   const decoratedArgs = extractParameterDecorators(constructor, property);
   return async (ctx, next) => {
@@ -79,6 +86,28 @@ function makeCtx(cursor: ICursor, route: IRoute) {
   };
 }
 
+// извлечение next-функций для ендпоинтов
+function extractNextFunctions(origin: ConstructorProperty, prefix: string): ICursor[] {
+  const result = [];
+  const { constructor, property } = origin;
+  const handler = Reflect.getOwnMetadata(constants.USE_NEXT_METADATA, constructor, property);
+  if (handler) {
+    if (Reflect.getOwnMetadata(constants.IS_ENDPOINT, handler)) {
+      const handlerConstructorProperty = restoreReverseMetadata(handler);
+      result.push({
+        handler,
+        ...handlerConstructorProperty,
+        prefix,
+        origin,
+      });
+      result.push(...extractNextFunctions(handlerConstructorProperty, prefix));
+    } else {
+      throw new Error(constants.USE_NEXT_ERROR);
+    }
+  }
+  return result;
+}
+
 function buildRoutesList(
   constructor: Constructor,
   prefix: string = "/",
@@ -96,31 +125,49 @@ function buildRoutesList(
       // метаданных endpoint-а
       // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
       // он будет равен конструктору самого endpoint-а
-      const { constructor, method, descriptor, path, property } = endpoint;
-      const handler = descriptor.value;
+      const { method, path, handler } = endpoint;
+      const handlerConstructorProperty = restoreReverseMetadata(handler);
+      // const { constructor, property } =
+      // const handler = descriptor.value;
       // remove trailing slash and set root if empty
       const routePath = join(prefix, path).replace(/\/$/, "") || "/";
       // target - элемент маршрута, доступен через декораторы параметров `@Target`
-      const route = <IRoute>safeJSON({
-        method,
-        path: routePath,
-        constructor,
-        property,
-        handler,
-      });
 
       // get middlewars for endpoint with correct prefix
       const endpointMiddlewares = extractMiddlewares(
         {
-          constructor,
-          property,
+          ...handlerConstructorProperty,
         },
         routePath
       );
+      const nextFunctions = extractNextFunctions(handlerConstructorProperty, routePath);
+
+      const route = <IRoute>safeJSON({
+        method,
+        path: routePath,
+        ...handlerConstructorProperty,
+        handler,
+      });
       // создадим курсоры, включив в них информацию и о последнем вызове в стеке
       const cursors = []
         .concat(middlewares, commonMiddlewares, endpointMiddlewares)
-        .concat([{ constructor, property, handler, prefix: routePath }]);
+        .concat([
+          {
+            ...handlerConstructorProperty,
+            handler,
+            prefix: routePath,
+            origin: { ...handlerConstructorProperty, constructor },
+          },
+        ])
+        .concat(nextFunctions)
+        .map((cursor) => {
+          // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
+          // является родительским для текущего конструкта
+          if (cursor.origin.constructor.prototype instanceof cursor.constructor) {
+            Object.assign(cursor, { constructor: cursor.origin.constructor });
+          }
+          return cursor;
+        });
 
       Object.assign(route, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
@@ -154,6 +201,7 @@ function buildRoutesList(
           property,
           handler: descriptor.value,
           prefix: newPrefix,
+          origin: { constructor, property },
         });
       }
       routesList.push(
@@ -194,3 +242,87 @@ export class $ {
     return this;
   }
 }
+
+/*
+class ControllersCore {
+  // private prefix: string;
+
+  // private controller: Constructor;
+
+  private bridges;
+
+  // private middlewares;
+
+  private endpoints;
+
+  constructor(
+    private controller: Constructor,
+    private prefix: string,
+    private middlewares: ICursor[] = []
+  ) {
+    this.middlewares.push(
+      ...extractMiddlewares({ constructor: this.controller, property: undefined }, this.prefix)
+    );
+
+    this.buildRoutes();
+  }
+
+  private buildRoutes() {
+    this.endpoints = this.extractRoutes();
+  }
+
+  private extractRoutes() {
+    const endpoints: IEndpoint[] = Reflect.getOwnMetadata(
+      constants.ENDPOINTS_METADATA,
+      this.controller
+    );
+
+    if (endpoints) {
+      endpoints.forEach((endpoint: IEndpoint) => {
+        // тут важный момент - заменяется значение constructor, и извлекается из
+        // метаданных endpoint-а
+        // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
+        // он будет равен конструктору самого endpoint-а
+        const { method, path, handler } = endpoint;
+        const routePath = join(this.prefix, path).replace(/\/$/, "") || "/";
+
+        const handlerConstructorProperty = restoreReverseMetadata(handler);
+
+        const endpointMiddlewares = extractMiddlewares(
+          {
+            ...handlerConstructorProperty,
+          },
+          routePath
+        );
+
+        const route = <IRoute>safeJSON({
+          method,
+          path: routePath,
+          ...handlerConstructorProperty,
+          handler,
+        });
+        // создадим курсоры, включив в них информацию и о последнем вызове в стеке
+        const cursors = []
+          .concat(this.middlewares, endpointMiddlewares)
+          .concat([{ ...handlerConstructorProperty, handler, prefix: routePath }])
+          .map((cursor) => {
+            // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
+            // является родительским для текущего конструкта
+            if (cursor.origin.constructor.prototype instanceof cursor.constructor) {
+              Object.assign(cursor, { constructor: cursor.origin.constructor });
+            }
+            return cursor;
+          });
+
+        Object.assign(route, {
+          // добавим информацию о всем стеке middleware, который предшествует данному методу
+          cursors,
+          // сгенерирем полный стек вызовов в контексте
+          middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, route))),
+        });
+        this.endpoints.push(route);
+      });
+    }
+  }
+}
+*/

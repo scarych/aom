@@ -1,6 +1,7 @@
 node_modules/
 
 lib/
+drafts/
 old/
 
 _config.yml

@@ -11,13 +11,7 @@ export function checkConstructorProperty(constructor, property = undefined) {
 }
 
 // ...
-export function checkOpenAPIMetadata(constructor, property = undefined) {
+export function getOpenAPIMetadata(constructor, property = undefined) {
   const metakey = constants.OPEN_API_METADATA;
-  return Reflect.getOwnMetadata(metakey, constructor, property);
-}
-
-// ...
-export function checkOpenAPIContainer(constructor, property = undefined) {
-  const metakey = constants.OPEN_API_CONTAINER_METADATA;
   return Reflect.getOwnMetadata(metakey, constructor, property);
 }

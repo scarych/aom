@@ -4,11 +4,13 @@ import { saveReverseMetadata } from "../functions";
 import {
   CombinedDecorator,
   Constructor,
+  HandlerFunction,
+  IBridge,
   MarkerHandler,
   MiddlewareHandler,
   Property,
 } from "../../common/declares";
-
+// ************************************************ //
 // ...
 export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
   return function (constructor, property?) {
@@ -16,13 +18,13 @@ export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
 
     const metakey = constants.MIDDLEWARE_METADATA;
     // ...
-    const bridges = []
+    const middlewaresList = []
       .concat(Reflect.getOwnMetadata(metakey, constructor, property) || [])
       .concat(middlewares);
-    Reflect.defineMetadata(metakey, bridges, constructor, property);
+    Reflect.defineMetadata(metakey, middlewaresList, constructor, property);
   };
 }
-
+// ************************************************ //
 // ...
 export function Middleware(): MethodDecorator {
   return function (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) {
@@ -32,14 +34,14 @@ export function Middleware(): MethodDecorator {
     // сохраним в контексте конструктора список
     const listMetakey = constants.MIDDLEWARES_LIST_METADATA;
     const middlewaresList = Reflect.getOwnMetadata(listMetakey, constructor) || [];
-    middlewaresList.push({ property, descriptor });
+    middlewaresList.push({ constructor, property, descriptor });
     Reflect.defineMetadata(listMetakey, middlewaresList, constructor);
 
     const metakey = constants.IS_MIDDLEWARE_METADATA;
     Reflect.defineMetadata(metakey, true, constructor[property]);
   };
 }
-
+// ************************************************ //
 // ...
 export function Bridge(prefix, nextRoute): CombinedDecorator {
   return function (constructor: Constructor, property = undefined, descriptor = undefined) {
@@ -47,12 +49,12 @@ export function Bridge(prefix, nextRoute): CombinedDecorator {
 
     const metakey = constants.BRIDGE_METADATA;
     // ...
-    const bridges = Reflect.getOwnMetadata(metakey, constructor) || [];
+    const bridges: IBridge[] = Reflect.getOwnMetadata(metakey, constructor) || [];
     bridges.push({ prefix, nextRoute, constructor, property, descriptor });
     Reflect.defineMetadata(metakey, bridges, constructor);
   };
 }
-
+// ************************************************ //
 // ...
 export function Marker(handler: MarkerHandler): MethodDecorator {
   return function (
@@ -71,7 +73,7 @@ export function Marker(handler: MarkerHandler): MethodDecorator {
   };
 }
 
-
+/*
 // ...
 export function Sticker(): MethodDecorator {
   return function (
@@ -84,5 +86,19 @@ export function Sticker(): MethodDecorator {
     const stickerName = `${constructor.name}:${<string>property}`;
     // ...
     Reflect.defineMetadata(metakey, stickerName, constructor, property);
+  };
+}
+*/
+
+// ************************************************ //
+export function UseNext(handler: HandlerFunction): MethodDecorator {
+  return (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) => {
+    checkConstructorProperty(constructor, property);
+    const { USE_NEXT_METADATA } = constants;
+    if (!Reflect.getOwnMetadata(USE_NEXT_METADATA, constructor, property)) {
+      Reflect.defineMetadata(USE_NEXT_METADATA, handler, constructor, property);
+    } else {
+      throw new Error(constants.USE_NEXT_DEFINE_ERROR);
+    }
   };
 }

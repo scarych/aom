@@ -2,7 +2,13 @@ import * as constants from "../../common/constants";
 import { FwdContainer } from "../forwards";
 import { checkConstructorProperty } from "../../common/functions";
 import { nextSequences } from "../functions";
-import { ArgsFunction, Constructor, HandlerFunction, IArgs } from "../../common/declares";
+import {
+  ArgsFunction,
+  ClassConstructor,
+  Constructor,
+  HandlerFunction,
+  IArgs,
+} from "../../common/declares";
 
 function _default(args: IArgs | any) {
   return args;
@@ -100,7 +106,7 @@ export function Ctx() {
 }
 
 // ---
-export function Err(ErrorConstructor: Constructor = Error): ReturnType<typeof Args> {
+export function Err(ErrorConstructor: ClassConstructor = Error): ReturnType<typeof Args> {
   if (!(ErrorConstructor === Error || ErrorConstructor.prototype instanceof Error))
     throw new Error(constants.ERROR_CONSTRUCTOR_ERROR);
   const handler = function () {
@@ -161,15 +167,16 @@ export function This(constructor = undefined): ReturnType<typeof Args> {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
   const handler = ({ ctx, cursor }) => {
+    let _constuctor;
     // если используется `FwdRef`, то в качестве целевого значения используем результат функции
     if (constructor instanceof FwdContainer) {
       constructor = constructor.exec();
     }
-    constructor = constructor || cursor.constructor;
-    let _this = ctx.$StateMap.get(constructor);
+    _constuctor = constructor || cursor.constructor;
+    let _this = ctx.$StateMap.get(_constuctor);
     if (!_this) {
-      _this = Reflect.construct(constructor, []);
-      ctx.$StateMap.set(constructor, _this);
+      _this = Reflect.construct(_constuctor, []);
+      ctx.$StateMap.set(_constuctor, _this);
     }
     return _this;
   };

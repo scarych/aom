@@ -5,17 +5,23 @@ export const MIDDLEWARE_METADATA = "aom:middleware";
 export const MIDDLEWARES_LIST_METADATA = "aom:middlewares_storage";
 export const IS_MIDDLEWARE_METADATA = "aom:is_middleware";
 export const ENDPOINTS_METADATA = "aom:endpoints";
-export const LAZY_ENDPOINT = "aom:lazy_endpoint";
+export const IS_ENDPOINT = "aom:is_endpoint";
+export const COMMON_ENDPOINT = "aom:common_endpoint";
+export const IS_ENDPOINTS_LIST = "aom:is_endpoints_list";
+export const COMMON_ENDPOINTS_LIST = "aom:common_endpoints_list";
 export const PARAMETERS_METADATA = "aom:parameters";
 export const REVERSE_METADATA = "aom:reverse_link";
+export const USE_NEXT_METADATA = "aom:use_next_endpoint";
 export const ERROR_METADATA = "aom:error_result";
 export const OPEN_API_METADATA = "aom:open_api_meta";
 export const OPEN_API_CONTAINER_METADATA = "aom:open_api_container";
-export const LAZY_ENDPOINT_ERROR = "Wrong endpoint! The handler hasn't marked with `@Endpoint()` decorator";
+export const COMMON_ENDPOINT_ERROR = "Wrong endpoint! The handler hasn't marked with `@Endpoint()` decorator";
 export const CONSTRUCTOR_TYPE_ERROR = "Wrong target type! The decorator allowed for class only";
 export const CONSTRUCTOR_PROPERTY_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods only";
 export const IS_MIDDLEWARE_ERROR = "Wrong middleware! The handler isn't marked as middleware";
+export const USE_NEXT_DEFINE_ERROR = "Next function already defined for property!";
+export const USE_NEXT_ERROR = "Wrong next function! The handler isn't marked as endpoint";
 export const ERROR_CONSTRUCTOR_ERROR =
   "Wrong error decorator argument! The constructor must be `class extends  Error`";
 export const PARAMETER_HANDLER_ERROR = "Wrong handler for parameter decorator!";

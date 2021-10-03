@@ -20,7 +20,7 @@ import {
 export function safeJSON<T = IRoute | ICursor>(data: T): T {
   Object.assign(data, {
     toJSON() {
-      const skipKeys = ["constructor", "handler", "property", "middlewares", "cursors"];
+      const skipKeys = ["constructor", "handler", "property", "middlewares", "cursors", "origin"];
       const safeEntries = Object.entries(data).filter(([key]) => skipKeys.indexOf(key) < 0);
       return Object.fromEntries(safeEntries);
     },
@@ -62,7 +62,7 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
     if (constructor && property) {
       const decoratedArgs = extractParameterDecorators(constructor, property);
 
-      // /* временно отключим стикеры как таковые
+      /* временно отключим стикеры как таковые
       // check sticker metadata
       const stickerData = Reflect.getOwnMetadata(
         constants.IS_STICKER_METADATA,
@@ -116,10 +116,8 @@ export function extractParameterDecorators(constructor: Constructor, property: P
  * @returns
  */
 // export function extractMiddlewares({ constructor, property = undefined, prefix }) {
-export function extractMiddlewares(
-  { constructor, property = undefined }: ConstructorProperty,
-  prefix: string
-): ICursor[] {
+export function extractMiddlewares(origin: ConstructorProperty, prefix: string): ICursor[] {
+  const { constructor, property = undefined } = origin;
   const resultMiddlewares = [];
   // ...
   const metadataKey = constants.MIDDLEWARE_METADATA;
@@ -136,10 +134,12 @@ export function extractMiddlewares(
       // try to found middlewares for current middlewares and set them before current
       // cyclic links checking onboard
       resultMiddlewares.push(...extractMiddlewares({ ...middlewareMapData }, prefix));
+
       resultMiddlewares.push({
         ...middlewareMapData,
         handler,
         prefix,
+        origin,
       });
     } else {
       throw new Error(constants.IS_MIDDLEWARE_ERROR);
