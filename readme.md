@@ -3,7 +3,7 @@
 ![Travis (.com)](https://img.shields.io/travis/com/scarych/aom)
 ![npm](https://img.shields.io/npm/dm/aom)
 ![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/npm/aom)
-
+![GitHub](https://img.shields.io/github/license/scarych/aom)
 
 `aom` - it is meta-framework made of typescript-decorators, which allows to fast and comfortable
 create safe api-services, using the principle of accumulation data layers, enriched with abstractions.
