@@ -21,7 +21,7 @@
     "clean": "rimraf lib",
     "clean-build": "npm run clean && npm run build",
     "build": "tsc --project tsconfig.build.json",
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "echo \"Error: no test specified\" && exit 0",
     "prepare": "npm run clean-build"
   },
   "author": "Grigory Kholstinnikov",

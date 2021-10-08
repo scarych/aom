@@ -1,5 +1,8 @@
 # AOM: API Over Models
 
+[![Coverage Status](https://coveralls.io/repos/github/scarych/aom/badge.svg?branch=master)](https://coveralls.io/github/scarych/aom?branch=master)
+[![Build Status](https://app.travis-ci.com/scarych/aom.svg?branch=master)](https://app.travis-ci.com/scarych/aom)
+
 `aom` - it is meta-framework made of typescript-decorators, which allows to fast and comfortable
 create safe api-services, using the principle of accumulation data layers, enriched with abstractions.
 
