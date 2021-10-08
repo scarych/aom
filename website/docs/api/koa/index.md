@@ -10,10 +10,12 @@ At the present time realised the functionality based on http-framework
 
 The construction of a route map is using a set of decorators that differ in types:
 
+- `Controller` is a class decorator that defines a route node and carries out the transfer
+  of decorated data in case of inheritance of route nodes
 - `endpoints` - to indicate the endpoints of the route. Includes decorators:
   `Endpoint`,`Get`, `Post`, `Patch`, `Put`, `Options`, `Delete`, `All`
 - `middlewares` - to indicate middleware-functions, "bridges" and expansion of the context.
-  The list includes to itself: `Middleware`, `Use`, `Bridge`, `Marker` and `Sticker`
+  The list includes to itself: `Middleware`, `Use`, `Bridge`, `Marker` and `UseNext`
 - `parameters` - for parameterization of incoming arguments, used to get typical or
   specialized values ​​into middlewares or endpoints functions. The list includes but
   not limited to these values: `Args`, `Ctx`, `Body`, `Query`, `Session`, `State`,
@@ -26,6 +28,7 @@ The code sample with `aom/koa` decorators:
 @Bridge("/auth", Auth)
 @Bridge("/shop", Shop)
 @Bridge("/account", Account)
+@Controller()
 class Root {
   @Get()
   static Index() {
@@ -34,6 +37,7 @@ class Root {
 }
 
 // ...
+@Controller()
 class Auth {
   user: models.Users;
   login: models.UserLogins;
@@ -69,6 +73,7 @@ class Auth {
 }
 
 // ...
+@Controller()
 class Shop {
   @Get()
   static Index(@Query() query) {
@@ -94,6 +99,7 @@ class Shop {
 }
 
 // ...
+@Controller()
 @Use(Auth.Required)
 class Account {
   @Get()
@@ -132,6 +138,10 @@ structured and understandable code, convenient for refactoring and data control.
 
 A route node - is a class responsible for a local fragment of a route map. All elements of the route
 node become available after it is connected to another node.
+
+Use the `@Controller` decorator for the route node. In general, it is optional, and only
+required if you are creating a route node by inheriting from another route node. More on this
+in the section [`Inheritance`](./inherits).
 
 After assembly, route nodes unfolds in a sequence of `middleware` functions, which ends by the final
 `endpoint`, thereby creating a complete structure of all routes, described in communication nodes.

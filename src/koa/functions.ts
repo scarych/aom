@@ -1,4 +1,4 @@
-import { FwdContainer } from "./forwards";
+import { FwdContainer } from "../references/forwards";
 import * as constants from "../common/constants";
 import { Promise } from "bluebird";
 import {

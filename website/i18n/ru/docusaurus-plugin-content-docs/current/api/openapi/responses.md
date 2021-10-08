@@ -13,7 +13,7 @@ sidebar_position: 4
 ```ts
 interface OpenApiResponse {
   status: number; // код ответа
-  schema: SchemaObject | Function | any; // схема в формате JSON-schema, или объект, генерирующий JSON подходящего формата
+  schema: SchemaObject | ThisRefContainer | Function | any; // схема в формате JSON-schema, или объект, генерирующий JSON подходящего формата
   contentType?: string; // тип данных, по умолчанию `application/json`
   isArray?: boolean; // признак того, что возвращается список объектов (коллекция), по умолчанию `false`
   description?: string; // описание ответа

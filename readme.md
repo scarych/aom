@@ -39,6 +39,7 @@ keep the existing code-stack, and comfortably extend it in the `aom` +`typescrip
 @Bridge("/auth", Auth)
 @Bridge("/shop", Shop)
 @Bridge("/account", Account)
+@Controller()
 class Root {
   @Get()
   static Index() {
@@ -47,6 +48,7 @@ class Root {
 }
 
 // ...
+@Controller()
 class Auth {
   user: models.Users;
   login: models.UserLogins;
@@ -82,6 +84,7 @@ class Auth {
 }
 
 // ...
+@Controller()
 class Shop {
   @Get()
   static Index(@Query() query) {
@@ -107,6 +110,7 @@ class Shop {
 }
 
 // ...
+@Controller()
 @Use(Auth.Required)
 class Account {
   @Get()

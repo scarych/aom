@@ -2,8 +2,7 @@ import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
 import { getDefinitions } from "./definitions";
-import { ThisRefContainer } from "./thisref";
-import { OpenApiSchemaObject } from "./types";
+import { ThisRefContainer } from "../references/this";
 
 export class OpenApi {
   mergeSeparator = "+";

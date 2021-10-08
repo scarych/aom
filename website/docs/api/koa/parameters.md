@@ -151,6 +151,10 @@ Thus, at each step of the route, reflexive information about who is processing i
 can be obtained. It can be used for logging, controlling access to routes, as well as saving and
 applying contextual data in any of its sections.
 
+If compound routes were used using the `@UseNext` decorator, then subsequent called functions will
+be included in the general list of cursors, and will follow the value that defines the endpoint
+itself, and have the same `prefix` value.
+
 The presence of the `constructor` value in `route` and `cursor` makes it possible to use values from
 the structure `ctx.$StateMap = new WeakMap`, which are described in more detail in the description
 for decorators [`StateMap`](#statemap) and [`This`](#this).

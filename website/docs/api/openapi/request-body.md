@@ -14,7 +14,7 @@ The decorator takes an argument that has the interface:
 interface OpenApiRequestBody {
   description: string; //
   contentType?: string; // content type, default: application/json
-  schema: SchemaObject | Function | any; // OAS-specified shema object
+  schema: SchemaObject | ThisRefContainer | Function | any; // OAS-specified shema object
 }
 ```
 

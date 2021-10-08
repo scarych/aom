@@ -15,7 +15,7 @@ It takes as arguments a sequence of objects that satisfy the following structure
 ```ts
 interface OpenApiResponse {
   status: number; // response status code
-  schema: SchemaObject | Function | any; // a JSON-schema or an object that generates JSON in JSON-schema
+  schema: SchemaObject | ThisRefContainer |Function | any; // a JSON-schema or an object that generates JSON in JSON-schema
   contentType?: string; // content type, default `application/json`
   isArray?: boolean; // a flag that a array of objects (collection) is returned, by default `false`
   description?: string; // response description

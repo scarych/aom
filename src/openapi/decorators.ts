@@ -1,4 +1,5 @@
 import { TagObject } from "openapi3-ts";
+import { ThisRefContainer } from "..";
 import * as constants from "../common/constants";
 import { Constructor } from "../common/declares";
 

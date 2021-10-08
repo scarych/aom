@@ -1,6 +1,6 @@
 // import { OpenApi } from "openapi";
 import { join } from "path";
-import { FwdContainer } from "./forwards";
+import { FwdContainer } from "../references/forwards";
 import * as constants from "../common/constants";
 import { Promise } from "bluebird";
 import {
@@ -92,14 +92,19 @@ function extractNextFunctions(origin: ConstructorProperty, prefix: string): ICur
   const { constructor, property } = origin;
   const handler = Reflect.getOwnMetadata(constants.USE_NEXT_METADATA, constructor, property);
   if (handler) {
-    if (Reflect.getOwnMetadata(constants.IS_ENDPOINT, handler)) {
+    // частью составного маршрута является всегда общий ендпоинт
+    if (Reflect.getOwnMetadata(constants.COMMON_ENDPOINT, handler)) {
       const handlerConstructorProperty = restoreReverseMetadata(handler);
+      // если next-функция использует middleware, то добавим и их перед вызовом актуального значения
+      result.push(...extractMiddlewares(handlerConstructorProperty, prefix));
+      // добавим непосредственно next-вызов
       result.push({
         handler,
         ...handlerConstructorProperty,
         prefix,
         origin,
       });
+      // добавим потенциально следующий next-вызов
       result.push(...extractNextFunctions(handlerConstructorProperty, prefix));
     } else {
       throw new Error(constants.USE_NEXT_ERROR);

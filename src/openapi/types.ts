@@ -1,4 +1,5 @@
 import { SchemaObject, SecuritySchemeObject, TagObject } from "openapi3-ts";
+import { ThisRefContainer } from "../references/this";
 
 // special extensions to fix bug with inheritance of SchemaObject
 export declare type OpenApiSchemaObject = Omit<SchemaObject, "type"> & {
@@ -19,7 +20,7 @@ export declare interface OpenApiParameterObject {
 
 export declare interface OpenApiResponse {
   status: number;
-  schema: OpenApiSchemaObject | Function | any;
+  schema: OpenApiSchemaObject | Function | ThisRefContainer | any;
   description?: string;
   contentType?: string;
   isArray?: boolean;
@@ -28,7 +29,7 @@ export declare interface OpenApiResponse {
 export declare interface OpenApiRequestBody {
   description?: string;
   contentType?: string;
-  schema: OpenApiSchemaObject | Function | any;
+  schema: OpenApiSchemaObject | Function | ThisRefContainer | any;
 }
 
 // для аргумента в декоратор PathParameters сделаем значение `in` необязательным

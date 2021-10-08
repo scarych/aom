@@ -26,7 +26,8 @@
   --ifm-color-primary-light: #986fb6;
   --ifm-color-primary-lighter: #aa84c5;
   --ifm-color-primary-lightest: #bd98d8;
-  --ifm-code-font-size: 95%;
+  /* --ifm-code-font-size: 95%; */
+  /* --ifm-h1-font-size: 2.5rem; */
 }
 
 .docusaurus-highlight-code-line {
@@ -38,4 +39,8 @@
 
 html[data-theme='dark'] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
+}
+
+h1 {
+  font-size: 2.5rem;
 }

@@ -7,7 +7,7 @@ sidebar_position: 2
 
 All endpoints are created using decorators from the following list:
 
-- `@Endpoint(path, method = 'get'|'post'|'put'|'patch'|'delete'|'options'|'all')` - creates
+- `@Endpoint(method = 'get'|'post'|'put'|'patch'|'delete'|'options'|'all', path)` - creates
   `endpoint`, pointing to the address `path` on the `method` method. To create an endpoint via
   this decorator, you must specify at least the method to be used. Calling this decorator
   without arguments creates a common endpoint (more details below). Default: `path='/'`.
@@ -118,3 +118,130 @@ throw an error.
 **Important!** The context of "common" endpoints is the class in which they are declared: that is,
 the default `@This` decorator will use its own class (in the example, `Data`), and the
 return value of the `@Route()` with different calls will differ only in the values of `path` and `method`.
+
+## Composite endpoints: `@UseNext`
+
+Route endpoints can be formed from building blocks. For example, when implementing mechanisms
+that imply different conditions for entering the endpoint and the same data structures at the output.
+
+To create a composite destination, the `@UseNext` decorator is used, the argument of which is a
+pointer to the general endpoint, which will be called if `next()` was returned.
+
+Example:
+
+```ts
+class Auth {
+  login: AuthLogins;
+
+  @Post("/login")
+  @Summary("Login/password authentication")
+  @RequestBody({
+    schema: LoginForm,
+  })
+  @Requests({
+    status: 400,
+    schema: ErrorResponse,
+  })
+  @UseNext(Auth.GenerateTokens) // define the next elements in the chain `Auth.GenerateTokens` method
+  static async Login(
+    @SafeBody(LoginForm) { login, password }: LoginForm,
+    @This() auth: Auth,
+    @Err() err,
+    @Next() next
+  ) {
+    // find a login with the "custom" type
+    auth.login = await AuthLogins.findOne({ login, type: "custom" });
+    // return an error if the login is not found
+    if (!auth.login) {
+      return err("login not found", 400);
+    }
+    // return an error if the password is incorrect
+    if (auth.login.checkPassword(password)) {
+      return err("wrong password", 400);
+    }
+    // otherwise, go to the next function - generating a token for authorization
+    return next();
+  }
+
+  // create a middleware for checking
+  @Middleware()
+  @Responses({
+    status: 400,
+    schema: ErrorResponse,
+  })
+  static async CheckPhoneNumber(@This() auth: Auth, @Body() { login }, @Err() err, @Next() next) {
+    // find a login with the type "phone"
+    auth.login = await AuthLogins.findOne({ login, type: "phone" });
+    // return error response if login not found
+    if (!auth.login) {
+      return err("login not found", 400);
+    }
+    return next();
+  }
+
+  @Post("/request-code")
+  @Summary("Request authorization by phone number")
+  @RequestBody({
+    schema: RequestCodeForm,
+  })
+  @Responses({
+    status: 200,
+    schema: MessageResponse,
+  })
+  @Use(Auth.CheckPhoneNumber) // first check that such a login exists
+  static async RequestCode(@This() { login }: Auth) {
+    await login.sendOneOffCode(); // generate and send a one-off code
+    return { message: "Code sent by SMS" };
+  }
+
+  @Post("/confirm-code")
+  @Summary("Confirm authorization by phone number")
+  @RequestBody({
+    schema: ConfirmCodeForm,
+  })
+  @Requests({
+    status: 400,
+    schema: ErrorResponse,
+  })
+  @Use(Auth.CheckPhoneNumber) // first check that such a login exists
+  @UseNext(Auth.GenerateTokens) // define the next elements in the chain `Auth.GenerateTokens` method
+  static ConfirmCode(
+    @SafeBody(ConfirmCodeForm) { code }: ConfirmCodeForm,
+    @This() { login }: Auth,
+    @Err() err,
+    @Next() next
+  ) {
+    // check that the specified one-off code is valid
+    const codeIsValid = await login.checkOneOffCode(code);
+    // return the error if code not valid
+    if (!codeIsValid) {
+      return err("wrong code", 400);
+    }
+    // otherwise, go to the next function - generating a token for authorization
+    return next();
+  }
+
+  // create common endpoint
+  @Endpoint()
+  // describe returned data schema
+  @Responses({
+    status: 200,
+    schema: AuthTokens,
+  })
+  // since it is called after all other checks have passed, all data in it is safe
+  // and can be used directly at the time of the call
+  static GenerateTokens(@This() { login }: Auth) {
+    const { _id: loginId } = login;
+    const newToken = new AuthTokens({ loginId });
+    const lifetime = 60 * 60 * 1000; //
+    await newToken.generateRandomData(lifetime);
+    return newToken;
+  }
+}
+```
+
+The length of a compound route can be of any length. In this case, for each common endpoint, add
+the `@UseNext` decorator specifying the next function to be called, and return the `next()` value
+in it if its logic is successful.
+
+If a composite route fragment uses `middleware`, then they will be added to the cursors call sequence.

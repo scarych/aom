@@ -163,7 +163,7 @@ use an object with an existing data schema, including references to other values
 In this case, it will be necessary to manually control the integrity of such links, which can
 complicate the development.
 
-### How does this works
+## How does this works
 
 Decorators from `aom/openapi` describe general schema properties that will be included in
 the documentation. To get the final structure, you should use the `aom/koa/$` assembler,

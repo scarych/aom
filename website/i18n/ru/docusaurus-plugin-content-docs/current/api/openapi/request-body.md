@@ -14,7 +14,7 @@ sidebar_position: 4.5
 interface OpenApiRequestBody {
   description: string; // описание
   contentType?: string; // тип данных, по умолчанию application/json
-  schema: SchemaObject | Function | any; // схема данных, удовлетворяющая спецификации OAS
+  schema: SchemaObject | ThisRefContainer | Function | any; // схема данных, удовлетворяющая спецификации OAS
 }
 ```
 

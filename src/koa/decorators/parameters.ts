@@ -1,5 +1,5 @@
 import * as constants from "../../common/constants";
-import { FwdContainer } from "../forwards";
+import { FwdContainer } from "../../references/forwards";
 import { checkConstructorProperty } from "../../common/functions";
 import { nextSequences } from "../functions";
 import {
@@ -9,6 +9,7 @@ import {
   HandlerFunction,
   IArgs,
 } from "../../common/declares";
+import { ThisRefContainer } from "../../references/this";
 
 function _default(args: IArgs | any) {
   return args;
@@ -34,9 +35,27 @@ export function Args(handler: ArgsFunction = _default): ParameterDecorator {
 }
 
 // ---
-export function Query(queryHandler: Function = _default): ReturnType<typeof Args> {
-  const handler = function ({ ctx }) {
-    return Reflect.apply(queryHandler, null, [ctx.query]);
+export function Query(
+  queryHandler: Function | ThisRefContainer = _default
+): ReturnType<typeof Args> {
+  const handler = function ({ ctx, cursor }) {
+    let resultHandler = queryHandler;
+    if (queryHandler instanceof ThisRefContainer) {
+      resultHandler = queryHandler.exec(cursor.constructor);
+    }
+    return Reflect.apply(<Function>resultHandler, cursor.constructor, [ctx.query]);
+  };
+  return Args(handler);
+}
+
+// ---
+export function Body(bodyHandler: Function | ThisRefContainer = _default): ReturnType<typeof Args> {
+  const handler = function ({ ctx, cursor }) {
+    let resultHandler = bodyHandler;
+    if (bodyHandler instanceof ThisRefContainer) {
+      resultHandler = bodyHandler.exec(cursor.constructor);
+    }
+    return Reflect.apply(<Function>resultHandler, cursor.constructor, [ctx.request.body]);
   };
   return Args(handler);
 }
@@ -61,14 +80,6 @@ export function State(stateName: string = undefined): ReturnType<typeof Args> {
 export function Session(sessionName: string = undefined): ReturnType<typeof Args> {
   const handler = function ({ ctx }) {
     return sessionName ? Reflect.get(ctx.session, sessionName) : ctx.session;
-  };
-  return Args(handler);
-}
-
-// ---
-export function Body(bodyHandler: Function = _default): ReturnType<typeof Args> {
-  const handler = function ({ ctx }) {
-    return Reflect.apply(bodyHandler, null, [ctx.request.body]);
   };
   return Args(handler);
 }
@@ -162,7 +173,7 @@ export function StateMap(constructor = undefined): ReturnType<typeof Args> {
 }
 
 // ---
-export function This(constructor = undefined): ReturnType<typeof Args> {
+export function This(constructor?: Function | FwdContainer): ReturnType<typeof Args> {
   if (constructor && !(constructor instanceof Function || constructor instanceof FwdContainer)) {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }

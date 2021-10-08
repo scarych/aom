@@ -120,3 +120,130 @@ class Customers {
 декораторе `@This` по умолчанию будет использован собственный класс (в указанном примере `Data`),
 а в возвращаемом значении декоратора `@Route()` при разных вызовах будет отличаться только
 значения `path` и `method`.
+
+## Составные точки назначения: `@UseNext`
+
+Конечные точки маршрута могут быть сформированы из составных элементов. Например при реализации механизмов,
+подразумевающих разные условия входа в конечную точку и одинаковые структуры данных на выходе.
+
+Для создания составной точки назначения используется декоратор `@UseNext`, аргументом которого является
+указатель на общий endpoint, который будет вызван, если было возвращено значение `next()`.
+
+Пример:
+
+```ts
+class Auth {
+  login: AuthLogins;
+
+  @Post("/login")
+  @Summary("Авторизация по логину")
+  @RequestBody({
+    schema: LoginForm,
+  })
+  @Requests({
+    status: 400,
+    schema: ErrorResponse,
+  })
+  @UseNext(Auth.GenerateTokens) // определим следующим элементов в цепочке метод `Auth.GenerateTokens`
+  static async Login(
+    @SafeBody(LoginForm) { login, password }: LoginForm,
+    @This() auth: Auth,
+    @Err() err,
+    @Next() next
+  ) {
+    // найдем логин с типом "произвольный логин"
+    auth.login = await AuthLogins.findOne({ login, type: "custom" });
+    // вернем ошибку если логин не найден
+    if (!auth.login) {
+      return err("login not found", 400);
+    }
+    // вернем ошибку, если неправильный пароль
+    if (auth.login.checkPassword(password)) {
+      return err("wrong password", 400);
+    }
+    // иначе перейдем на следующую функцию - генерацию токена для авторизации
+    return next();
+  }
+
+  // создадим прослойку для проверки
+  @Middleware()
+  @Responses({
+    status: 400,
+    schema: ErrorResponse,
+  })
+  static async CheckPhoneNumber(@This() auth: Auth, @Body() { login }, @Err() err, @Next() next) {
+    // найдем логин с типом "номер телефона"
+    auth.login = await AuthLogins.findOne({ login, type: "phone" });
+    if (!auth.login) {
+      return err("login not found", 400);
+    }
+    return next();
+  }
+
+  @Post("/request-code")
+  @Summary("Запросить авторизацию по номеру телефона")
+  @RequestBody({
+    schema: RequestCodeForm,
+  })
+  @Responses({
+    status: 200,
+    schema: MessageResponse,
+  })
+  @Use(Auth.CheckPhoneNumber) // предварительно проверим, что такой логин существует
+  static async RequestCode(@This() { login }: Auth) {
+    await login.sendOneOffCode(); // сгенерируем и отправим одноразовый код
+    return { message: "Код отправлен по смс" };
+  }
+
+  @Post("/confirm-code")
+  @Summary("Подтвердить авторизацию по номеру телефона")
+  @RequestBody({
+    schema: ConfirmCodeForm,
+  })
+  @Requests({
+    status: 400,
+    schema: ErrorResponse,
+  })
+  @Use(Auth.CheckPhoneNumber) // предварительно проверим, что логин валиден и существует
+  @UseNext(Auth.GenerateTokens) // определим следующим элементов в цепочке метод `Auth.GenerateTokens`
+  static ConfirmCode(
+    @SafeBody(ConfirmCodeForm) { code }: ConfirmCodeForm,
+    @This() { login }: Auth,
+    @Err() err,
+    @Next() next
+  ) {
+    // проверим, что указанный одноразовый код валиден
+    const codeIsValid = await login.checkOneOffCode(code);
+    // если это не так, то вернем ошибку
+    if (!codeIsValid) {
+      return err("wrong code", 400);
+    }
+    // иначе перейдем на следующую функцию - генерацию токена для авторизации
+    return next();
+  }
+
+  // создадим общую конечную точку
+  @Endpoint()
+  // опишем возвращемый в ней тип данных
+  @Responses({
+    status: 200,
+    schema: AuthTokens,
+  })
+  // поскольку она вызывается после прохождения всех прочих проверок, все данные в ней безопасны
+  // и могут быть использованы непосредственно в момент вызова
+  static GenerateTokens(@This() { login }: Auth) {
+    const { _id: loginId } = login;
+    const newToken = new AuthTokens({ loginId });
+    const lifetime = 60 * 60 * 1000; //
+    await newToken.generateRandomData(lifetime);
+    return newToken;
+  }
+}
+```
+
+Длина составного маршрута может быть произвольной длины. В этом случае для каждой общей конечной точки
+следует добавлять декоратор `@UseNext` с указанием следующей вызываемой функции, и возвращать в ней
+значение `next()` в случае успешного прохождения ее логики.
+
+Если составной фрагмент маршрута использует `middleware`, то они будут добавлены в общую последовательность
+вызовов.

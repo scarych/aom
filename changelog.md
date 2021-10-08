@@ -1,15 +1,21 @@
+#### 1.0.0-beta.14
+
+- Added `@Controller` decorator
+- Added routes classes inheritance
+- Added `@UseNext` decorator
+- Added openapi parametric context schema: `CursorRef` function
 
 #### 1.0.0-beta.13
 
-- Add Docusaurus manual
-- Add lazy endpoints support
+- Added Docusaurus manual
+- Added lazy endpoints support
 
 #### 1.0.0-beta.12
 
-- Rewrite base code on Typescript
-- Add `npm build` and `npm prepublish` commands
+- Rewrited base code on Typescript
+- Added `npm build` and `npm prepublish` commands
 
 #### 1.0.0-beta.11
 
-- Add `FwdRef` function
-- Add `changelog` to `readme.md`
+- Added `FwdRef` function
+- Added `changelog` to `readme.md`
