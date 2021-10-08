@@ -1,4 +1,7 @@
-#### 1.0.0-beta.14
+#### 1.0.0-beta.16
+
+- Added `readme.md` badges
+#### 1.0.0-beta.15
 
 - Added `@Controller` decorator
 - Added routes classes inheritance
