@@ -15,11 +15,11 @@ export function CombineSchemas(origin, extensions) {
     const { name } = constructor;
     if (isArray) {
       Object.assign(result.properties, {
-        [key]: { type: "array", items: { $ref: `#/definitions/${name}` } },
+        [key]: { type: "array", items: { $ref: `#/components/schemas/${name}` } },
       });
     } else {
       Object.assign(result.properties, {
-        [key]: { $ref: `#/definitions/${name}` },
+        [key]: { $ref: `#/components/schemas/${name}` },
       });
     }
   });
