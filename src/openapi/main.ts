@@ -294,7 +294,7 @@ export class OpenApi {
   toJSON() {
     // add tags data
     const tags = [];
-    this.usedTagsSet.forEach((tagContainer) => tags.push(this.tagsMap.get(tagContainer)));
+    this.usedTagsSet.forEach((tagContainer) => tags.push({ name: tagContainer }));
     // add security schemas
     const securitySchemes = {};
     this.securitySet.forEach((securityConstructor: Constructor) =>

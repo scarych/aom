@@ -1,8 +1,13 @@
+#### 1.0.0-beta.19
+
+- Fix bug inside `CombineSchemas`
+- Fix bug inside openapi builder
+
 #### 1.0.0-beta.17
 
 - Decorator `@IsDefinition` renamed to `@ComponentSchema`
 - Changed required attributes for openapi interfaces
-- Removed unnecessary dependencies 
+- Removed unnecessary dependencies
 
 #### 1.0.0-beta.16
 
