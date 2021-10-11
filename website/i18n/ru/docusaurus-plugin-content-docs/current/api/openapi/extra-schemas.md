@@ -5,10 +5,11 @@ sidebar_position: 7
 
 <!-- # Extra schemas usage -->
 
-## IsDefinition
+## ComponentSchema
 
-`IsDefinition` - единственный декоратор, который применяется не к маршрутным узлам, а к структурам,
-являющихся вложенными (nested) документами в моделях данных.
+`ComponentSchema` - единственный декоратор, который применяется не к маршрутным узлам, а к структурам,
+являющихся вложенными (nested) документами в моделях данных, или общим используемым структурам данных,
+которые в результате сборки документации окажутся в разделе `Schemas` для общего пользования.
 
 Использование данного декоратора обусловлено ввиду особенностей работы библиотек `class-validator`
 и `class-validator-jsonschema`, требующих соблюдения определенных правил при использовании декоратора
@@ -28,6 +29,7 @@ export class JSONSchema {
   static toJSON(): SchemaObject {
     return targetConstructorToSchema(this, {
       classTransformerMetadataStorage: defaultMetadataStorage,
+      refPointerPrefix: "#/components/schemas/",
     });
   }
 }
@@ -47,7 +49,7 @@ class Users extends BaseModel {
 // ... вложенный документ HistoryAction
 
 // добавим к нему декоратор, который создаст определение, на которое сошлется генератор `json-schema`
-@IsDefinition()
+@ComponentSchema()
 class HistoryAction extends JSONSchema {
   @prop()
   @IsString()

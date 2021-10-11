@@ -5,10 +5,11 @@ sidebar_position: 7
 
 <!-- # Extra schemas usage -->
 
-## IsDefinition
+## ComponentSchema
 
-`IsDefinition` is the only decorator that does not apply to route nodes, but to structures that
-are nested documents in data models.
+`ComponentSchema` is the only decorator that does not apply to route nodes, but to structures that
+are nested documents in data models, or for common data structure, if you need to show them into section
+`Schemas` of Swagger documentation.
 
 The use of this decorator is due to the peculiarities of the work of the `class-validator` and
 `class-validator-jsonschema` packages, which require observance of certain rules when using the
@@ -28,6 +29,7 @@ export class JSONSchema {
   static toJSON(): SchemaObject {
     return targetConstructorToSchema(this, {
       classTransformerMetadataStorage: defaultMetadataStorage,
+      refPointerPrefix: "#/components/schemas/",
     });
   }
 }
@@ -46,7 +48,7 @@ class Users extends BaseModel {
 
 // ... subdocument `HistoryAction`
 // add a decorator to it, which will create a definition that the generator `json-schema` will refer to
-@IsDefinition()
+@ComponentSchema()
 class HistoryAction extends JSONSchema {
   @prop()
   @IsString()
