@@ -217,3 +217,18 @@ export function All(
   const method = "all";
   return defineEndpoint(method, path, handler);
 }
+
+// ************************************************ //
+/**
+ * определить endpoint как контейнер для контекстной функции
+ * @returns  {MethodDecorator}
+ */
+/*
+внедрить потом!
+export function ContextContainer(): MethodDecorator {
+  return (constructor, property, descriptor) => {
+    checkConstructorProperty(constructor, property);
+    Reflect.defineMetadata(constants.IS_CONTEXT_CONTAINER, true, constructor, property);
+  };
+}
+*/

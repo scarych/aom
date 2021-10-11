@@ -1,6 +1,13 @@
+#### 1.0.0-beta.17
+
+- Decorator `@IsDefinition` renamed to `@ComponentSchema`
+- Changed required attributes for openapi interfaces
+- Removed unnecessary dependencies 
+
 #### 1.0.0-beta.16
 
 - Added `readme.md` badges
+
 #### 1.0.0-beta.15
 
 - Added `@Controller` decorator

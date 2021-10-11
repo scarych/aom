@@ -44,13 +44,11 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     );
   }
 
+  // если текущий метод является ContextContainer-ом, то вернем его содержимое
+  // которое уже является готовым ендпоинтом
   /*
-  // в момент генерации вызова проверим, является ли данное свойство стикером
-  const stickerData = Reflect.getOwnMetadata(constants.IS_STICKER_METADATA, constructor, property);
-  // и если является, и целевой конструктор является наследником курсора
-  if (stickerData && route.constructor.prototype instanceof cursor.constructor) {
-    // то в курсоре заменим конструктор на целевой
-    cursor.constructor = route.constructor;
+  if (Reflect.getOwnMetadata(constants.IS_CONTEXT_CONTAINER, constructor, property)) {
+    return Reflect.apply(handler, constructor, []);
   }
   */
 

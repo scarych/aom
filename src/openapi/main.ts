@@ -1,11 +1,12 @@
+import YAML from "yaml";
 import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
-import { getDefinitions } from "./definitions";
+import { getComponentsSchemas } from "./component-schema";
 import { ThisRefContainer } from "../references/this";
 
 export class OpenApi {
-  mergeSeparator = "+";
+  mergeSeparator = " > ";
   data = {
     openapi: "3.0.0",
   };
@@ -15,6 +16,7 @@ export class OpenApi {
   }
 
   tagsSet = new Set();
+  usedTagsSet = new Set();
   tagsMap = new Map();
 
   securitySet = new Set();
@@ -23,7 +25,8 @@ export class OpenApi {
   paths = {};
   registerPath(route: IRoute): void {
     let { path, method, cursors } = route;
-
+    const idParts = [];
+    let id;
     // создадим заглушку для текущего метода
     const currentMethod = {};
     const parameters = [];
@@ -59,11 +62,19 @@ export class OpenApi {
     cursors.forEach((cursor: ICursor) => {
       // из остальных извлечем полезные данные
       const { constructor, property } = cursor;
+      if (!id && idParts.indexOf(constructor.name) < 0) {
+        idParts.push(constructor.name);
+      }
       const cursorOpenApiData = getOpenAPIMetadata(constructor, property);
       if (cursorOpenApiData) {
         // возьмем описание и название из текущего курсора и заменим значения итеративно
         const { description, summary } = cursorOpenApiData;
-        Object.assign(currentMethod, { description, summary });
+        if (description) {
+          Object.assign(currentMethod, { description });
+        }
+        if (summary) {
+          Object.assign(currentMethod, { summary });
+        }
 
         // build request body data
         if (cursorOpenApiData.requestBody) {
@@ -75,6 +86,8 @@ export class OpenApi {
         // если курсор совпадает с собственным роутером
         // то установим правило замены следующего тега, если он вдруг встретится
         if (cursor.handler === route.handler && route.path === cursor.prefix) {
+          idParts.push(property);
+          id = idParts.join("_"); // соберем id
           nextTagRule = constants.NEXT_TAGS_REPLACE;
         } else if (cursorOpenApiData.nextTagRule) {
           // иначе используем значение, если оно стоит для курсора
@@ -166,7 +179,7 @@ export class OpenApi {
       });
     }
 
-    Object.assign(currentMethod, { parameters });
+    Object.assign(currentMethod, { parameters, operationId: id });
     // в конце добавим путь и метод в общий список
     if (!this.paths[path]) this.paths[path] = {};
     this.paths[path][method] = currentMethod;
@@ -192,7 +205,7 @@ export class OpenApi {
       }
       return Reflect.get(tagData, "name");
     });
-
+    let result;
     // если в списке больше чем один тег, то производим хитрую операцию слияния
     if (validTags.length > 1) {
       const resultTagName = validTagsName.join(mergeSeparator);
@@ -204,13 +217,16 @@ export class OpenApi {
         // console.log("this tags exists", validTags);
       }
 
-      // console.log(this.tagsSet, this.tagsMap);
-
-      return [resultTagName];
+      result = [resultTagName];
     } else {
       // иначе возвращаем то, что получилось (1 тег или пустой массив)
-      return validTagsName;
+      result = [...validTagsName];
     }
+    // добавим в список использованных тегов итоговое значение
+    if (!this.usedTagsSet.has(result[0])) {
+      this.usedTagsSet.add(result[0]);
+    }
+    return result;
   }
 
   buildResponses(responses) {
@@ -266,8 +282,10 @@ export class OpenApi {
     }
     */
     const content = { [contentType]: contentSchema };
-    Object.assign(result, { description, content });
-
+    Object.assign(result, { content });
+    if (description) {
+      Object.assign(result, { description });
+    }
     return result;
     // return undefined;
   }
@@ -276,7 +294,7 @@ export class OpenApi {
   toJSON() {
     // add tags data
     const tags = [];
-    this.tagsSet.forEach((tagContainer) => tags.push(this.tagsMap.get(tagContainer)));
+    this.usedTagsSet.forEach((tagContainer) => tags.push(this.tagsMap.get(tagContainer)));
     // add security schemas
     const securitySchemes = {};
     this.securitySet.forEach((securityConstructor: Constructor) =>
@@ -285,17 +303,22 @@ export class OpenApi {
       })
     );
     //
-    return Object.assign(
-      {},
-      {
+    return JSON.parse(
+      JSON.stringify({
         ...this.data,
-        definitions: getDefinitions(),
         components: {
-          tags,
           securitySchemes,
+          schemas: getComponentsSchemas(),
         },
+        tags,
         paths: this.paths,
-      }
+      })
     );
+  }
+
+  toString() {
+    const doc = new YAML.Document();
+    doc.contents = this.toJSON();
+    return doc.toString();
   }
 }

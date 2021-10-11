@@ -10,6 +10,7 @@ export const COMMON_ENDPOINT = "aom:common_endpoint";
 export const IS_ENDPOINTS_LIST = "aom:is_endpoints_list";
 export const COMMON_ENDPOINTS_LIST = "aom:common_endpoints_list";
 export const PARAMETERS_METADATA = "aom:parameters";
+export const IS_CONTEXT_CONTAINER = "aom:context_container";
 export const REVERSE_METADATA = "aom:reverse_link";
 export const USE_NEXT_METADATA = "aom:use_next_endpoint";
 export const ERROR_METADATA = "aom:error_result";

@@ -1,4 +1,4 @@
-import { IsDefinition } from "./definitions";
+import { ComponentSchema } from "./component-schema";
 
 export function CombineSchemas(origin, extensions) {
   const result = { type: "object", properties: {}, ...origin.toJSON() };
@@ -11,7 +11,7 @@ export function CombineSchemas(origin, extensions) {
     } else {
       constructor = extensions[key];
     }
-    Reflect.apply(IsDefinition(), null, [constructor]);
+    Reflect.apply(ComponentSchema(), null, [constructor]);
     const { name } = constructor;
     if (isArray) {
       Object.assign(result.properties, {

@@ -21,7 +21,7 @@ export declare interface OpenApiParameterObject {
 export declare interface OpenApiResponse {
   status: number;
   schema: OpenApiSchemaObject | Function | ThisRefContainer | any;
-  description?: string;
+  description: string;
   contentType?: string;
   isArray?: boolean;
 }

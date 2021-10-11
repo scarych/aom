@@ -2,14 +2,14 @@ import { Constructor } from "../common/declares";
 import { checkConstructorProperty } from "../common/functions";
 
 // справочник определений
-const definitionsSet = new Set();
+const componentsSet = new Set();
 /**
  * вернуть структуру с определениями
  * @returns Object
  */
-export function getDefinitions(): Record<string, Constructor> {
+export function getComponentsSchemas(): Record<string, Constructor> {
   const result = {};
-  definitionsSet.forEach((constructor: Constructor) => {
+  componentsSet.forEach((constructor: Constructor) => {
     const { name } = constructor;
     Object.assign(result, { [name]: constructor });
   });
@@ -20,9 +20,9 @@ export function getDefinitions(): Record<string, Constructor> {
  * декоратор для записи класса в структуру определений
  * @returns {ClassDecorator}
  */
-export function IsDefinition(): ClassDecorator {
+export function ComponentSchema(): ClassDecorator {
   return (constructor) => {
     checkConstructorProperty(constructor);
-    definitionsSet.add(constructor);
+    componentsSet.add(constructor);
   };
 }
