@@ -1,3 +1,8 @@
+#### 1.0.0-beta.20
+
+- Fix bug with cursor context loss inside `nextSequences` function
+- Improve `Controller` processing: added tranfer node used middlewares
+
 #### 1.0.0-beta.19
 
 - Fix bug inside `CombineSchemas`

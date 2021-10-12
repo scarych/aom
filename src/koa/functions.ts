@@ -58,37 +58,22 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
   while (!returnValue && handlers.length > 0) {
     const handler = handlers.shift();
     //
-    const { constructor, property } = restoreReverseMetadata(handler) || <ConstructorProperty>{};
+    let { constructor, property } = restoreReverseMetadata(handler) || <ConstructorProperty>{};
     if (constructor && property) {
+      // замена контекста констуктора, если он является предком для текущего курсора
+      if (contextArgs.cursor.constructor.prototype instanceof constructor) {
+        constructor = contextArgs.cursor.constructor;
+      }
       const decoratedArgs = extractParameterDecorators(constructor, property);
-
-      /* временно отключим стикеры как таковые
-      // check sticker metadata
-      const stickerData = Reflect.getOwnMetadata(
-        constants.IS_STICKER_METADATA,
-        constructor,
-        property
-      );
-
-      const { route } = contextArgs;
-
-      if (stickerData && route.constructor.prototype instanceof constructor) {
-        // change default cursor constuctor
-        Object.assign(contextArgs.cursor, {
-          constructor: route.constructor,
-          property,
-        });
-      } else {
-        // restore cursor constructor and property
-        Object.assign(contextArgs.cursor, { constructor, property });
-      } // */
-
+      // локальным курсором будет значение с данными исполняемого элемента для сохранения 
+      // валидного контекста на аргументах
+      const cursor = { ...contextArgs.cursor, constructor, property };
       const args = await Promise.map(
         decoratedArgs,
-        async (arg) => arg && (await Reflect.apply(arg, constructor, [contextArgs]))
+        async (arg) => arg && (await Reflect.apply(arg, constructor, [{ ...contextArgs, cursor }]))
       );
       args.push(contextArgs);
-      // .concat([defaultArguments]);
+
       const result = await Reflect.apply(handler, constructor, args);
 
       if (result === contextArgs.next) {

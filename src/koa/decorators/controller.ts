@@ -43,6 +43,20 @@ export function Controller(): ClassDecorator {
     // будут перенесены все валидные значения из более раннего родителя
     const parentConstructor = Object.getPrototypeOf(constructor);
 
+    // перенесем use-миддлвари, определенные на самом маршрутном узле
+    const parentNodeMiddlewares =
+      Reflect.getOwnMetadata(constants.MIDDLEWARE_METADATA, parentConstructor, undefined) || [];
+    if (parentNodeMiddlewares.length > 0) {
+      const nodeMiddlewares =
+        Reflect.getOwnMetadata(constants.MIDDLEWARE_METADATA, constructor, undefined) || [];
+      // подставим их перед собственными миддлварями текущей ноды
+      Reflect.defineMetadata(
+        constants.MIDDLEWARE_METADATA,
+        [...parentNodeMiddlewares, ...nodeMiddlewares],
+        constructor,
+        undefined
+      );
+    }
     // перенесем миддлвари
     const parentMiddlewares: ConstructorPropertyDescriptor[] =
       Reflect.getOwnMetadata(constants.MIDDLEWARES_LIST_METADATA, parentConstructor) || [];
@@ -113,7 +127,7 @@ export function Controller(): ClassDecorator {
           cloneMetadataPlain(constants.OPEN_API_METADATA, endpoint, constructor);
           // перенесем декораторы миддлвари
           cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
-          // перенесем декораторы use next 
+          // перенесем декораторы use next
           cloneMetadataPlain(constants.USE_NEXT_METADATA, endpoint, constructor);
         } else {
           console.warn(

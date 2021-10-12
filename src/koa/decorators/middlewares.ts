@@ -73,23 +73,6 @@ export function Marker(handler: MarkerHandler): MethodDecorator {
   };
 }
 
-/*
-// ...
-export function Sticker(): MethodDecorator {
-  return function (
-    constructor: Constructor,
-    property: Property,
-    descriptor: TypedPropertyDescriptor<any>
-  ) {
-    if (typeof constructor !== "function") throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
-    const metakey = constants.IS_STICKER_METADATA;
-    const stickerName = `${constructor.name}:${<string>property}`;
-    // ...
-    Reflect.defineMetadata(metakey, stickerName, constructor, property);
-  };
-}
-*/
-
 // ************************************************ //
 export function UseNext(handler: HandlerFunction): MethodDecorator {
   return (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) => {
