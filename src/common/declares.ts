@@ -32,6 +32,9 @@ export declare interface KoaContenxt {
   body: any;
   session: any;
   query: any;
+  state: any;
+  params: any;
+  $StateMap?: WeakMap<any, any>;
 }
 
 export declare type NextFunction = (...middlewares: HandlerFunction[]) => HandlerFunction;

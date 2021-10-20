@@ -48,6 +48,7 @@ export function AddTag(tag: string | TagObject): ClassDecorator {
     if (typeof tag === "string") {
       tag = { name: tag };
     }
+    // Object.assign(tag, { description: constructor.name }); // описанием тега является имя маршрутного узла
     Reflect.defineMetadata(constants.OPENAPI_TAG, tag, constructor);
   };
 }

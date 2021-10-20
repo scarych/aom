@@ -3,7 +3,7 @@ import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
 import { getComponentsSchemas } from "./component-schema";
-import { ThisRefContainer } from "../references/this";
+import { ThisRefContainer, RouteRefContainer } from "../references";
 
 export class OpenApi {
   mergeSeparator = " > ";
@@ -79,7 +79,7 @@ export class OpenApi {
         // build request body data
         if (cursorOpenApiData.requestBody) {
           Object.assign(currentMethod, {
-            requestBody: this.buildRequestBody(cursorOpenApiData.requestBody, constructor),
+            requestBody: this.buildRequestBody(cursorOpenApiData.requestBody, cursor, route),
           });
         }
 
@@ -110,7 +110,13 @@ export class OpenApi {
 
         // build responses in branch
         if (cursorOpenApiData.responses instanceof Array) {
-          responses.push(...cursorOpenApiData.responses.map((response) => [response, constructor]));
+          responses.push(
+            ...cursorOpenApiData.responses.map((response) => ({
+              response,
+              cursor,
+              route,
+            }))
+          );
         }
 
         // build path parameters in branch
@@ -232,13 +238,15 @@ export class OpenApi {
   buildResponses(responses) {
     const result = {};
     responses.forEach((responseData) => {
-      const [response, constructor] = responseData;
+      const { response, cursor, route } = responseData;
       const { status, description, isArray = false } = response;
       const { contentType = "application/json" } = response;
       const contentSchema = {};
       let schema;
       if (response.schema instanceof ThisRefContainer) {
-        schema = response.schema.exec(constructor);
+        schema = response.schema.exec(cursor.constructor);
+      } else if (response.schema instanceof RouteRefContainer) {
+        schema = response.schema.exec(route.constructor);
       } else {
         schema = response.schema;
       }
@@ -257,14 +265,16 @@ export class OpenApi {
     // return undefined;
   }
 
-  buildRequestBody(requestBody, constructor) {
+  buildRequestBody(requestBody, cursor, route) {
     const result = {};
 
     const { contentType = "application/json", description } = requestBody;
 
     let schema;
     if (requestBody.schema instanceof ThisRefContainer) {
-      schema = requestBody.schema.exec(constructor);
+      schema = requestBody.schema.exec(cursor.constructor);
+    } else if (requestBody.schema instanceof RouteRefContainer) {
+      schema = requestBody.schema.exec(route.constructor);
     } else {
       schema = requestBody.schema;
     }

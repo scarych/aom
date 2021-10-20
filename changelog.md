@@ -1,12 +1,17 @@
+#### 1.0.0-beta.21
+
+- Added `RouteRef` function
+- Fixed OpenApi generation processing
+
 #### 1.0.0-beta.20
 
-- Fix bug with cursor context loss inside `nextSequences` function
-- Improve `Controller` processing: added tranfer node used middlewares
+- Fixed bug with cursor context loss inside `nextSequences` function
+- Improved `Controller` processing: added tranfer node used middlewares
 
 #### 1.0.0-beta.19
 
-- Fix bug inside `CombineSchemas`
-- Fix bug inside openapi builder
+- Fixed bug inside `CombineSchemas`
+- Fixed bug inside openapi builder
 
 #### 1.0.0-beta.17
 

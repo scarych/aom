@@ -1,4 +1,5 @@
 import { SchemaObject, SecuritySchemeObject, TagObject } from "openapi3-ts";
+import { RouteRefContainer } from "..";
 import { ThisRefContainer } from "../references/this";
 
 // special extensions to fix bug with inheritance of SchemaObject
@@ -20,7 +21,7 @@ export declare interface OpenApiParameterObject {
 
 export declare interface OpenApiResponse {
   status: number;
-  schema: OpenApiSchemaObject | Function | ThisRefContainer | any;
+  schema: OpenApiSchemaObject | Function | ThisRefContainer | RouteRefContainer | any;
   description: string;
   contentType?: string;
   isArray?: boolean;
@@ -29,7 +30,7 @@ export declare interface OpenApiResponse {
 export declare interface OpenApiRequestBody {
   description?: string;
   contentType?: string;
-  schema: OpenApiSchemaObject | Function | ThisRefContainer | any;
+  schema: OpenApiSchemaObject | Function | ThisRefContainer | RouteRefContainer | any;
 }
 
 // для аргумента в декоратор PathParameters сделаем значение `in` необязательным

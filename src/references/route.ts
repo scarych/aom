@@ -1,7 +1,8 @@
 import { ThisRefFunction, IFwdContainer } from "../common/declares";
 
 const _default = (arg) => arg;
-export class ThisRefContainer implements IFwdContainer {
+
+export class RouteRefContainer implements IFwdContainer {
   fwdFn: ThisRefFunction;
 
   constructor(fwdFn: ThisRefFunction) {
@@ -13,6 +14,6 @@ export class ThisRefContainer implements IFwdContainer {
   }
 }
 
-export function ThisRef(handler: ThisRefFunction = _default): ThisRefContainer {
-  return new ThisRefContainer(handler);
+export function RouteRef(handler: ThisRefFunction = _default): RouteRefContainer {
+  return new RouteRefContainer(handler);
 }

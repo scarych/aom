@@ -1,6 +1,6 @@
 {
   "name": "aom",
-  "version": "1.0.0-beta.20",
+  "version": "1.0.0-beta.21",
   "description": "API Over Models: typescript-decorators meta-framework",
   "keywords": [
     "koa",
@@ -18,11 +18,10 @@
     "node": ">=12.22.0"
   },
   "scripts": {
-    "clean": "rimraf lib",
-    "clean-build": "npm run clean && npm run build",
+    "prebuild": "rm -rf lib/",
     "build": "tsc --project tsconfig.build.json",
     "test": "echo \"Error: no test specified\" && exit 0",
-    "prepare": "npm run clean-build"
+    "prepare": "npm run build"
   },
   "author": "Grigory Kholstinnikov",
   "license": "MIT",
@@ -37,7 +36,6 @@
   "devDependencies": {
     "@types/node": "^16.9.6",
     "openapi3-ts": "^2.0.1",
-    "rimraf": "^3.0.2",
     "tslib": "^2.3.0",
     "typescript": "^4.4.3"
   },
