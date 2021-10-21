@@ -67,15 +67,6 @@ export class OpenApi {
       }
       const cursorOpenApiData = getOpenAPIMetadata(constructor, property);
       if (cursorOpenApiData) {
-        // возьмем описание и название из текущего курсора и заменим значения итеративно
-        const { description, summary } = cursorOpenApiData;
-        if (description) {
-          Object.assign(currentMethod, { description });
-        }
-        if (summary) {
-          Object.assign(currentMethod, { summary });
-        }
-
         // build request body data
         if (cursorOpenApiData.requestBody) {
           Object.assign(currentMethod, {
@@ -86,6 +77,15 @@ export class OpenApi {
         // если курсор совпадает с собственным роутером
         // то установим правило замены следующего тега, если он вдруг встретится
         if (cursor.handler === route.handler && route.path === cursor.prefix) {
+          // возьмем описание и название из текущего курсора и заменим значения итеративно
+          const { description, summary } = cursorOpenApiData;
+          if (description) {
+            Object.assign(currentMethod, { description });
+          }
+          if (summary) {
+            Object.assign(currentMethod, { summary });
+          }
+
           idParts.push(property);
           id = idParts.join("_"); // соберем id
           nextTagRule = constants.NEXT_TAGS_REPLACE;

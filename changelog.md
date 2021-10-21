@@ -1,3 +1,6 @@
+#### 1.0.0-beta.22
+
+- Fixed OpenApi summary and description processing
 #### 1.0.0-beta.21
 
 - Added `RouteRef` function
