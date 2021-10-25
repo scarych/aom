@@ -75,7 +75,14 @@ export function Endpoint(method?: HTTPMethods, path?: string): MethodDecorator {
 
     // сохраним элемент в списке общих ендпоинтов
     const endpointsList = Reflect.getOwnMetadata(IS_ENDPOINTS_LIST, constructor) || [];
-    endpointsList.push({ constructor, property, descriptor });
+    // проверим, чтобы такой ендпоинт не был ранее объявлен в списке
+    const existsEndpoint = (endpoint) => {
+      return endpoint.constructor === constructor && endpoint.property === property;
+    };
+    if (!endpointsList.filter(existsEndpoint).length) {
+      endpointsList.push({ constructor, property, descriptor });
+    }
+
     Reflect.defineMetadata(IS_ENDPOINTS_LIST, endpointsList, constructor);
 
     // если установлены метод и путь, значит используем значение как стандартный endpoint

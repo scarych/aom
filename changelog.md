@@ -1,3 +1,6 @@
+#### 1.0.0-beta.23
+
+- Fixed bug with endpoint metadata definition
 #### 1.0.0-beta.22
 
 - Fixed OpenApi summary and description processing
