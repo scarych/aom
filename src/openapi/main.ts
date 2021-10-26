@@ -4,6 +4,7 @@ import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
 import { getComponentsSchemas } from "./component-schema";
 import { ThisRefContainer, RouteRefContainer } from "../references";
+import { QueryParameters } from ".";
 
 export class OpenApi {
   mergeSeparator = " > ";
@@ -21,6 +22,10 @@ export class OpenApi {
 
   securitySet = new Set();
   securityMap = new Map();
+
+  /** используемые id методов */
+  usedIdSet = new Set();
+  usedIdMap = new Map();
 
   paths = {};
   registerPath(route: IRoute): void {
@@ -62,9 +67,11 @@ export class OpenApi {
     cursors.forEach((cursor: ICursor) => {
       // из остальных извлечем полезные данные
       const { constructor, property } = cursor;
+      /*
       if (!id && idParts.indexOf(constructor.name) < 0) {
         idParts.push(constructor.name);
       }
+      */
       const cursorOpenApiData = getOpenAPIMetadata(constructor, property);
       if (cursorOpenApiData) {
         // build request body data
@@ -86,8 +93,23 @@ export class OpenApi {
             Object.assign(currentMethod, { summary });
           }
 
-          idParts.push(property);
-          id = idParts.join("_"); // соберем id
+          // создадим уникальный идентификатор, основанный на имени маршрутного узла
+          // и имени свойства, которое определяет данный endpoint
+          const methodId = [constructor.name, property].join("_");
+          // если такого значения в set еще нет, то добавим его
+          if (!this.usedIdSet.has(methodId)) {
+            this.usedIdSet.add(methodId);
+            // также создадим карту, в которой будут перечислены все варианты названий, если id будет повторяться
+            this.usedIdMap.set(methodId, [methodId]);
+            id = methodId;
+          } else {
+            // если значение уже используется, то добавим к нему число
+            // равное количеству элементов в соответствуей карте
+            const usedIdMap = this.usedIdMap.get(methodId);
+            id = [methodId, usedIdMap.length].join("_");
+            // обновим состав карты
+            this.usedIdMap.set(methodId, [...usedIdMap, id]);
+          }
           nextTagRule = constants.NEXT_TAGS_REPLACE;
         } else if (cursorOpenApiData.nextTagRule) {
           // иначе используем значение, если оно стоит для курсора
@@ -140,6 +162,18 @@ export class OpenApi {
           });
         }
 
+        // если установлены параметры адресной строки, то обогатим общий список с установкой значения `in`
+        if (
+          cursorOpenApiData.queryParameters instanceof Array &&
+          cursorOpenApiData.queryParameters.length > 0
+        ) {
+          parameters.push(
+            ...cursorOpenApiData.queryParameters.map((queryParameter) => ({
+              ...queryParameter,
+              in: "query",
+            }))
+          );
+        }
         // если установлены общие параметры, то обогатим общий список
         if (
           cursorOpenApiData.parameters instanceof Array &&

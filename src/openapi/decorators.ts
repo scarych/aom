@@ -6,6 +6,7 @@ import { Constructor } from "../common/declares";
 import { checkConstructorProperty } from "../common/functions";
 import {
   OpenApiParameterObject,
+  OpenApiPathParameterObject,
   OpenApiPathParameters,
   OpenApiRequestBody,
   OpenApiResponse,
@@ -92,6 +93,12 @@ export function PathParameters(pathParameters: OpenApiPathParameters): MethodDec
   return standartDecorator({ pathParameters });
 }
 
+export function QueryParameters(...queryParameters: OpenApiPathParameterObject[]): MethodDecorator {
+  // ...
+  return standartDecorator({ queryParameters });
+}
+
+/** @deprecated decorator should not to be used */
 export function Parameters(...parameters: OpenApiParameterObject[]): MethodDecorator {
   // ...
   return standartDecorator({ parameters });
