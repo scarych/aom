@@ -189,19 +189,23 @@ export function This(
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
   const handler = ({ ctx, cursor, route }: IArgs) => {
-    let _constuctor;
+    let _constructor;
     if (constructor instanceof FwdContainer) {
       // если используется `FwdRef`, то в качестве целевого значения используем результат функции
-      constructor = constructor.exec();
+      _constructor = constructor.exec();
     } else if (constructor instanceof RouteRefContainer) {
       // если используется RouteRef, то возвращается конструктор для текущего маршрута
-      constructor = constructor.exec(route.constructor);
+      _constructor = constructor.exec(route.constructor);
+    } else if (constructor) {
+      _constructor = constructor;
+    } else {
+      _constructor = cursor.constructor;
     }
-    _constuctor = constructor || cursor.constructor;
-    let _this = ctx.$StateMap.get(_constuctor);
+
+    let _this = ctx.$StateMap.get(_constructor);
     if (!_this) {
-      _this = Reflect.construct(_constuctor, []);
-      ctx.$StateMap.set(_constuctor, _this);
+      _this = Reflect.construct(_constructor, []);
+      ctx.$StateMap.set(_constructor, _this);
     }
     return _this;
   };

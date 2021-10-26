@@ -1,14 +1,21 @@
+#### 1.0.0-beta.25
+
+- Fixed critical bug with `@This` context definition
+
 #### 1.0.0-beta.24
 
 - Added `@QueryParameters` to `aom/openapi` decorators
 - Marked `@Parameters` as **deprecated**
 - Improved `parameterId` generation: used only endpoint class and property name
+
 #### 1.0.0-beta.23
 
 - Fixed bug with endpoint metadata definition
+
 #### 1.0.0-beta.22
 
 - Fixed OpenApi summary and description processing
+
 #### 1.0.0-beta.21
 
 - Added `RouteRef` function
