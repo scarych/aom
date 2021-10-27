@@ -2,9 +2,9 @@ import YAML from "yaml";
 import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
-import { getComponentsSchemas } from "./component-schema";
+import { getComponentsSchemas, componentsSet, refPointerPrefix } from "./component-schema";
 import { ThisRefContainer, RouteRefContainer } from "../references";
-import { QueryParameters } from ".";
+import { toJSONSchema } from "./functions";
 
 export class OpenApi {
   mergeSeparator = " > ";
@@ -284,13 +284,27 @@ export class OpenApi {
       } else {
         schema = response.schema;
       }
-      if (isArray) {
-        Object.assign(contentSchema, {
-          schema: { type: "array", items: schema },
-        });
+
+      if (componentsSet.has(schema)) {
+        const { name } = schema;
+        const $ref = `${refPointerPrefix}${name}`;
+        if (isArray) {
+          Object.assign(contentSchema, {
+            schema: { type: "array", items: { $ref } },
+          });
+        } else {
+          Object.assign(contentSchema, { schema: { $ref } });
+        }
       } else {
-        Object.assign(contentSchema, { schema });
+        if (isArray) {
+          Object.assign(contentSchema, {
+            schema: { type: "array", items: toJSONSchema(schema) },
+          });
+        } else {
+          Object.assign(contentSchema, { schema: toJSONSchema(schema) });
+        }
       }
+
       const content = { [contentType]: contentSchema };
       result[status] = { description, content };
     });
@@ -314,17 +328,17 @@ export class OpenApi {
     }
 
     const contentSchema = {};
-    Object.assign(contentSchema, { schema });
-    /*
-    if (this.schemasSet.has(schema)) {
+    // Object.assign(contentSchema, { schema });
+    // /*
+    if (componentsSet.has(schema)) {
       const { name } = schema;
       Object.assign(contentSchema, {
-        schema: { $ref: `#/components/schemas/${name}` },
+        schema: { $ref: `${refPointerPrefix}${name}` },
       });
     } else {
-      Object.assign(contentSchema, { schema });
+      Object.assign(contentSchema, { schema: toJSONSchema(schema) });
     }
-    */
+    // */
     const content = { [contentType]: contentSchema };
     Object.assign(result, { content });
     if (description) {

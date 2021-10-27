@@ -27,6 +27,9 @@
   "license": "MIT",
   "dependencies": {
     "bluebird": "^3.7.2",
+    "class-transformer": "^0.4.0",
+    "class-validator": "^0.13.1",
+    "class-validator-jsonschema": "^3.1.0",
     "reflect-metadata": "^0.1.13",
     "yaml": "^1.10.2"
   },
