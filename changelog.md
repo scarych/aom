@@ -1,3 +1,7 @@
+#### 1.0.0-beta.26
+
+- Added `class-validator`, `class-transformer` and `class-validator-jsonschema` to core dependecies
+- Refactored JSON-schema generation: OpenAPI build JSON-schemas itself
 #### 1.0.0-beta.25
 
 - Fixed critical bug with `@This` context definition
