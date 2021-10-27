@@ -11,31 +11,18 @@ sidebar_position: 7
 являющихся вложенными (nested) документами в моделях данных, или общим используемым структурам данных,
 которые в результате сборки документации окажутся в разделе `Schemas` для общего пользования.
 
+Рекомендуется его использовать для всех моделей и схем данных: `aom` будет создавать ссылки на
+указанные типы вида `{$ref: "#/components/schema/ClassName"}`
+
 Использование данного декоратора обусловлено ввиду особенностей работы библиотек `class-validator`
 и `class-validator-jsonschema`, требующих соблюдения определенных правил при использовании декоратора
 [`@ValidateNested`](https://github.com/epiphone/class-validator-jsonschema#validatenested-and-arrays).
 
-**Важно**: классы, к которым применяется данный декоратор, должны использовать метод `static toJSON`
-для возврата корректного значения JSON-schema, аналогично примерам указанным выше.
-
 ```ts
-// ... jsonschema.ts
-// ... определим класс, использующий хранилище из `class-transformer` для корректного приведения типов
-import { targetConstructorToSchema } from "class-validator-jsonschema";
-import { SchemaObject } from "openapi3-ts";
-import { defaultMetadataStorage } from "class-transformer/cjs/storage";
-
-export class JSONSchema {
-  static toJSON(): SchemaObject {
-    return targetConstructorToSchema(this, {
-      classTransformerMetadataStorage: defaultMetadataStorage,
-      refPointerPrefix: "#/components/schemas/",
-    });
-  }
-}
 // ...
 // ... модель данных с вложенной структурой (на примере typegoose)
-class Users extends BaseModel {
+@ComponentSchema()
+class Users {
   @prop({ ref: () => Users })
   @IsMongoId()
   userId: Ref<Users>;
@@ -50,7 +37,7 @@ class Users extends BaseModel {
 
 // добавим к нему декоратор, который создаст определение, на которое сошлется генератор `json-schema`
 @ComponentSchema()
-class HistoryAction extends JSONSchema {
+class HistoryAction {
   @prop()
   @IsString()
   action: string;
