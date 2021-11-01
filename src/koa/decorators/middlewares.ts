@@ -10,6 +10,7 @@ import {
   MiddlewareHandler,
   Property,
 } from "../../common/declares";
+import { FwdContainer } from "../../references/forwards";
 // ************************************************ //
 // ...
 export function Use(...middlewares: MiddlewareHandler[]): CombinedDecorator {
@@ -74,7 +75,7 @@ export function Marker(handler: MarkerHandler): MethodDecorator {
 }
 
 // ************************************************ //
-export function UseNext(handler: HandlerFunction): MethodDecorator {
+export function UseNext(handler: HandlerFunction | FwdContainer): MethodDecorator {
   return (constructor: Constructor, property: Property, descriptor: PropertyDescriptor) => {
     checkConstructorProperty(constructor, property);
     const { USE_NEXT_METADATA } = constants;

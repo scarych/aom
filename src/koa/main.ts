@@ -88,8 +88,11 @@ function makeCtx(cursor: ICursor, route: IRoute) {
 function extractNextFunctions(origin: ConstructorProperty, prefix: string): ICursor[] {
   const result = [];
   const { constructor, property } = origin;
-  const handler = Reflect.getOwnMetadata(constants.USE_NEXT_METADATA, constructor, property);
+  let handler = Reflect.getOwnMetadata(constants.USE_NEXT_METADATA, constructor, property);
   if (handler) {
+    if (handler instanceof FwdContainer) {
+      handler = handler.exec();
+    }
     // частью составного маршрута является всегда общий ендпоинт
     if (Reflect.getOwnMetadata(constants.COMMON_ENDPOINT, handler)) {
       const handlerConstructorProperty = restoreReverseMetadata(handler);

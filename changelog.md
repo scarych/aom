@@ -1,3 +1,6 @@
+#### 1.0.0-beta.27
+
+- Added support for `FwdRef` to `UseNext` decorator
 #### 1.0.0-beta.26
 
 - Added `class-validator`, `class-transformer` and `class-validator-jsonschema` to core dependecies
