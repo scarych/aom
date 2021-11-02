@@ -1,6 +1,6 @@
 {
   "name": "aom",
-  "version": "1.0.0-beta.27",
+  "version": "1.0.0-beta.28",
   "description": "API Over Models: typescript-decorators meta-framework",
   "keywords": [
     "koa",

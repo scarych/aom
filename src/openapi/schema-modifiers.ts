@@ -14,7 +14,7 @@ export function CombineSchemas(origin, extensions) {
       constructor = extensions[key];
     }
     // применим декоратор `ComponentSchema()` к классу
-    Reflect.apply(ComponentSchema(), null, [constructor]);
+    Reflect.decorate([ComponentSchema()], constructor);
     const { name } = constructor;
     if (isArray) {
       Object.assign(result.properties, {

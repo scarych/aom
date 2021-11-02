@@ -5,6 +5,7 @@ import { getOpenAPIMetadata } from "../common/functions";
 import { getComponentsSchemas, componentsSet, refPointerPrefix } from "./component-schema";
 import { ThisRefContainer, RouteRefContainer } from "../references";
 import { toJSONSchema } from "./functions";
+import { getDisplayName } from "../special/display-name";
 
 export class OpenApi {
   mergeSeparator = " > ";
@@ -95,7 +96,7 @@ export class OpenApi {
 
           // создадим уникальный идентификатор, основанный на имени маршрутного узла
           // и имени свойства, которое определяет данный endpoint
-          const methodId = [constructor.name, property].join("_");
+          const methodId = getDisplayName(constructor, property);
           // если такого значения в set еще нет, то добавим его
           if (!this.usedIdSet.has(methodId)) {
             this.usedIdSet.add(methodId);
@@ -286,7 +287,8 @@ export class OpenApi {
       }
 
       if (componentsSet.has(schema)) {
-        const { name } = schema;
+        // const { name } = schema;
+        const name = getDisplayName(schema);
         const $ref = `${refPointerPrefix}${name}`;
         if (isArray) {
           Object.assign(contentSchema, {
@@ -331,7 +333,8 @@ export class OpenApi {
     // Object.assign(contentSchema, { schema });
     // /*
     if (componentsSet.has(schema)) {
-      const { name } = schema;
+      // const { name } = schema;
+      const name = getDisplayName(schema);
       Object.assign(contentSchema, {
         schema: { $ref: `${refPointerPrefix}${name}` },
       });

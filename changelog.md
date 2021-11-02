@@ -1,10 +1,17 @@
+#### 1.0.0-beta.28
+
+- Added `@DisplayName`: to define special display name for schemas and api methods
+- Added `@NoJSONSchema`: to prevent call `targetConstructorToSchema` for special classes
+
 #### 1.0.0-beta.27
 
 - Added support for `FwdRef` to `UseNext` decorator
+
 #### 1.0.0-beta.26
 
 - Added `class-validator`, `class-transformer` and `class-validator-jsonschema` to core dependecies
 - Refactored JSON-schema generation: OpenAPI build JSON-schemas itself
+
 #### 1.0.0-beta.25
 
 - Fixed critical bug with `@This` context definition

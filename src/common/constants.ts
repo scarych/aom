@@ -16,7 +16,8 @@ export const USE_NEXT_METADATA = "aom:use_next_endpoint";
 export const ERROR_METADATA = "aom:error_result";
 export const OPEN_API_METADATA = "aom:open_api_meta";
 export const OPEN_API_CONTAINER_METADATA = "aom:open_api_container";
-export const COMMON_ENDPOINT_ERROR = "Wrong endpoint! The handler hasn't marked with `@Endpoint()` decorator";
+export const COMMON_ENDPOINT_ERROR =
+  "Wrong endpoint! The handler hasn't marked with `@Endpoint()` decorator";
 export const CONSTRUCTOR_TYPE_ERROR = "Wrong target type! The decorator allowed for class only";
 export const CONSTRUCTOR_PROPERTY_TYPE_ERROR =
   "Wrong target type! The decorator allowed for static methods only";
@@ -38,3 +39,6 @@ export const MONGO_QUERY_FIELDS_TYPE_ERROR = "Property type is not defined!";
 export const MONGO_JOIN_FIELDS = "aom:mongo_join_fields";
 export const MONGO_JOIN_FIELDS_ERROR =
   "Wrong relation! The argument relation must be database model";
+
+export const DISPLAY_NAME = "aom:display_name";
+export const DISPLAY_NAME_ERROR = "Wrong display name! The value is already used!";
