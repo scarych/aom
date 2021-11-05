@@ -1,4 +1,7 @@
-#### 1.0.0-beta.28
+#### 1.0.0-beta.29
+
+- Added support for `ThisRef` and `RouteRef` to `PathParameters` and `QueryParameters` decorators
+- #### 1.0.0-beta.28
 
 - Added `@DisplayName`: to define special display name for schemas and api methods
 - Added `@NoJSONSchema`: to prevent call `targetConstructorToSchema` for special classes

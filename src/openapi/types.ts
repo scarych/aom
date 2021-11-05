@@ -16,7 +16,7 @@ export declare interface OpenApiParameterObject {
   description?: string;
   in: "query" | "path" | "header" | "cookie" | string;
   required?: Boolean;
-  schema: OpenApiSchemaObject;
+  schema: OpenApiSchemaObject | Function | ThisRefContainer | RouteRefContainer | any;
 }
 
 export declare interface OpenApiResponse {

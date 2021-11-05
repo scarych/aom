@@ -158,7 +158,7 @@ export class OpenApi {
             parameters.push({
               in: "path",
               required: true,
-              ...parameterProps,
+              ...this.buildParameter(parameterProps, cursor, route),
             });
           });
         }
@@ -170,7 +170,7 @@ export class OpenApi {
         ) {
           parameters.push(
             ...cursorOpenApiData.queryParameters.map((queryParameter) => ({
-              ...queryParameter,
+              ...this.buildParameter(queryParameter, cursor, route),
               in: "query",
             }))
           );
@@ -268,6 +268,20 @@ export class OpenApi {
       this.usedTagsSet.add(result[0]);
     }
     return result;
+  }
+
+  buildParameter(parameter, cursor, route) {
+    const result = parameter;
+
+    let schema;
+    if (parameter.schema instanceof ThisRefContainer) {
+      schema = parameter.schema.exec(cursor.constructor);
+    } else if (parameter.schema instanceof RouteRefContainer) {
+      schema = parameter.schema.exec(route.constructor);
+    } else {
+      schema = parameter.schema;
+    }
+    return { ...result, schema };
   }
 
   buildResponses(responses) {
