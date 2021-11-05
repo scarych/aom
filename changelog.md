@@ -1,3 +1,6 @@
+#### 1.0.0-beta.30
+
+- Added filter parameters with empty schemas
 #### 1.0.0-beta.29
 
 - Added support for `ThisRef` and `RouteRef` to `PathParameters` and `QueryParameters` decorators

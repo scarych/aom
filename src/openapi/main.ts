@@ -220,7 +220,10 @@ export class OpenApi {
       });
     }
 
-    Object.assign(currentMethod, { parameters, operationId: id });
+    Object.assign(currentMethod, {
+      parameters: parameters.filter((parameter) => parameter.schema),
+      operationId: id,
+    });
     // в конце добавим путь и метод в общий список
     if (!this.paths[path]) this.paths[path] = {};
     this.paths[path][method] = currentMethod;
