@@ -1,3 +1,4 @@
+export const CONTROLLER_NODE = "aom:controller_node";
 export const BRIDGE_METADATA = "aom:bridge";
 export const MARKERS_METADATA = "aom:marker";
 export const IS_STICKER_METADATA = "aom:is_sticker";

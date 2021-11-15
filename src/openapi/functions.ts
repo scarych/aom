@@ -12,7 +12,7 @@ export function toJSONSchema(constructor): SchemaObject {
       refPointerPrefix,
     });
   } else {
-    return <SchemaObject>constructor;
+    return <SchemaObject>(constructor.toJSON ? constructor.toJSON() : constructor);
   }
 }
 

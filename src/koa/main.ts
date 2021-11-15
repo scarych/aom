@@ -77,6 +77,7 @@ function makeCtx(cursor: ICursor, route: IRoute) {
         ctx.body = result;
       }
     } catch (e) {
+      console.error("caught ctx error", e);
       ctx.status = e.status || 500;
       ctx.body = e;
     }

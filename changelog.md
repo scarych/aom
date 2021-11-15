@@ -1,3 +1,7 @@
+#### 1.0.0-beta.31
+
+- Improved controller inheritance process (added cascade controller parent search)
+- Added `toJSON` condition to `toJSONSchema` function
 #### 1.0.0-beta.30
 
 - Added filter parameters with empty schemas

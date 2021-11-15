@@ -65,7 +65,7 @@ export async function nextSequences(handlers: HandlerFunction[] = [], contextArg
         constructor = contextArgs.cursor.constructor;
       }
       const decoratedArgs = extractParameterDecorators(constructor, property);
-      // локальным курсором будет значение с данными исполняемого элемента для сохранения 
+      // локальным курсором будет значение с данными исполняемого элемента для сохранения
       // валидного контекста на аргументах
       const cursor = { ...contextArgs.cursor, constructor, property };
       const args = await Promise.map(
