@@ -3,7 +3,7 @@ import * as constants from "../common/constants";
 import { Constructor, ICursor, IRoute } from "../common/declares";
 import { getOpenAPIMetadata } from "../common/functions";
 import { getComponentsSchemas, componentsSet, refPointerPrefix } from "./component-schema";
-import { ThisRefContainer, RouteRefContainer } from "../references";
+import { FwdContainer, ThisRefContainer, RouteRefContainer } from "../references";
 import { toJSONSchema } from "./functions";
 import { getDisplayName } from "../special/display-name";
 
@@ -68,6 +68,27 @@ export class OpenApi {
     cursors.forEach((cursor: ICursor) => {
       // из остальных извлечем полезные данные
       const { constructor, property } = cursor;
+
+      // проверим, что у нас на атрибуте стоял декоратор DelayRefStack
+      const delayedStackHandler = Reflect.getOwnMetadata(
+        constants.DELAYED_STACK_HANDLER,
+        constructor,
+        property
+      );
+
+      if (delayedStackHandler) {
+        if (delayedStackHandler instanceof FwdContainer) {
+          Reflect.decorate([...delayedStackHandler.exec()], constructor, property);
+        } else if (delayedStackHandler instanceof ThisRefContainer) {
+          Reflect.decorate(
+            [...delayedStackHandler.exec(cursor.constructor)],
+            constructor,
+            property
+          );
+        } else if (delayedStackHandler instanceof RouteRefContainer) {
+          Reflect.decorate([...delayedStackHandler.exec(route.constructor)], constructor, property);
+        }
+      }
       /*
       if (!id && idParts.indexOf(constructor.name) < 0) {
         idParts.push(constructor.name);

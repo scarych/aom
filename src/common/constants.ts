@@ -35,6 +35,8 @@ export const OPENAPI_SECURITY = "aom:openapi_security_schema";
 export const NEXT_TAGS_REPLACE = "aom:next_tags_replace";
 export const NEXT_TAGS_IGNORE = "aom:next_tags_ignore";
 export const NEXT_TAGS_MERGE = "aom:next_tags_merge";
+export const DELAYED_STACK_HANDLER = "aom:delayed_stack_handler";
+
 export const MONGO_QUERY_FIELDS = "aom:mongo_query_fields";
 export const MONGO_QUERY_FIELDS_TYPE_ERROR = "Property type is not defined!";
 export const MONGO_JOIN_FIELDS = "aom:mongo_join_fields";

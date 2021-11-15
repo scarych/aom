@@ -87,6 +87,8 @@ export function Controller(): ClassDecorator {
           cloneMetadataPlain(constants.MIDDLEWARE_METADATA, middleware, constructor);
           // скопируем с преобразованием списка декораторы маркеров
           cloneMetadataList(constants.MARKERS_METADATA, middleware, constructor);
+          // перенесем декораторы proxy route
+          cloneMetadataPlain(constants.DELAYED_STACK_HANDLER, middleware, constructor);
         } else {
           console.warn("property for middleware", { middleware }, "exists into", { constructor });
         }
@@ -129,6 +131,8 @@ export function Controller(): ClassDecorator {
             cloneMetadataPlain(constants.MIDDLEWARE_METADATA, endpoint, constructor);
             // перенесем декораторы use next
             cloneMetadataPlain(constants.USE_NEXT_METADATA, endpoint, constructor);
+            // перенесем декораторы proxy route
+            cloneMetadataPlain(constants.DELAYED_STACK_HANDLER, endpoint, constructor);
           } else {
             console.warn(
               "property for endpoint", //
@@ -241,6 +245,12 @@ export function Controller(): ClassDecorator {
             // перенесем мидлвари
             cloneMetadataPlain(
               constants.MIDDLEWARE_METADATA,
+              <ConstructorProperty>bridge,
+              constructor
+            );
+            // перенесем proxy route
+            cloneMetadataPlain(
+              constants.DELAYED_STACK_HANDLER,
               <ConstructorProperty>bridge,
               constructor
             );

@@ -1,10 +1,15 @@
-#### 1.0.0-beta.31
+#### 1.0.0-beta.32
+
+- Added `DelayRefStack` decorator
+- #### 1.0.0-beta.31
 
 - Improved controller inheritance process (added cascade controller parent search)
 - Added `toJSON` condition to `toJSONSchema` function
+
 #### 1.0.0-beta.30
 
 - Added filter parameters with empty schemas
+
 #### 1.0.0-beta.29
 
 - Added support for `ThisRef` and `RouteRef` to `PathParameters` and `QueryParameters` decorators

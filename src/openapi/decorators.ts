@@ -3,6 +3,7 @@ import * as constants from "../common/constants";
 import { Constructor } from "../common/declares";
 
 import { checkConstructorProperty } from "../common/functions";
+import { FwdContainer, RouteRefContainer, ThisRefContainer } from "../references";
 import {
   OpenApiParameterObject,
   OpenApiPathParameterObject,
@@ -125,4 +126,14 @@ export function IgnoreNextTags(): MethodDecorator {
 
 export function MergeNextTags(): MethodDecorator {
   return standartDecorator({ nextTagRule: constants.NEXT_TAGS_MERGE });
+}
+
+export function DelayRefStack(
+  handler: FwdContainer | ThisRefContainer | RouteRefContainer
+): MethodDecorator {
+  return function (constructor, property) {
+    checkConstructorProperty(constructor, property);
+
+    Reflect.defineMetadata(constants.DELAYED_STACK_HANDLER, handler, constructor, property);
+  };
 }
