@@ -1,3 +1,6 @@
+#### 1.0.0-beta.33
+
+- Added `AdditionalConverter` decorator
 #### 1.0.0-beta.32
 
 - Added `DelayRefStack` decorator
