@@ -1,3 +1,7 @@
+#### 1.0.0-beta.34
+
+- Fixed strange bug into `mergeOpenAPIHandlerMetadata` function
+- Minor files refactoring
 #### 1.0.0-beta.33
 
 - Added `AdditionalConverter` decorator

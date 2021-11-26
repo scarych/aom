@@ -15,7 +15,7 @@ import {
 
 function mergeOpenAPIHandlerMetadata({ constructor, property = undefined }, data = {}) {
   const key = constants.OPEN_API_METADATA;
-  const openapiMetadata = Reflect.getOwnMetadata(key, constructor, property) || {};
+  const openapiMetadata = { ...Reflect.getOwnMetadata(key, constructor, property) };
   Object.keys(data).forEach((key) => {
     if (data[key] instanceof Array) {
       const curData = openapiMetadata[key] || [];

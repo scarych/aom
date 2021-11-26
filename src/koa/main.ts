@@ -5,6 +5,7 @@ import * as constants from "../common/constants";
 import { Promise } from "bluebird";
 import {
   extractMiddlewares,
+  extractNextFunctions,
   extractParameterDecorators,
   restoreReverseMetadata,
   safeJSON,
@@ -83,36 +84,6 @@ function makeCtx(cursor: ICursor, route: IRoute) {
     }
     return ctx.body;
   };
-}
-
-// извлечение next-функций для ендпоинтов
-function extractNextFunctions(origin: ConstructorProperty, prefix: string): ICursor[] {
-  const result = [];
-  const { constructor, property } = origin;
-  let handler = Reflect.getOwnMetadata(constants.USE_NEXT_METADATA, constructor, property);
-  if (handler) {
-    if (handler instanceof FwdContainer) {
-      handler = handler.exec();
-    }
-    // частью составного маршрута является всегда общий ендпоинт
-    if (Reflect.getOwnMetadata(constants.COMMON_ENDPOINT, handler)) {
-      const handlerConstructorProperty = restoreReverseMetadata(handler);
-      // если next-функция использует middleware, то добавим и их перед вызовом актуального значения
-      result.push(...extractMiddlewares(handlerConstructorProperty, prefix));
-      // добавим непосредственно next-вызов
-      result.push({
-        handler,
-        ...handlerConstructorProperty,
-        prefix,
-        origin,
-      });
-      // добавим потенциально следующий next-вызов
-      result.push(...extractNextFunctions(handlerConstructorProperty, prefix));
-    } else {
-      throw new Error(constants.USE_NEXT_ERROR);
-    }
-  }
-  return result;
 }
 
 function buildRoutesList(
