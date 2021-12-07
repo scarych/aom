@@ -16,14 +16,14 @@ export declare type Property = string | symbol;
 
 export declare interface IArgs {
   next: Function;
-  ctx: KoaContenxt;
+  ctx: KoaContext;
   route: IRoute;
   cursor: ICursor;
 }
 
 export declare type ArgsFunction = (arg: IArgs) => any;
 
-export declare interface KoaContenxt {
+export declare interface KoaContext {
   req: any;
   res: any;
   headers: any;
