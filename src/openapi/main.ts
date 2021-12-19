@@ -88,6 +88,8 @@ export class OpenApi {
         } else if (delayedStackHandler instanceof RouteRefContainer) {
           Reflect.decorate([...delayedStackHandler.exec(route.constructor)], constructor, property);
         }
+        // после установки удалим метаданные, чтобы потом они не вызвались повторно, если повторяется контекст вызова
+        Reflect.deleteMetadata(constants.DELAYED_STACK_HANDLER, constructor, property);
       }
       /*
       if (!id && idParts.indexOf(constructor.name) < 0) {

@@ -1,3 +1,6 @@
+#### 1.0.0-beta.36
+
+- Fixed `DelayRefStack` decorators processing
 #### 1.0.0-beta.35
 
 - Fixed `KoaContext` naming

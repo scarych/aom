@@ -12,7 +12,6 @@ import {
 } from "./functions";
 import {
   Constructor,
-  ConstructorProperty,
   HandlerFunction,
   IArgs,
   ICursor,
@@ -220,87 +219,3 @@ export class $ {
     return this;
   }
 }
-
-/*
-class ControllersCore {
-  // private prefix: string;
-
-  // private controller: Constructor;
-
-  private bridges;
-
-  // private middlewares;
-
-  private endpoints;
-
-  constructor(
-    private controller: Constructor,
-    private prefix: string,
-    private middlewares: ICursor[] = []
-  ) {
-    this.middlewares.push(
-      ...extractMiddlewares({ constructor: this.controller, property: undefined }, this.prefix)
-    );
-
-    this.buildRoutes();
-  }
-
-  private buildRoutes() {
-    this.endpoints = this.extractRoutes();
-  }
-
-  private extractRoutes() {
-    const endpoints: IEndpoint[] = Reflect.getOwnMetadata(
-      constants.ENDPOINTS_METADATA,
-      this.controller
-    );
-
-    if (endpoints) {
-      endpoints.forEach((endpoint: IEndpoint) => {
-        // тут важный момент - заменяется значение constructor, и извлекается из
-        // метаданных endpoint-а
-        // в общем случае он равен текущему конструктору, но в случае lazy endpoint-ов
-        // он будет равен конструктору самого endpoint-а
-        const { method, path, handler } = endpoint;
-        const routePath = join(this.prefix, path).replace(/\/$/, "") || "/";
-
-        const handlerConstructorProperty = restoreReverseMetadata(handler);
-
-        const endpointMiddlewares = extractMiddlewares(
-          {
-            ...handlerConstructorProperty,
-          },
-          routePath
-        );
-
-        const route = <IRoute>safeJSON({
-          method,
-          path: routePath,
-          ...handlerConstructorProperty,
-          handler,
-        });
-        // создадим курсоры, включив в них информацию и о последнем вызове в стеке
-        const cursors = []
-          .concat(this.middlewares, endpointMiddlewares)
-          .concat([{ ...handlerConstructorProperty, handler, prefix: routePath }])
-          .map((cursor) => {
-            // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
-            // является родительским для текущего конструкта
-            if (cursor.origin.constructor.prototype instanceof cursor.constructor) {
-              Object.assign(cursor, { constructor: cursor.origin.constructor });
-            }
-            return cursor;
-          });
-
-        Object.assign(route, {
-          // добавим информацию о всем стеке middleware, который предшествует данному методу
-          cursors,
-          // сгенерирем полный стек вызовов в контексте
-          middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, route))),
-        });
-        this.endpoints.push(route);
-      });
-    }
-  }
-}
-*/
