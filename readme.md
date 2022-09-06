@@ -38,6 +38,8 @@ on `koa`, which makes it useful when migrating functionality already existing pr
 popular libraries: `koa-router`, `koa-session` and others, which allows, if necessary,
 keep the existing code-stack, and comfortably extend it in the `aom` +`typescript` methodology.
 
+Ку-ку
+
 **Code sample**
 
 ```ts
