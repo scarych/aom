@@ -123,8 +123,11 @@ export function Err(ErrorConstructor: ClassConstructor = Error): ReturnType<type
   if (!(ErrorConstructor === Error || ErrorConstructor.prototype instanceof Error))
     throw new Error(constants.ERROR_CONSTRUCTOR_ERROR);
   const handler = function () {
-    return function (message, status = 500, data = undefined) {
-      return Object.assign(new ErrorConstructor(message), { status, data });
+    return function (message, status?, data?) {
+      const error = new ErrorConstructor(message);
+      status = status || error["status"] || Reflect.get(ErrorConstructor, "status");
+      data = data || error["data"];
+      return Object.assign(error, { status, data });
     };
   };
   return Args(handler);

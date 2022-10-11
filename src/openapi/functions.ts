@@ -21,12 +21,17 @@ export function toJSONSchema(constructor): SchemaObject {
   }
 }
 
+/** для указанного класса пропускает преобразование в JSON-schema через типовую трансформацию
+ * вместо этого возвращает результат функции toJSON или собственное значение класса
+ * позволяет использовать фиксированные схемы данных в качестве возвращаемых структур
+ */
 export function NoJSONSchema(): ClassDecorator {
   return (constructor) => {
     noJSONSchemaSet.add(constructor);
   };
 }
 
+/** расширяет список конверторов для указанного класса согласно спецификации функции targetConstructorToSchema */
 export function AdditionalConverter(converter: convertorType = {}): ClassDecorator {
   return (constructor) => {
     const { name } = constructor;

@@ -76,10 +76,10 @@ function makeCtx(cursor: ICursor, route: IRoute) {
       } else {
         ctx.body = result;
       }
-    } catch (e) {
-      console.error("caught ctx error", e);
-      ctx.status = e.status || 500;
-      ctx.body = e;
+    } catch (error) {
+      console.error("caught ctx error", error, route, cursor);
+      ctx.status = error.status || 500;
+      ctx.body = error;
     }
     return ctx.body;
   };
@@ -125,6 +125,7 @@ function buildRoutesList(
         ...handlerConstructorProperty,
         handler,
       });
+
       // создадим курсоры, включив в них информацию и о последнем вызове в стеке
       const cursors = []
         .concat(middlewares, commonMiddlewares, endpointMiddlewares)
@@ -194,6 +195,7 @@ function buildRoutesList(
   return routesList;
 }
 
+/** @deprecated : use `export { $aom } from "aom"` instead */
 export class $ {
   routes: IRoute[];
 
@@ -219,3 +221,5 @@ export class $ {
     return this;
   }
 }
+
+export class $aom extends $ {}

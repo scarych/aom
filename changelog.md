@@ -1,3 +1,6 @@
+#### 1.0.0-beta.37
+
+- Fixed middlewares inheritances: replace constructor value for origin on extends
 #### 1.0.0-beta.36
 
 - Fixed `DelayRefStack` decorators processing

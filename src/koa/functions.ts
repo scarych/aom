@@ -177,7 +177,14 @@ export function extractMiddlewares(origin: ConstructorProperty, prefix: string):
     }
   });
 
-  return resultMiddlewares;
+  return resultMiddlewares.map((middleware) => {
+    // здесь проверим, что если миддлварьки наследуются от оригинала
+    // то перенесем значение конструктора
+    if (origin.constructor.prototype instanceof middleware.constructor) {
+      middleware.constructor = origin.constructor;
+    }
+    return middleware;
+  });
 }
 
 // извлечение next-функций для ендпоинтов
