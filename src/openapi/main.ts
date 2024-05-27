@@ -17,6 +17,8 @@ export class OpenApi {
     Object.assign(this.data, { ...initData });
   }
 
+  componentsSchemas = new Set();
+
   tagsSet = new Set();
   usedTagsSet = new Set();
   tagsMap = new Map();
@@ -327,6 +329,7 @@ export class OpenApi {
       }
 
       if (componentsSet.has(schema)) {
+        this.componentsSchemas.add(schema);
         // const { name } = schema;
         const name = getDisplayName(schema);
         const $ref = `${refPointerPrefix}${name}`;
@@ -373,6 +376,8 @@ export class OpenApi {
     // Object.assign(contentSchema, { schema });
     // /*
     if (componentsSet.has(schema)) {
+      // зафиксируем схему в собственном локальном значении, из которого потом будет построена итоговая структура
+      this.componentsSchemas.add(schema);
       // const { name } = schema;
       const name = getDisplayName(schema);
       Object.assign(contentSchema, {
@@ -409,7 +414,7 @@ export class OpenApi {
         ...this.data,
         components: {
           securitySchemes,
-          schemas: getComponentsSchemas(),
+          schemas: getComponentsSchemas(this.componentsSchemas),
         },
         tags,
         paths: this.paths,

@@ -11,9 +11,9 @@ export const componentsSet = new Set();
  * вернуть структуру с определениями
  * @returns Object
  */
-export function getComponentsSchemas(): Record<string, Constructor> {
+export function getComponentsSchemas(sourceSet: Set<any>): Record<string, Constructor> {
   const result = {};
-  componentsSet.forEach((constructor: Constructor) => {
+  sourceSet.forEach((constructor: Constructor) => {
     const name = getDisplayName(constructor);
     Object.assign(result, { [name]: toJSONSchema(constructor) });
   });
