@@ -1,5 +1,5 @@
 import { toJSONSchema } from "./functions";
-import { ComponentSchema, refPointerPrefix } from "./component-schema";
+import { ComponentSchema, componentsSet, refPointerPrefix } from "./component-schema";
 
 export function CombineSchemas(origin, extensions) {
   const result = { type: "object", properties: {}, ...toJSONSchema(origin) };
@@ -13,8 +13,10 @@ export function CombineSchemas(origin, extensions) {
     } else {
       constructor = extensions[key];
     }
-    // применим декоратор `ComponentSchema()` к классу
-    Reflect.decorate([ComponentSchema()], constructor);
+    // применим декоратор `ComponentSchema()` к классу, если тот еще не применялся к нему
+    if (!componentsSet.has(constructor)) {
+      Reflect.decorate([ComponentSchema()], constructor);
+    }
     const { name } = constructor;
     if (isArray) {
       Object.assign(result.properties, {

@@ -27,10 +27,8 @@ export function getComponentsSchemas(): Record<string, Constructor> {
 export function ComponentSchema(displayName?: string): ClassDecorator {
   return (constructor) => {
     checkConstructorProperty(constructor);
-    // если указано видимое имя, то добавим его для элемента данных
-    if (displayName) {
-      Reflect.decorate([DisplayName(displayName)], constructor);
-    }
+    // если указано видимое имя, то добавим его для элемента данных, или используем собственное имя класса
+    Reflect.decorate([DisplayName(displayName || constructor.name)], constructor);
     // сохраним в справочнике
     componentsSet.add(constructor);
   };

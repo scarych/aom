@@ -16,7 +16,7 @@ export function DisplayName(name: string): CombinedDecorator {
     checkConstructorProperty(constructor);
     // проверим, чтобы указанное имя до этого не использовалось
     if (displayNamesMap.has(name)) {
-      throw new Error(DISPLAY_NAME_ERROR);
+      throw new Error(`${DISPLAY_NAME_ERROR}: ${name}`);
     }
     // запишем метаданные и сохраним значение в общей карте
     Reflect.defineMetadata(DISPLAY_NAME, name, constructor, property);
