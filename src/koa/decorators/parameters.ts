@@ -63,9 +63,19 @@ export function Body(
 }
 
 // ---
-export function Params(paramName: string = undefined): ReturnType<typeof Args> {
-  const handler = function ({ ctx }: IArgs) {
-    return paramName ? Reflect.get(ctx.params, paramName) : ctx.params;
+export function Params(
+  paramsHandler: Function | ThisRefContainer | RouteRefContainer | string = _default
+): ReturnType<typeof Args> {
+  const handler = function ({ ctx, route, cursor }: IArgs) {
+    let resultHandler = paramsHandler;
+    if (paramsHandler instanceof ThisRefContainer) {
+      resultHandler = paramsHandler.exec(cursor.constructor);
+    } else if (paramsHandler instanceof RouteRefContainer) {
+      resultHandler = paramsHandler.exec(route.constructor);
+    } else if ("string" === typeof paramsHandler) {
+      return Reflect.get(ctx.params, paramsHandler);
+    }
+    return Reflect.apply(<Function>resultHandler, cursor.constructor, [ctx.params]);
   };
   return Args(handler);
 }
@@ -95,9 +105,19 @@ export function Files(): ReturnType<typeof Args> {
 }
 
 // ---
-export function Headers(headerName: string = undefined): ReturnType<typeof Args> {
-  const handler = function ({ ctx }: IArgs) {
-    return headerName ? Reflect.get(ctx.headers, headerName) : ctx.headers;
+export function Headers(
+  headerHandler: Function | ThisRefContainer | RouteRefContainer | string = _default
+): ReturnType<typeof Args> {
+  const handler = function ({ ctx, cursor, route }: IArgs) {
+    let resultHandler = headerHandler;
+    if (headerHandler instanceof ThisRefContainer) {
+      resultHandler = headerHandler.exec(cursor.constructor);
+    } else if (headerHandler instanceof RouteRefContainer) {
+      resultHandler = headerHandler.exec(route.constructor);
+    } else if ("string" === typeof headerHandler) {
+      return Reflect.get(ctx.headers, headerHandler);
+    }
+    return Reflect.apply(<Function>resultHandler, cursor.constructor, [ctx.headers]);
   };
   return Args(handler);
 }

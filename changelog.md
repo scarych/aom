@@ -1,19 +1,32 @@
+#### 1.0.0-beta.39
+
+- Improve `@Params` and `@Headers` decorators: added support for data validation like `@Body` and `@Query`
+
+#### 1.0.0-beta.38
+
+- Modified `@ComponentSchema` processing: added auto `displayName` call with default class name
+
 #### 1.0.0-beta.37
 
 - Fixed middlewares inheritances: replace constructor value for origin on extends
+
 #### 1.0.0-beta.36
 
 - Fixed `DelayRefStack` decorators processing
+
 #### 1.0.0-beta.35
 
 - Fixed `KoaContext` naming
+
 #### 1.0.0-beta.34
 
 - Fixed strange bug into `mergeOpenAPIHandlerMetadata` function
 - Minor files refactoring
+
 #### 1.0.0-beta.33
 
 - Added `AdditionalConverter` decorator
+
 #### 1.0.0-beta.32
 
 - Added `DelayRefStack` decorator
