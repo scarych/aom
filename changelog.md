@@ -1,3 +1,6 @@
+#### 1.0.0-beta.40
+
+- Increase `class-validator`, `class-validator-jsonschema` and ``class-transformer` version. `openapi3-ts` placed to dependecies
 #### 1.0.0-beta.39
 
 - Improve `@Params` and `@Headers` decorators: added support for data validation like `@Body` and `@Query`
