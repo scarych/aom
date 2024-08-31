@@ -211,7 +211,7 @@ export function extractNextFunctions(origin: ConstructorProperty, prefix: string
       // добавим потенциально следующий next-вызов
       result.push(...extractNextFunctions(handlerConstructorProperty, prefix));
     } else {
-      throw new Error(constants.USE_NEXT_ERROR);
+      throw new Error(`${constants.USE_NEXT_ERROR} ${constructor.name}.${property.toString()}`);
     }
   }
   return result;

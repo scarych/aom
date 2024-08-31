@@ -1,6 +1,16 @@
+#### 1.0.0-beta.42
+
+- Export `restoreReverseMetadata` and `saveReverseMetadata` from `./functions`
+- Add debug information about mismatched `Endpoint` decorator
+
+#### 1.0.0-beta.41
+
+- Append `Promise` for return type of `NextFunction`
+
 #### 1.0.0-beta.40
 
 - Increase `class-validator`, `class-validator-jsonschema` and ``class-transformer` version. `openapi3-ts` placed to dependecies
+
 #### 1.0.0-beta.39
 
 - Improve `@Params` and `@Headers` decorators: added support for data validation like `@Body` and `@Query`

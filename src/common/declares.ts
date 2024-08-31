@@ -37,7 +37,7 @@ export declare interface KoaContext {
   $StateMap?: WeakMap<any, any>;
 }
 
-export declare type NextFunction = (...middlewares: HandlerFunction[]) => HandlerFunction;
+export declare type NextFunction = (...middlewares: HandlerFunction[]) => Promise<HandlerFunction>;
 
 export declare type ErrorFunction = <T extends Error>(
   message: string,
