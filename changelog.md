@@ -1,3 +1,7 @@
+#### 1.0.0-beta.44
+
+- Decorator `Summary` became `CombinedDecorator` and allows append to controllers
+
 #### 1.0.0-beta.43
 
 - Export `getOpenAPIMetadata` from `common/functions`

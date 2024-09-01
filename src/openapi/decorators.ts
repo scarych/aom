@@ -1,6 +1,6 @@
 import { TagObject } from "openapi3-ts";
 import * as constants from "../common/constants";
-import { Constructor } from "../common/declares";
+import { CombinedDecorator, Constructor } from "../common/declares";
 
 import { checkConstructorProperty } from "../common/functions";
 import { FwdContainer, RouteRefContainer, ThisRefContainer } from "../references";
@@ -77,7 +77,7 @@ export function UseSecurity(...security: Constructor[]): MethodDecorator {
 }
 
 // значение добавляется только целенаправленно один раз
-export function Summary(summary: string): MethodDecorator {
+export function Summary(summary: string): CombinedDecorator {
   // ...
   return standartDecorator({ summary });
 }
