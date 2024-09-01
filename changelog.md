@@ -1,6 +1,10 @@
+#### 1.0.0-beta.43
+
+- Export `getOpenAPIMetadata` from `common/functions`
+
 #### 1.0.0-beta.42
 
-- Export `restoreReverseMetadata` and `saveReverseMetadata` from `./functions`
+- Export `restoreReverseMetadata` and `saveReverseMetadata` from `koa/functions`
 - Add debug information about mismatched `Endpoint` decorator
 
 #### 1.0.0-beta.41
