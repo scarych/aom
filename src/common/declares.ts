@@ -51,6 +51,7 @@ export declare interface ConstructorProperty {
 }
 
 export declare interface ICursor extends ConstructorProperty {
+  index: number;
   handler: HandlerFunction;
   prefix: string;
   origin: ConstructorProperty;

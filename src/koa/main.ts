@@ -149,7 +149,8 @@ function buildRoutesList(
 
       Object.assign(route, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
-        cursors,
+        // для курсоров добавим их index-ы, чтобы точно ориентироваться в сложных списках
+        cursors: cursors.map((cursor, index) => ({ ...cursor, index })),
         // сгенерирем полный стек вызовов в контексте
         middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, route))),
       });
@@ -160,7 +161,7 @@ function buildRoutesList(
   const bridges = Reflect.getOwnMetadata(constants.BRIDGE_METADATA, constructor);
 
   if (bridges) {
-    bridges.forEach((bridgeData) => {
+    bridges.forEach((bridgeData, index) => {
       let { prefix: nextPrefix, nextRoute, property, descriptor } = bridgeData;
 
       // если мост является FwdContainer, то извлечем значение из выполнения функции
@@ -175,6 +176,7 @@ function buildRoutesList(
       // если мост является собственной миддлварбю
       if (descriptor && typeof descriptor.value === "function") {
         bridgeMiddlewares.push({
+          index,
           constructor,
           property,
           handler: descriptor.value,

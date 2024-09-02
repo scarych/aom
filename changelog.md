@@ -1,3 +1,7 @@
+#### 1.0.0-beta.45
+
+- Extend 'ICursor' type with `index:number` value
+
 #### 1.0.0-beta.44
 
 - Decorator `Summary` became `CombinedDecorator` and allows append to controllers
