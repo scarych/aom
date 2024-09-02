@@ -138,19 +138,20 @@ function buildRoutesList(
           },
         ])
         .concat(nextFunctions)
-        .map((cursor) => {
+        .map((cursor, index) => {
           // тут попробуем заменить конструктор в ендпоинте, если он вдруг по какой-то причине
           // является родительским для текущего конструкта
           if (cursor.origin.constructor.prototype instanceof cursor.constructor) {
             Object.assign(cursor, { constructor: cursor.origin.constructor });
           }
-          return cursor;
+          // установим финальное значение index для списка курсоров
+          return { ...cursor, index };
         });
 
       Object.assign(route, {
         // добавим информацию о всем стеке middleware, который предшествует данному методу
         // для курсоров добавим их index-ы, чтобы точно ориентироваться в сложных списках
-        cursors: cursors.map((cursor, index) => ({ ...cursor, index })),
+        cursors,
         // сгенерирем полный стек вызовов в контексте
         middlewares: [$StateMap].concat(cursors.map((cursor) => makeCtx(cursor, route))),
       });

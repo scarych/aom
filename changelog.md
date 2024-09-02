@@ -1,3 +1,7 @@
+#### 1.0.0-beta.46
+
+- Fix 'ICursor' value `index:number` assignment
+
 #### 1.0.0-beta.45
 
 - Extend 'ICursor' type with `index:number` value
