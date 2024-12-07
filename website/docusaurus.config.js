@@ -79,7 +79,7 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
               position: "right",
             },
             {
-              href: "https://github.com/scarych/aom",
+              href: "https://github.com/aom-js",
               label: "GitHub",
               position: "right",
             },
