@@ -1,3 +1,7 @@
+#### 1.0.0-beta.47
+
+- Upgrade version `openapi3-ts`
+  
 #### 1.0.0-beta.46
 
 - Fix 'ICursor' value `index:number` assignment

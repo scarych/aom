@@ -1,4 +1,4 @@
-import { TagObject } from "openapi3-ts";
+import { TagObject } from "openapi3-ts/oas30";
 import * as constants from "../common/constants";
 import { CombinedDecorator, Constructor } from "../common/declares";
 

@@ -1,4 +1,4 @@
-import { SchemaObject, SecuritySchemeObject, TagObject } from "openapi3-ts";
+import { SchemaObject, SecuritySchemeObject, TagObject } from "openapi3-ts/oas30";
 import { RouteRefContainer } from "..";
 import { ThisRefContainer } from "../references/this";
 

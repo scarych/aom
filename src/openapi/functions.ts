@@ -1,5 +1,5 @@
 import { targetConstructorToSchema } from "class-validator-jsonschema";
-import { SchemaObject } from "openapi3-ts";
+import { SchemaObject } from "openapi3-ts/oas30";
 import { defaultMetadataStorage } from "class-transformer/cjs/storage";
 import { refPointerPrefix } from "./component-schema";
 import { SchemaConverter } from "class-validator-jsonschema/build/defaultConverters";
