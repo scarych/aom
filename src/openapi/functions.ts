@@ -9,12 +9,12 @@ const additionalConverters = {};
 
 type convertorType = SchemaConverter | SchemaObject;
 
-export function toJSONSchema(constructor): SchemaObject {
+export function toJSONSchema(constructor, refPrefix = refPointerPrefix): SchemaObject {
   if (typeof constructor === "function" && !noJSONSchemaSet.has(constructor)) {
     return targetConstructorToSchema(constructor, {
       additionalConverters,
       classTransformerMetadataStorage: defaultMetadataStorage,
-      refPointerPrefix,
+      refPointerPrefix: refPrefix,
     });
   } else {
     return <SchemaObject>(constructor.toJSON ? constructor.toJSON() : constructor);

@@ -1,7 +1,11 @@
-#### 1.0.0-beta.47
+#### 1.0.0-beta.48
 
-- Upgrade version `openapi3-ts`
-  
+- Add parameter `refPointerPrefix` for `toJSONSchema` function
+
+  #### 1.0.0-beta.47
+
+- Increment version `openapi3-ts`
+
 #### 1.0.0-beta.46
 
 - Fix 'ICursor' value `index:number` assignment
