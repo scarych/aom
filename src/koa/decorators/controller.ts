@@ -281,6 +281,18 @@ export function Controller(): ClassDecorator {
         Reflect.defineMetadata(constants.OPENAPI_SECURITY, openApiSecurity, constructor);
       }
 
+      // перенесем информацию о параметрах конструктора класса, если они не были установлены
+      const constructorParameters = Reflect.getOwnMetadata(
+        constants.PARAMETERS_METADATA,
+        parentConstructor
+      );
+      if (
+        constructorParameters &&
+        !Reflect.getOwnMetadata(constants.PARAMETERS_METADATA, constructor)
+      ) {
+        Reflect.defineMetadata(constants.PARAMETERS_METADATA, constructorParameters, constructor);
+      }
+
       // если текущий родитель не являлся контроллером ноды, то повторим операцию с другим родителем
       // пока не закончатся родители,или пока не наткнемся на контроллер ноды (который уже унаследовал все, что можно)
       if (!Reflect.getOwnMetadata(constants.CONTROLLER_NODE, parentConstructor)) {

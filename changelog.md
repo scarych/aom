@@ -1,3 +1,7 @@
+#### 1.0.0-beta.50
+
+- Extends ability of `@Controller` decorator to transfer constructor parameters to inherits controller
+
 #### 1.0.0-beta.49
 
 - Extends ability of `@This` decorator to pass parameters decorators for `constuctor`-method of context class
