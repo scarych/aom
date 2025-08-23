@@ -1,3 +1,7 @@
+#### 1.0.0-beta.49
+
+- Extends ability of `@This` decorator to pass parameters decorators for `constuctor`-method of context class
+
 #### 1.0.0-beta.48
 
 - Add parameter `refPointerPrefix` for `toJSONSchema` function

@@ -1,3 +1,4 @@
+import { Promise } from "bluebird";
 import * as constants from "../../common/constants";
 import { FwdContainer } from "../../references/forwards";
 import { checkConstructorProperty } from "../../common/functions";
@@ -211,7 +212,7 @@ export function This(
   ) {
     throw new Error(constants.CONSTRUCTOR_TYPE_ERROR);
   }
-  const handler = ({ ctx, cursor, route }: IArgs) => {
+  const handler = async ({ ctx, cursor, route, next }: IArgs) => {
     let _constructor;
     if (constructor instanceof FwdContainer) {
       // если используется `FwdRef`, то в качестве целевого значения используем результат функции
@@ -227,7 +228,17 @@ export function This(
 
     let _this = ctx.$StateMap.get(_constructor);
     if (!_this) {
-      _this = Reflect.construct(_constructor, []);
+      // вот тут следует добавить инъекцию аргументов, которые прикреплены без property
+      const metakey = constants.PARAMETERS_METADATA;
+      const decoratedArgs = Reflect.getOwnMetadata(metakey, _constructor, undefined) || [];
+      // данная процедура позволяет добавить инъекции внутрь constuctor того класса, который создается в контексте
+      const defaultArguments = <IArgs>{ route, cursor, ctx, next };
+      const args = await Promise.map(
+        decoratedArgs,
+        async (arg) => arg && (await Reflect.apply(arg, constructor, [defaultArguments]))
+      );
+
+      _this = Reflect.construct(_constructor, args);
       ctx.$StateMap.set(_constructor, _this);
     }
     return _this;
