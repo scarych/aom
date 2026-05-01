@@ -144,12 +144,14 @@ const darkCodeTheme = require("prism-react-renderer/themes/dracula");
           theme: lightCodeTheme,
           darkTheme: darkCodeTheme,
         },
+        /*
         gtag: {
           // You can also use your "G-" Measurement ID here.
           trackingID: "G-YJGS9P570Z",
           // Optional fields.
           // anonymizeIP: true, // Should IPs be anonymized?
         },
+        */
       }),
   }
 );
